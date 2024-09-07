@@ -1,0 +1,431 @@
+class_name GameManager
+extends Control
+
+var polygon: PolygonGuide.Polygon
+
+@export var leftScoreboard: Scoreboard
+@export var rightScoreboard: Scoreboard
+@export var playField: Control
+
+class PlayfieldBoundaries:
+	var minYOffset: float = -270
+	var maxYOffset: float = 270
+	var minXOffset: float = -480
+	var maxXOffset: float = 480
+var boundaries := PlayfieldBoundaries.new()
+
+var transitioning := false
+var transitionDuration: float
+var transitionTimeElapsed: float
+var transitionFraction: float
+
+var oldCenterHeight: float
+var centerHeightDelta: float
+
+var oldPlayfieldWidth: float
+var playfieldWidthDelta: float
+
+@export var vertexPrefab: PackedScene
+@export var verticesControl: Control
+var vertices: Array[Vertex]
+
+@export var wallPrefab: PackedScene
+@export var wallsControl: Control
+var walls: Dictionary
+
+@export var teamPrefab: PackedScene
+@export var teamsControl: Control
+var teams: Dictionary
+
+@export var bumperPrefab: PackedScene
+@export var bumpersControl: Control
+var bumpers: Dictionary
+
+@export var ballsControl: Control
+
+var standardTransitionDuration := 10.0
+
+
+func _ready():
+
+	polygon = PolygonGuide.polygons[len(PlayerManager.playersByTeamColor)]
+	var teamNum := 0
+
+	if polygon.sides > 2:
+
+		vertices.append(vertexPrefab.instantiate())
+		verticesControl.add_child(vertices[-1])
+		vertices[-1].initVertex(polygon.internalAngle*+0.5, polygon.macroRadius, boundaries)
+
+		for teamColor in PlayerManager.playersByTeamColor:
+			
+			if teamNum < len(PlayerManager.playersByTeamColor)-1:
+				vertices.append(vertexPrefab.instantiate())
+				verticesControl.add_child(vertices[-1])
+				vertices[-1].initVertex(polygon.internalAngle*(-teamNum - 0.5), polygon.macroRadius, boundaries)
+			else: teamNum = -1
+
+			var newTeam: Team = teamPrefab.instantiate()
+			teams[vertices[teamNum]] = newTeam
+			teamsControl.add_child(newTeam)
+			newTeam.initTeam(
+				polygon, vertices[teamNum], vertices[teamNum+1],
+				PlayerManager.playersByTeamColor[teamColor], teamColor
+			)
+			leftScoreboard.addLivesCounter(teamColor, newTeam)
+			
+			teamNum += 1
+
+	else:
+
+		for angle in [
+			polygon.internalAngle/2, -polygon.internalAngle/2,
+			polygon.internalAngle/2 - PI, -polygon.internalAngle/2 + PI
+		]:
+			vertices.append(vertexPrefab.instantiate())
+			verticesControl.add_child(vertices[-1])
+			vertices[-1].initVertex(angle, polygon.macroRadius, boundaries)
+
+		var newTeam: Team = teamPrefab.instantiate()
+		teams[vertices[-1]] = newTeam
+		teamsControl.add_child(newTeam)
+		newTeam.initTeam(
+			polygon, vertices[-1], vertices[0],
+			PlayerManager.playersByTeamColor.values()[0], PlayerManager.playersByTeamColor.keys()[0]
+		)
+		leftScoreboard.addLivesCounter(PlayerManager.playersByTeamColor.keys()[0], newTeam)
+
+		newTeam = teamPrefab.instantiate()
+		teams[vertices[1]] = newTeam
+		teamsControl.add_child(newTeam)
+		newTeam.initTeam(
+			polygon, vertices[1], vertices[2],
+			PlayerManager.playersByTeamColor.values()[1], PlayerManager.playersByTeamColor.keys()[1]
+		)
+		leftScoreboard.addLivesCounter(PlayerManager.playersByTeamColor.keys()[1], newTeam)
+
+		var newWall: Wall = wallPrefab.instantiate()
+		walls[vertices[0]] = newWall
+		wallsControl.add_child(newWall)
+		newWall.initWall(vertices[0], vertices[1])
+
+		newWall = wallPrefab.instantiate()
+		walls[vertices[2]] = newWall
+		wallsControl.add_child(newWall)
+		newWall.initWall(vertices[2], vertices[3])
+
+	
+	for vertex in vertices:
+		bumpers[vertex] = bumperPrefab.instantiate()
+		bumpersControl.add_child(bumpers[vertex])
+		bumpers[vertex].initBumper(vertex)
+	
+	for vertex in teams:
+		(teams[vertex] as Team).eliminateTeam.connect(reduceBoard)
+
+	if polygon.sides%2 == 0:
+		updatePlayfieldCenter(270)
+	else:
+		updatePlayfieldCenter(polygon.macroRadius)
+	updatePlayfieldWidth(polygon.maxWidth)
+
+
+func removeVertex(vertex: Vertex):
+
+	for i in range(len(vertex.trackers)-1,-1,-1):
+		vertex.trackers[i].switchVertex(walls[vertex].rightVertex)
+	if vertex.reducingChild != null:
+		vertex.reducingParent.reducingChild = vertex.reducingChild
+		pathReducingVertex(vertex.reducingChild)
+
+	walls[vertex].queue_free()
+	walls.erase(vertex)
+	if vertex in bumpers and vertex.reducingParent in bumpers:
+		bumpers[vertex].queue_free()
+		bumpers.erase(vertex)
+	elif vertex in bumpers:
+		bumpers[vertex.reducingParent] = bumpers[vertex]
+		bumpers.erase(vertex)
+	vertex.queue_free()
+
+
+func checkBumpers():
+
+	var verticesWithWallToLeft := {}
+	var verticesWithWallToRight := {}
+
+	for vertex in walls:
+		var wall: Wall = walls[vertex]
+		if wall.rightVertex in bumpers: verticesWithWallToLeft[wall.rightVertex] = null
+		if wall.leftVertex in bumpers: verticesWithWallToRight[wall.leftVertex] = null
+	
+	for vertex in verticesWithWallToLeft:
+		if vertex in verticesWithWallToRight:
+			bumpers[vertex].queue_free()
+			bumpers.erase(vertex)
+
+
+func reduceBoard(eliminatedTeam: Team):
+	var newVertexArray: Array[Vertex] = []
+	var vertexToEliminateIndex: int
+	polygon = PolygonGuide.polygons[polygon.sides-1]
+
+	transitioning = true
+	transitionDuration = standardTransitionDuration
+	transitionTimeElapsed = 0
+
+	oldCenterHeight = verticesControl.position.y
+	if polygon.sides%2 == 0:
+		centerHeightDelta = 270 - oldCenterHeight
+	else:
+		centerHeightDelta = polygon.macroRadius - oldCenterHeight
+
+	oldPlayfieldWidth = 960 - leftScoreboard.size.x*2
+	playfieldWidthDelta = polygon.maxWidth - oldPlayfieldWidth
+
+	var newWall: Wall = wallPrefab.instantiate()
+	walls[eliminatedTeam.leftVertex] = newWall
+	wallsControl.add_child(newWall)
+	newWall.initWall(eliminatedTeam.leftVertex, eliminatedTeam.rightVertex)
+	checkBumpers()
+
+	for vertex in teams:
+		if teams[vertex] as Team == eliminatedTeam:
+			vertexToEliminateIndex = vertices.find(vertex)
+		else:
+			(teams[vertex] as Team).changePolygon(polygon, standardTransitionDuration)
+
+	if polygon.sides > 2:
+
+		var currentVertexIndex: int
+		if vertexToEliminateIndex == 1: currentVertexIndex = -1
+		else: currentVertexIndex = 1
+		vertices[currentVertexIndex].changePolygon(polygon, polygon.internalAngle*0.5, standardTransitionDuration)
+		newVertexArray.append(vertices[currentVertexIndex])
+
+		var reducingVertex := eliminatedTeam.leftVertex
+		var reducingParent := eliminatedTeam.rightVertex
+		reducingVertex.initVertexReduction(reducingParent, standardTransitionDuration)
+		reducingVertex.onTransitionEnd.connect(removeVertex)
+
+		var currentVertex := vertices[currentVertexIndex]
+		var previousVertex: Vertex
+		var targetAngle: float
+		var transitionDirection: int
+		while len(newVertexArray) < polygon.sides:
+
+			currentVertexIndex += 1
+			if currentVertexIndex == len(vertices): currentVertexIndex -= len(vertices)
+			if currentVertexIndex == vertexToEliminateIndex:
+				currentVertexIndex += 1
+				if currentVertexIndex == len(vertices): currentVertexIndex -= len(vertices)
+			previousVertex = currentVertex
+			currentVertex = vertices[currentVertexIndex]
+			targetAngle = polygon.internalAngle*(-len(newVertexArray) + 0.5)
+
+			if (
+				doesPathIntersect(previousVertex, currentVertex, targetAngle, Vertex.RIGHT) or
+				doesPathOvertake(previousVertex, currentVertex, targetAngle, Vertex.RIGHT)
+			):
+				transitionDirection = Vertex.LEFT
+			else:
+				transitionDirection = Vertex.RIGHT
+
+			currentVertex.changePolygon(polygon, targetAngle, standardTransitionDuration, transitionDirection)
+			newVertexArray.append(currentVertex)
+
+	elif polygon.sides == 2:
+
+		leftScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+		rightScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+
+		var bottomWallVertex: Vertex
+		var leftTeamVertex: Vertex
+		var rightTeamVertex: Vertex
+		var topWallVertex: Vertex
+
+		bottomWallVertex = vertices[vertexToEliminateIndex]
+		leftTeamVertex = vertices[vertexToEliminateIndex-1]
+		rightTeamVertex = vertices[vertexToEliminateIndex-2]
+		topWallVertex = (teams[rightTeamVertex] as Team).rightVertex
+
+		var topWall: Wall = null
+
+		for vertex in walls:
+			if vertex == topWallVertex:
+				topWall = walls[vertex]
+				vertex.revertReduction()
+				vertex.onTransitionEnd.disconnect(removeVertex)
+				break
+
+		if topWall == null:
+
+			topWallVertex = vertexPrefab.instantiate()
+			verticesControl.add_child(topWallVertex)
+			topWallVertex.initVertex(leftTeamVertex.rotation, leftTeamVertex.unadjustedMacroRadius, boundaries)
+			(teams[rightTeamVertex] as Team)._rightVertexTracker.switchVertex(topWallVertex)
+
+			var newBumper: Bumper = bumperPrefab.instantiate()
+			bumpers[topWallVertex] = newBumper
+			bumpersControl.add_child(newBumper)
+			newBumper.initBumper(topWallVertex)
+
+			topWall = wallPrefab.instantiate()
+			walls[topWallVertex] = topWall
+			wallsControl.add_child(topWall)
+			topWall.initWall(topWallVertex, leftTeamVertex)
+
+		bottomWallVertex.changePolygon(polygon, polygon.internalAngle*0.5, standardTransitionDuration)
+
+		var targetAngle: float
+		var transitionDirection: int
+
+		targetAngle = polygon.internalAngle*-0.5
+		if (
+			doesPathIntersect(bottomWallVertex, rightTeamVertex, targetAngle, Vertex.RIGHT) or
+			doesPathOvertake(bottomWallVertex, rightTeamVertex, targetAngle, Vertex.RIGHT)
+		): transitionDirection = Vertex.LEFT
+		else: transitionDirection = Vertex.RIGHT
+		rightTeamVertex.changePolygon(polygon, targetAngle, standardTransitionDuration, transitionDirection)
+
+		targetAngle = polygon.internalAngle*0.5-PI
+		if (
+			doesPathIntersect(rightTeamVertex, topWallVertex, targetAngle, Vertex.RIGHT) or
+			doesPathOvertake(rightTeamVertex, topWallVertex, targetAngle, Vertex.RIGHT)
+		): transitionDirection = Vertex.LEFT
+		else: transitionDirection = Vertex.RIGHT
+		topWallVertex.changePolygon(polygon, targetAngle, standardTransitionDuration, transitionDirection)
+
+		targetAngle = polygon.internalAngle*-0.5+PI
+		if (
+			doesPathIntersect(topWallVertex, leftTeamVertex, targetAngle, Vertex.RIGHT) or
+			doesPathOvertake(topWallVertex, leftTeamVertex, targetAngle, Vertex.RIGHT)
+		): transitionDirection = Vertex.LEFT
+		else: transitionDirection = Vertex.RIGHT
+		leftTeamVertex.changePolygon(polygon, targetAngle, standardTransitionDuration, transitionDirection)
+
+		newVertexArray = [bottomWallVertex, rightTeamVertex, topWallVertex, leftTeamVertex]
+
+	teams.erase(vertices[vertexToEliminateIndex])
+	vertices = newVertexArray
+	for vertex in vertices:
+		while vertex.reducingChild != null:
+			pathReducingVertex(vertex.reducingChild)
+			vertex = vertex.reducingChild
+	eliminatedTeam.queue_free()
+
+
+func doesPathIntersect(pathedVertex: Vertex, pathingVertex: Vertex, destinationAngle: float, direction: int) -> bool:
+	if direction == pathedVertex.transitionDirection or direction == Vertex.NONE:
+		return false
+	else:
+		var angleToIntersection := angle_difference(pathingVertex.rotation, pathedVertex.targetAngle)
+		var angleToDestination := angle_difference(pathingVertex.rotation, destinationAngle)
+		if direction == Vertex.LEFT:
+			if angleToIntersection < 0: angleToIntersection = 2*PI + angleToIntersection
+			if angleToDestination < 0: angleToDestination = 2*PI + angleToDestination
+			if angleToDestination > angleToIntersection: return true
+		elif direction == Vertex.RIGHT:
+			if angleToIntersection > 0: angleToIntersection = -2*PI + angleToIntersection
+			if angleToDestination > 0: angleToDestination = -2*PI + angleToDestination
+			if angleToDestination < angleToIntersection: return true
+	return false
+
+
+func doesPathOvertake(pathedVertex: Vertex, pathingVertex: Vertex, destinationAngle: float, direction: int) -> bool:
+	if direction != pathedVertex.transitionDirection or direction == Vertex.NONE:
+		return false
+	else:
+		var angleToPathedVertex := angle_difference(pathingVertex.rotation, pathedVertex.rotation)
+		if angleToPathedVertex == 0: return false
+		var angleToDestination := angle_difference(pathingVertex.rotation, destinationAngle)
+		if direction == Vertex.LEFT:
+			if angleToPathedVertex < 0: angleToPathedVertex = 2*PI + angleToPathedVertex
+			if angleToDestination < 0: angleToDestination = 2*PI + angleToDestination
+			if angleToDestination > angleToPathedVertex + pathedVertex.angleDelta: return true
+		elif direction == Vertex.RIGHT:
+			if angleToPathedVertex > 0: angleToPathedVertex = -2*PI + angleToPathedVertex
+			if angleToDestination > 0: angleToDestination = -2*PI + angleToDestination
+			if angleToDestination < angleToPathedVertex + pathedVertex.angleDelta: return true
+	return false
+
+
+func pathReducingVertex(reducingVertex: Vertex):
+
+	var targetParent: Vertex = reducingVertex.reducingParent
+	while targetParent.transitionDuration - targetParent.transitionTimeElapsed < reducingVertex.reducingTimeRemaining:
+		targetParent = targetParent.reducingParent
+	var direction: int
+	var targetAngle: float
+	var targetMacroRadius: float
+
+	if reducingVertex.reducingTimeRemaining == targetParent.transitionDuration - targetParent.transitionTimeElapsed:
+		targetAngle = targetParent.targetAngle
+		targetMacroRadius = targetParent.targetMacroRadius
+	else:
+		var parentTransitionTimeFraction = (
+			(reducingVertex.reducingTimeRemaining+targetParent.transitionTimeElapsed) / targetParent.transitionDuration
+		)
+		targetAngle = (
+			targetParent.oldAngle + targetParent.angleDelta * parentTransitionTimeFraction
+		)
+		targetMacroRadius = (
+			targetParent.oldMacroRadius + targetParent.macroRadiusDelta * parentTransitionTimeFraction
+		)
+
+	if targetParent.transitionDirection == Vertex.NONE or targetParent.transitionDirection == Vertex.RIGHT:
+		direction = Vertex.RIGHT
+	else:
+		var angleToDestination := angle_difference(reducingVertex.rotation, targetAngle)
+
+		if angleToDestination < 0: angleToDestination = 2*PI + angleToDestination
+		if angleToDestination < targetParent.angleDelta: direction = Vertex.LEFT
+		else: direction = Vertex.RIGHT
+
+		# if reducingParent.transitionDirection == Vertex.LEFT:
+		# 	if angleToDestination < 0: angleToDestination = 2*PI + angleToDestination
+		# 	if angleToDestination < reducingParent.angleDelta: direction = Vertex.LEFT
+		# 	else: direction = Vertex.RIGHT
+
+		# elif reducingParent.transitionDirection == Vertex.RIGHT:
+		# 	if angleToDestination > 0: angleToDestination = -2*PI + angleToDestination
+		# 	if angleToDestination > reducingParent.angleDelta: direction = Vertex.RIGHT
+		# 	else: direction = Vertex.LEFT
+	
+	reducingVertex.changePolygon(polygon, targetAngle, reducingVertex.reducingTimeRemaining, direction, targetMacroRadius)
+
+
+func _process(delta):
+	
+	if transitioning:
+
+		transitionTimeElapsed += delta
+		if transitionTimeElapsed >= transitionDuration:
+			transitionTimeElapsed = transitionDuration
+			transitioning = false
+		transitionFraction = transitionTimeElapsed/transitionDuration
+
+		var playfieldCenter = oldCenterHeight + centerHeightDelta*transitionFraction
+		updatePlayfieldCenter(playfieldCenter)
+		var playfieldWidth = oldPlayfieldWidth + playfieldWidthDelta*transitionFraction
+		updatePlayfieldWidth(playfieldWidth)
+
+
+func updatePlayfieldCenter(playfieldCenter: float):
+
+	verticesControl.position.y = playfieldCenter
+	ballsControl.position.y = playfieldCenter
+
+	boundaries.minYOffset = -playfieldCenter - 0.1
+	boundaries.maxYOffset = 540-playfieldCenter + 0.1
+
+
+func updatePlayfieldWidth(playfieldWidth: float):
+
+	var scoreBoardWidth = (960-playfieldWidth)/2
+	leftScoreboard.set_deferred("size", Vector2(scoreBoardWidth, leftScoreboard.size.y))
+	rightScoreboard.position.x = 960-scoreBoardWidth
+	rightScoreboard.set_deferred("size", Vector2(scoreBoardWidth, rightScoreboard.size.y))
+
+	boundaries.minXOffset = -480 + scoreBoardWidth - 0.1
+	boundaries.maxXOffset = 480 - scoreBoardWidth + 0.1

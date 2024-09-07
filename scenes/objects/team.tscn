@@ -1,0 +1,60 @@
+[gd_scene load_steps=8 format=3 uid="uid://cabfjmylr6pau"]
+
+[ext_resource type="Script" path="res://scripts/global/Team.gd" id="1_25hma"]
+[ext_resource type="Shader" path="res://shaders/goal.gdshader" id="2_gowim"]
+[ext_resource type="Script" path="res://scripts/playfield/PaddleManager.gd" id="3_rumxq"]
+[ext_resource type="PackedScene" uid="uid://dn5fpyl6dbako" path="res://scenes/objects/paddle.tscn" id="4_5dvrg"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dk33v"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mhneu"]
+noise = SubResource("FastNoiseLite_dk33v")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xbply"]
+shader = ExtResource("2_gowim")
+shader_parameter/density = 0.0
+shader_parameter/noiseTexture = SubResource("NoiseTexture2D_mhneu")
+
+[node name="Team" type="Control" node_paths=PackedStringArray("goal", "goalShader", "goalCollider", "paddleManager")]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -175.0
+offset_right = 176.0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("1_25hma")
+goal = NodePath("Goal")
+goalShader = NodePath("GoalShader")
+goalCollider = NodePath("Goal/GoalCollider")
+paddleManager = NodePath("PaddleManager")
+
+[node name="GoalShader" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_xbply")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.25098, 1, 1, 1)
+
+[node name="Goal" type="Area2D" parent="."]
+disable_mode = 2
+collision_layer = 4
+collision_mask = 0
+
+[node name="GoalCollider" type="CollisionPolygon2D" parent="Goal"]
+
+[node name="PaddleManager" type="Control" parent="."]
+anchors_preset = 0
+script = ExtResource("3_rumxq")
+paddlePrefab = ExtResource("4_5dvrg")
+
+[connection signal="area_entered" from="Goal" to="." method="onBallEnterGoal"]
+[connection signal="area_exited" from="Goal" to="." method="onBallExitGoal"]

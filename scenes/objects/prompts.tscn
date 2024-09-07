@@ -1,0 +1,182 @@
+[gd_scene load_steps=10 format=3 uid="uid://cbsdcdinyu7k2"]
+
+[ext_resource type="Script" path="res://scripts/main_menu/Prompts.gd" id="1_ggmtv"]
+[ext_resource type="Texture2D" uid="uid://dqigsc0jvsfks" path="res://images/controller_prompts/Switch_Left_Stick.png" id="2_e65lw"]
+[ext_resource type="Texture2D" uid="uid://hxhy1yn683e" path="res://images/controller_prompts/clockwise_arrow.png" id="3_gf7ep"]
+[ext_resource type="Texture2D" uid="uid://dnirdn6ps04hu" path="res://images/controller_prompts/Positional_Prompts_Up.png" id="4_a5kjn"]
+[ext_resource type="Texture2D" uid="uid://x6hayc2lwvk4" path="res://images/controller_prompts/XboxOne_Dpad_Up.png" id="5_t6xl3"]
+[ext_resource type="Texture2D" uid="uid://bb6e0i08aawqr" path="res://images/controller_prompts/W_Key_Dark.png" id="6_qv3aq"]
+[ext_resource type="Texture2D" uid="uid://cr5dyms7ov31p" path="res://images/controller_prompts/D_Key_Dark.png" id="7_u0gol"]
+[ext_resource type="Texture2D" uid="uid://cvdebbnonaban" path="res://images/controller_prompts/S_Key_Dark.png" id="8_x2bra"]
+[ext_resource type="Texture2D" uid="uid://dgq14lmdju2u0" path="res://images/controller_prompts/A_Key_Dark.png" id="9_56mpk"]
+
+[node name="Prompts" type="Control" node_paths=PackedStringArray("controlStickControl", "controlStickTextureRect", "clockwiseArrow", "faceButtonsControl", "faceButtonTextureRect", "dpadControl", "dpadButtonTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "upKeyHighlight", "rightKeyHighlight", "downKeyHighlight", "leftKeyHighlight")]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_ggmtv")
+controlStickControl = NodePath("ControlStick")
+controlStickTextureRect = NodePath("ControlStick/ControlStick")
+clockwiseArrow = NodePath("ControlStick/ClockwiseArrow")
+faceButtonsControl = NodePath("FaceButtons")
+faceButtonTextureRect = NodePath("FaceButtons/PositionalButtonPrompt")
+dpadControl = NodePath("Dpad")
+dpadButtonTextureRect = NodePath("Dpad/DpadPrompt")
+keysControl = NodePath("Keys")
+upKeyTextureRect = NodePath("Keys/UpKey")
+rightKeyTextureRect = NodePath("Keys/RightKey")
+downKeyTextureRect = NodePath("Keys/DownKey")
+leftKeyTextureRect = NodePath("Keys/LeftKey")
+upKeyHighlight = NodePath("Keys/UpKey/Highlight")
+rightKeyHighlight = NodePath("Keys/RightKey/Highlight")
+downKeyHighlight = NodePath("Keys/DownKey/Highlight")
+leftKeyHighlight = NodePath("Keys/LeftKey/Highlight")
+
+[node name="ControlStick" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ControlStick" type="TextureRect" parent="ControlStick"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 90.0
+offset_bottom = 90.0
+texture = ExtResource("2_e65lw")
+expand_mode = 1
+
+[node name="ClockwiseArrow" type="TextureRect" parent="ControlStick"]
+modulate = Color(0.54902, 0.54902, 0.54902, 1)
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 100.0
+pivot_offset = Vector2(50, 50)
+texture = ExtResource("3_gf7ep")
+expand_mode = 1
+
+[node name="FaceButtons" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PositionalButtonPrompt" type="TextureRect" parent="FaceButtons"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 90.0
+offset_bottom = 90.0
+texture = ExtResource("4_a5kjn")
+expand_mode = 1
+
+[node name="Dpad" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DpadPrompt" type="TextureRect" parent="Dpad"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 90.0
+offset_bottom = 90.0
+texture = ExtResource("5_t6xl3")
+expand_mode = 1
+
+[node name="Keys" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UpKey" type="TextureRect" parent="Keys"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 10.0
+offset_right = 70.0
+offset_bottom = 50.0
+texture = ExtResource("6_qv3aq")
+expand_mode = 1
+
+[node name="Highlight" type="ColorRect" parent="Keys/UpKey"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 32.0
+offset_bottom = 32.0
+color = Color(1, 1, 0.694118, 0.447059)
+
+[node name="RightKey" type="TextureRect" parent="Keys"]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 40.0
+offset_right = 100.0
+offset_bottom = 80.0
+texture = ExtResource("7_u0gol")
+expand_mode = 1
+
+[node name="Highlight" type="ColorRect" parent="Keys/RightKey"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 32.0
+offset_bottom = 32.0
+color = Color(1, 1, 0.694118, 0.447059)
+
+[node name="DownKey" type="TextureRect" parent="Keys"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 40.0
+offset_right = 70.0
+offset_bottom = 80.0
+texture = ExtResource("8_x2bra")
+expand_mode = 1
+
+[node name="Highlight" type="ColorRect" parent="Keys/DownKey"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 32.0
+offset_bottom = 32.0
+color = Color(1, 1, 0.694118, 0.447059)
+
+[node name="LeftKey" type="TextureRect" parent="Keys"]
+layout_mode = 0
+offset_top = 40.0
+offset_right = 40.0
+offset_bottom = 80.0
+texture = ExtResource("9_56mpk")
+expand_mode = 1
+
+[node name="Highlight" type="ColorRect" parent="Keys/LeftKey"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 32.0
+offset_bottom = 32.0
+color = Color(1, 1, 0.694118, 0.447059)
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_top = -16.0
+offset_right = 100.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 30
+text = "To Join:"
+horizontal_alignment = 1

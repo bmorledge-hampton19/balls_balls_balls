@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://bngtx6rr0whah"]
+
+[ext_resource type="Script" path="res://scripts/playfield/Bumper.gd" id="1_igjff"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_asq4e"]
+resource_local_to_scene = true
+
+[node name="Bumper" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_igjff")
+
+[node name="Area" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area"]
+shape = SubResource("CircleShape2D_asq4e")

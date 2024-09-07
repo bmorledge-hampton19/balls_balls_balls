@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://cd0f3kaj2vli3"]
+
+[ext_resource type="Script" path="res://scripts/playfield/Wall.gd" id="1_tpmo8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7w8gn"]
+resource_local_to_scene = true
+size = Vector2(351, 10)
+
+[node name="Wall" type="Control" node_paths=PackedStringArray("area", "collider")]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_tpmo8")
+area = NodePath("BottomWall")
+collider = NodePath("BottomWall/Collider")
+
+[node name="BottomWall" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+
+[node name="Collider" type="CollisionShape2D" parent="BottomWall"]
+position = Vector2(175.5, 5)
+shape = SubResource("RectangleShape2D_7w8gn")
+one_way_collision_margin = 0.0

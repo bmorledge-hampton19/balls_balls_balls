@@ -1,0 +1,127 @@
+[gd_scene load_steps=9 format=3 uid="uid://c24d33ihtpoy1"]
+
+[ext_resource type="Script" path="res://scripts/main_menu/TitleText.gd" id="1_migqa"]
+[ext_resource type="Script" path="res://scripts/main_menu/MainMenu.gd" id="1_w6426"]
+[ext_resource type="PackedScene" uid="uid://cbsdcdinyu7k2" path="res://scenes/objects/prompts.tscn" id="2_0fjbk"]
+[ext_resource type="Shader" path="res://shaders/PulsingCircleMask.gdshader" id="4_esswp"]
+[ext_resource type="Shader" path="res://shaders/CircleMask.gdshader" id="4_p7huo"]
+[ext_resource type="Texture2D" uid="uid://chxlsftx1v4as" path="res://images/ball_textures/circle.png" id="6_u4t3q"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8d73a"]
+shader = ExtResource("4_esswp")
+shader_parameter/circle_size = 0.4
+shader_parameter/pulseStart = 0.3
+shader_parameter/pulseMin = 0.4
+shader_parameter/pulseMax = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lschc"]
+shader = ExtResource("4_p7huo")
+shader_parameter/circle_size = 0.5
+shader_parameter/size_ratio = 1.0
+shader_parameter/location_x = 0.5
+shader_parameter/location_y = 0.5
+shader_parameter/invert_mask = false
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_w6426")
+
+[node name="MainViewport" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -270.0
+offset_right = 480.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(480, 270)
+
+[node name="Background" type="ColorRect" parent="MainViewport"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="TitleText" type="RichTextLabel" parent="MainViewport"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.22
+offset_bottom = 1.19999
+theme_override_font_sizes/normal_font_size = 120
+bbcode_enabled = true
+text = "[center]Balls Balls Balls[/center]"
+scroll_active = false
+script = ExtResource("1_migqa")
+
+[node name="PlayerSelectors" type="GridContainer" parent="MainViewport"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.278
+anchor_right = 1.0
+anchor_bottom = 0.722
+offset_top = -0.12001
+offset_bottom = 0.119965
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 8
+
+[node name="PlayerSelector" type="MarginContainer" parent="MainViewport/PlayerSelectors"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Prompts" parent="MainViewport/PlayerSelectors/PlayerSelector" instance=ExtResource("2_0fjbk")]
+visible = false
+layout_mode = 2
+
+[node name="Player" type="Control" parent="MainViewport/PlayerSelectors/PlayerSelector"]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="MainViewport/PlayerSelectors/PlayerSelector/Player"]
+material = SubResource("ShaderMaterial_8d73a")
+layout_mode = 0
+offset_left = 25.0
+offset_top = 25.0
+offset_right = 75.0
+offset_bottom = 75.0
+
+[node name="TextureRect" type="TextureRect" parent="MainViewport/PlayerSelectors/PlayerSelector/Player"]
+material = SubResource("ShaderMaterial_lschc")
+layout_mode = 0
+offset_left = 30.0
+offset_top = 30.0
+offset_right = 70.0
+offset_bottom = 70.0
+texture = ExtResource("6_u4t3q")
+expand_mode = 1
+
+[node name="ExitButton" type="Control" parent="MainViewport"]
+anchors_preset = 0
+offset_left = 780.0
+offset_top = 459.0
+offset_right = 940.0
+offset_bottom = 519.0
+
+[node name="Settings Button" type="Control" parent="MainViewport"]
+anchors_preset = 0
+offset_left = 22.0
+offset_top = 466.0
+offset_right = 177.0
+offset_bottom = 522.0
