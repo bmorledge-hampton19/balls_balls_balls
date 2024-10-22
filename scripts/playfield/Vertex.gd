@@ -109,7 +109,7 @@ func _process(delta):
 
 		rotation = oldAngle + angleDelta*transitionFraction
 		macroRadius = oldMacroRadius + macroRadiusDelta*transitionFraction
-
+	
 	unadjustedMacroRadius = macroRadius
 	enforceBoundaries()
 

@@ -1,3 +1,4 @@
+class_name Prompts
 extends Node
 
 @export var controlStickControl: Control
@@ -5,7 +6,7 @@ const controllerPromptsDir = "res://images/controller_prompts/"
 const leftStick = controllerPromptsDir + "Switch_Left_Stick.png"
 const rightStick = controllerPromptsDir + "Switch_Right_Stick.png"
 @export var controlStickTextureRect: TextureRect
-@export var clockwiseArrow: TextureRect
+@export var rotatingArrow: TextureRect
 var switchControlStickTimer := Timer.new()
 var maxControlStickSwitches = 2
 var currentControlStickSwitch = 0
@@ -58,6 +59,7 @@ const fourKey = controllerPromptsDir + "4_Key_Dark.png"
 var switchKeysTimer := Timer.new()
 var maxKeySwitches = 8
 var currentKeySwitch = 0
+var clockwise := true
 
 enum {CONTROL_STICK, FACE_BUTTONS, DPAD, KEYS}
 var currentPrompt: int
@@ -87,9 +89,10 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _process(_delta):
 	if currentPrompt == CONTROL_STICK:
-		clockwiseArrow.rotation = PI*-switchControlStickTimer.time_left
+		if clockwise: rotatingArrow.rotation = PI*-switchControlStickTimer.time_left
+		else: rotatingArrow.rotation = PI*switchControlStickTimer.time_left
 
 
 func switchControlStick():
@@ -97,7 +100,7 @@ func switchControlStick():
 		controlStickTextureRect.texture = preload(rightStick)
 	else:
 		controlStickTextureRect.texture = preload(leftStick)
-	
+
 	currentControlStickSwitch += 1
 	if currentControlStickSwitch == maxControlStickSwitches: switchPrompt()
 	else: switchControlStickTimer.start()
@@ -106,11 +109,13 @@ func switchControlStick():
 func switchFaceButton():
 	match currentFaceButtonSwitch % 4:
 		0:
-			faceButtonTextureRect.texture = preload(rightFaceButton)
+			if clockwise: faceButtonTextureRect.texture = preload(rightFaceButton)
+			else: faceButtonTextureRect.texture = preload(leftFaceButton)
 		1:
 			faceButtonTextureRect.texture = preload(downFaceButton)
 		2:
-			faceButtonTextureRect.texture = preload(leftFaceButton)
+			if clockwise: faceButtonTextureRect.texture = preload(leftFaceButton)
+			else: faceButtonTextureRect.texture = preload(rightFaceButton)
 		3:
 			faceButtonTextureRect.texture = preload(upFaceButton)
 
@@ -122,11 +127,13 @@ func switchFaceButton():
 func switchDpadButton():
 	match currentDpadButtonSwitch % 4:
 		0:
-			dpadButtonTextureRect.texture = preload(rightDpadButton)
+			if clockwise: dpadButtonTextureRect.texture = preload(rightDpadButton)
+			else: dpadButtonTextureRect.texture = preload(leftDpadButton)
 		1:
 			dpadButtonTextureRect.texture = preload(downDpadButton)
 		2:
-			dpadButtonTextureRect.texture = preload(leftDpadButton)
+			if clockwise: dpadButtonTextureRect.texture = preload(leftDpadButton)
+			else: dpadButtonTextureRect.texture = preload(rightDpadButton)
 		3:
 			dpadButtonTextureRect.texture = preload(upDpadButton)
 
@@ -144,7 +151,8 @@ func switchKeys():
 			leftKeyTextureRect.texture = preload(jKey)
 
 			upKeyHighlight.hide()
-			rightKeyHighlight.show()
+			if clockwise: rightKeyHighlight.show()
+			else: leftKeyHighlight.show()
 
 		1:
 			upKeyTextureRect.texture = preload(upArrowKey)
@@ -152,7 +160,8 @@ func switchKeys():
 			downKeyTextureRect.texture = preload(downArrowKey)
 			leftKeyTextureRect.texture = preload(leftArrowKey)
 
-			rightKeyHighlight.hide()
+			if clockwise: rightKeyHighlight.hide()
+			else: leftKeyHighlight.hide()
 			downKeyHighlight.show()
 
 		2:
@@ -162,7 +171,8 @@ func switchKeys():
 			leftKeyTextureRect.texture = preload(fourKey)
 
 			downKeyHighlight.hide()
-			leftKeyHighlight.show()
+			if clockwise: leftKeyHighlight.show()
+			else: rightKeyHighlight.show()
 
 		3:
 			upKeyTextureRect.texture = preload(wKey)
@@ -170,7 +180,8 @@ func switchKeys():
 			downKeyTextureRect.texture = preload(sKey)
 			leftKeyTextureRect.texture = preload(aKey)
 
-			leftKeyHighlight.hide()
+			if clockwise: leftKeyHighlight.hide()
+			else: rightKeyHighlight.hide()
 			upKeyHighlight.show()
 
 
@@ -204,8 +215,10 @@ func switchPrompt():
 			currentPrompt = KEYS
 
 		KEYS:
+			clockwise = not clockwise
 			keysControl.hide()
 			currentKeySwitch = 0
+			rotatingArrow.flip_h = not clockwise
 			controlStickControl.show()
 			switchControlStickTimer.start()
 			currentPrompt = CONTROL_STICK

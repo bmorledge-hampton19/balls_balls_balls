@@ -7,6 +7,7 @@ class Polygon:
 	var microRadius: float
 	var macroRadius: float
 	var paddleWidthMultiplier: float
+	var paddleSpeedMultiplier: float
 	var maxWidth: float
 	func _init(p_sides: int):
 		sides = p_sides
@@ -18,6 +19,7 @@ class Polygon:
 		microRadius = microRadii[sides]
 		macroRadius = macroRadii[sides]
 		paddleWidthMultiplier = paddleWidthMultipliers[sides]
+		paddleSpeedMultiplier = paddleSpeedMultipliers[sides]
 		maxWidth = maxWidths[sides]
 
 const sideLengths := {
@@ -58,6 +60,16 @@ const paddleWidthMultipliers := {
 	6 : 0.75,
 	7 : 0.725,
 	8 : 0.7
+}
+
+const paddleSpeedMultipliers := {
+	2 : 2,
+	3 : 1.7,
+	4 : 1.3,
+	5 : 1,
+	6 : 0.8,
+	7 : 0.625,
+	8 : 0.5
 }
 
 const maxWidths := {

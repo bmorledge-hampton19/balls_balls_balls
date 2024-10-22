@@ -41,14 +41,15 @@ var teams: Dictionary
 @export var bumpersControl: Control
 var bumpers: Dictionary
 
-@export var ballsControl: Control
+@export var ballManager: BallManager
 
 var standardTransitionDuration := 10.0
 
 
 func _ready():
 
-	polygon = PolygonGuide.polygons[len(PlayerManager.playersByTeamColor)]
+	var activeTeamColors := PlayerManager.getActiveTeamColors()
+	polygon = PolygonGuide.polygons[len(activeTeamColors)]
 	var teamNum := 0
 
 	if polygon.sides > 2:
@@ -57,9 +58,9 @@ func _ready():
 		verticesControl.add_child(vertices[-1])
 		vertices[-1].initVertex(polygon.internalAngle*+0.5, polygon.macroRadius, boundaries)
 
-		for teamColor in PlayerManager.playersByTeamColor:
+		for teamColor in activeTeamColors:
 			
-			if teamNum < len(PlayerManager.playersByTeamColor)-1:
+			if teamNum < len(activeTeamColors)-1:
 				vertices.append(vertexPrefab.instantiate())
 				verticesControl.add_child(vertices[-1])
 				vertices[-1].initVertex(polygon.internalAngle*(-teamNum - 0.5), polygon.macroRadius, boundaries)
@@ -70,13 +71,16 @@ func _ready():
 			teamsControl.add_child(newTeam)
 			newTeam.initTeam(
 				polygon, vertices[teamNum], vertices[teamNum+1],
-				PlayerManager.playersByTeamColor[teamColor], teamColor
+				PlayerManager.activePlayersByTeamColor[teamColor], teamColor
 			)
 			leftScoreboard.addLivesCounter(teamColor, newTeam)
 			
 			teamNum += 1
 
 	else:
+
+		leftScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+		rightScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_LEFT)
 
 		for angle in [
 			polygon.internalAngle/2, -polygon.internalAngle/2,
@@ -91,18 +95,18 @@ func _ready():
 		teamsControl.add_child(newTeam)
 		newTeam.initTeam(
 			polygon, vertices[-1], vertices[0],
-			PlayerManager.playersByTeamColor.values()[0], PlayerManager.playersByTeamColor.keys()[0]
+			PlayerManager.activePlayersByTeamColor[activeTeamColors[0]], activeTeamColors[0]
 		)
-		leftScoreboard.addLivesCounter(PlayerManager.playersByTeamColor.keys()[0], newTeam)
+		leftScoreboard.addLivesCounter(activeTeamColors[0], newTeam)
 
 		newTeam = teamPrefab.instantiate()
 		teams[vertices[1]] = newTeam
 		teamsControl.add_child(newTeam)
 		newTeam.initTeam(
 			polygon, vertices[1], vertices[2],
-			PlayerManager.playersByTeamColor.values()[1], PlayerManager.playersByTeamColor.keys()[1]
+			PlayerManager.activePlayersByTeamColor[activeTeamColors[1]], activeTeamColors[1]
 		)
-		leftScoreboard.addLivesCounter(PlayerManager.playersByTeamColor.keys()[1], newTeam)
+		leftScoreboard.addLivesCounter(activeTeamColors[1], newTeam)
 
 		var newWall: Wall = wallPrefab.instantiate()
 		walls[vertices[0]] = newWall
@@ -166,6 +170,7 @@ func checkBumpers():
 
 
 func reduceBoard(eliminatedTeam: Team):
+	if not eliminatedTeam in teams.values(): return
 	var newVertexArray: Array[Vertex] = []
 	var vertexToEliminateIndex: int
 	polygon = PolygonGuide.polygons[polygon.sides-1]
@@ -353,13 +358,15 @@ func doesPathOvertake(pathedVertex: Vertex, pathingVertex: Vertex, destinationAn
 func pathReducingVertex(reducingVertex: Vertex):
 
 	var targetParent: Vertex = reducingVertex.reducingParent
-	while targetParent.transitionDuration - targetParent.transitionTimeElapsed < reducingVertex.reducingTimeRemaining:
+	while targetParent.transitionDuration - targetParent.transitionTimeElapsed < reducingVertex.reducingTimeRemaining-0.01:
 		targetParent = targetParent.reducingParent
 	var direction: int
 	var targetAngle: float
 	var targetMacroRadius: float
 
-	if reducingVertex.reducingTimeRemaining == targetParent.transitionDuration - targetParent.transitionTimeElapsed:
+	if is_equal_approx(
+		reducingVertex.reducingTimeRemaining, targetParent.transitionDuration - targetParent.transitionTimeElapsed
+	):
 		targetAngle = targetParent.targetAngle
 		targetMacroRadius = targetParent.targetMacroRadius
 	else:
@@ -414,7 +421,7 @@ func _process(delta):
 func updatePlayfieldCenter(playfieldCenter: float):
 
 	verticesControl.position.y = playfieldCenter
-	ballsControl.position.y = playfieldCenter
+	ballManager.position.y = playfieldCenter
 
 	boundaries.minYOffset = -playfieldCenter - 0.1
 	boundaries.maxYOffset = 540-playfieldCenter + 0.1

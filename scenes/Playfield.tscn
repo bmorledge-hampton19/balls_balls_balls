@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bs24t7qhmm0um"]
+[gd_scene load_steps=11 format=3 uid="uid://bs24t7qhmm0um"]
 
 [ext_resource type="Script" path="res://scripts/playfield/GameManager.gd" id="1_upxls"]
 [ext_resource type="PackedScene" uid="uid://bwggye1f527c4" path="res://scenes/objects/vertex.tscn" id="2_vw8r0"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/playfield/BallManager.gd" id="6_dlowe"]
 [ext_resource type="PackedScene" uid="uid://crc10cctsupco" path="res://scenes/objects/ball.tscn" id="7_k45d6"]
 [ext_resource type="Script" path="res://scripts/playfield/Scoreboard.gd" id="7_n8whm"]
+[ext_resource type="PackedScene" uid="uid://brbfliohi7w1j" path="res://scenes/objects/trail.tscn" id="8_gkjmk"]
 [ext_resource type="PackedScene" uid="uid://ciaregb1hgvj7" path="res://scenes/objects/livesCounter.tscn" id="9_685es"]
 
 [node name="Viewport" type="Control"]
@@ -27,7 +28,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="Game" type="Control" parent="." node_paths=PackedStringArray("leftScoreboard", "rightScoreboard", "playField", "verticesControl", "wallsControl", "teamsControl", "bumpersControl", "ballsControl")]
+[node name="Game" type="Control" parent="." node_paths=PackedStringArray("leftScoreboard", "rightScoreboard", "playField", "verticesControl", "wallsControl", "teamsControl", "bumpersControl", "ballManager")]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -53,7 +54,7 @@ teamPrefab = ExtResource("4_jc0af")
 teamsControl = NodePath("PlayField/Teams")
 bumperPrefab = ExtResource("5_m3awi")
 bumpersControl = NodePath("PlayField/Bumpers")
-ballsControl = NodePath("PlayField/Balls")
+ballManager = NodePath("PlayField/BallManager")
 
 [node name="PlayField" type="Control" parent="Game"]
 layout_mode = 1
@@ -95,7 +96,7 @@ anchors_preset = 0
 offset_right = 960.0
 offset_bottom = 540.0
 
-[node name="Balls" type="Control" parent="Game/PlayField"]
+[node name="BallManager" type="Control" parent="Game/PlayField" node_paths=PackedStringArray("ballsControl", "trailsControl")]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -106,6 +107,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("6_dlowe")
 ballPrefab = ExtResource("7_k45d6")
+ballsControl = NodePath("Balls")
+trailPrefab = ExtResource("8_gkjmk")
+trailsControl = NodePath("Trails")
+
+[node name="Balls" type="Control" parent="Game/PlayField/BallManager"]
+anchors_preset = 0
+
+[node name="Trails" type="Control" parent="Game/PlayField/BallManager"]
+anchors_preset = 0
 
 [node name="LeftScoreboard" type="ColorRect" parent="Game" node_paths=PackedStringArray("textControl")]
 layout_mode = 1

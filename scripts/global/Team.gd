@@ -27,7 +27,7 @@ var angle: float:
 		return angle_difference(0, leftVertexAngle + vertexAngleDifference/2)
 
 
-var livesRemaining: int = 10
+var livesRemaining: int = 5
 var ballsInGoal: Dictionary
 
 var color: Color
@@ -156,4 +156,8 @@ func checkBall(ball: Ball):
 		livesRemaining -= 1
 		onLivesChanged.emit(livesRemaining)
 		if livesRemaining == 0:
+			for otherBall in ballsInGoal:
+				(otherBall as Ball).goalsEncompassing.erase(goal)
+				print("Encompassement: " + str(goal.to_local(otherBall.global_position).y))
+				if goal.to_local(otherBall.global_position).y >= otherBall.radius/2: otherBall.onBallInGoal.emit(otherBall)
 			eliminateTeam.emit(self)

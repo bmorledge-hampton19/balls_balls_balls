@@ -1,0 +1,214 @@
+[gd_scene load_steps=14 format=3 uid="uid://cxiab0g3k5g85"]
+
+[ext_resource type="Script" path="res://scripts/main_menu/PlayerDisplay.gd" id="1_qexq1"]
+[ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="2_a0fqo"]
+[ext_resource type="Shader" path="res://shaders/CircleMask.gdshader" id="3_rqenc"]
+[ext_resource type="Texture2D" uid="uid://hme6gheo7qpq" path="res://images/player_icons/PS3_Triangle.png" id="4_gqwh7"]
+[ext_resource type="Texture2D" uid="uid://6wu1uwdmjdso" path="res://images/controller_prompts/Generic_Controller.png" id="5_p2plo"]
+[ext_resource type="Texture2D" uid="uid://b268np1eu0is" path="res://images/controller_prompts/Keyboard_Icon.png" id="6_tfr6w"]
+[ext_resource type="Texture2D" uid="uid://di5l3ds2jasr1" path="res://images/controller_prompts/Positional_Prompts_All_Empty.png" id="7_bde5i"]
+[ext_resource type="Texture2D" uid="uid://bk1efl4l5c3u8" path="res://images/controller_prompts/XboxOne_Dpad.png" id="8_ttiup"]
+[ext_resource type="Texture2D" uid="uid://dqigsc0jvsfks" path="res://images/controller_prompts/Switch_Left_Stick.png" id="9_fpkai"]
+[ext_resource type="Texture2D" uid="uid://dabd86d3pkg5h" path="res://images/controller_prompts/Switch_Right_Stick.png" id="10_k1gxd"]
+[ext_resource type="Texture2D" uid="uid://bb6e0i08aawqr" path="res://images/controller_prompts/W_Key_Dark.png" id="11_sa86u"]
+[ext_resource type="Texture2D" uid="uid://crfbxq36d2jce" path="res://images/Close_Button.png" id="12_am6du"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lschc"]
+shader = ExtResource("3_rqenc")
+shader_parameter/circle_size = 0.5
+shader_parameter/size_ratio = 1.0
+shader_parameter/location_x = 0.5
+shader_parameter/location_y = 0.5
+shader_parameter/invert_mask = false
+
+[node name="Player" type="Control" node_paths=PackedStringArray("teamColorRect", "teamText", "playerIconTextureRect", "controllerIconTextureRect", "controllerNumLabel", "keyboardIconTextureRect", "faceButtonsTextureRect", "dpadTextureRect", "leftStickTextureRect", "rightStickTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "closeButton")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 100.0
+script = ExtResource("1_qexq1")
+teamColorRect = NodePath("TeamColor")
+teamText = NodePath("TeamText")
+playerIconTextureRect = NodePath("PlayerIcon")
+controllerIconTextureRect = NodePath("ControllerID/ControllerIcon")
+controllerNumLabel = NodePath("ControllerID/ControllerNum")
+keyboardIconTextureRect = NodePath("ControllerID/KeyboardIcon")
+faceButtonsTextureRect = NodePath("ControlType/FaceButtons")
+dpadTextureRect = NodePath("ControlType/Dpad")
+leftStickTextureRect = NodePath("ControlType/LeftStick")
+rightStickTextureRect = NodePath("ControlType/RightStick")
+keysControl = NodePath("ControlType/Keys")
+upKeyTextureRect = NodePath("ControlType/Keys/UpKey")
+rightKeyTextureRect = NodePath("ControlType/Keys/RightKey")
+downKeyTextureRect = NodePath("ControlType/Keys/DownKey")
+leftKeyTextureRect = NodePath("ControlType/Keys/LeftKey")
+closeButton = NodePath("CloseButton")
+
+[node name="TeamColor" type="ColorRect" parent="."]
+material = ExtResource("2_a0fqo")
+layout_mode = 0
+offset_left = 25.0
+offset_top = 17.0
+offset_right = 75.0
+offset_bottom = 67.0
+
+[node name="TeamText" type="Label" parent="."]
+layout_mode = 0
+offset_top = -15.0
+offset_right = 83.0
+offset_bottom = 15.0
+theme_override_font_sizes/font_size = 28
+text = "Team 1"
+
+[node name="PlayerIcon" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_lschc")
+layout_mode = 0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = 68.0
+offset_bottom = 60.0
+texture = ExtResource("4_gqwh7")
+expand_mode = 1
+
+[node name="CloseButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 80.0
+offset_top = -10.0
+offset_right = 100.0
+offset_bottom = 10.0
+texture_normal = ExtResource("12_am6du")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ControllerID" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 67.0
+offset_right = 50.0
+offset_bottom = 97.0
+
+[node name="ControllerIcon" type="TextureRect" parent="ControllerID"]
+visible = false
+layout_mode = 0
+offset_left = 5.0
+offset_right = 45.0
+offset_bottom = 30.0
+texture = ExtResource("5_p2plo")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="ControllerNum" type="Label" parent="ControllerID"]
+visible = false
+layout_mode = 0
+offset_left = 5.0
+offset_top = -20.0
+offset_right = 22.0
+offset_bottom = 12.0
+theme_override_colors/font_color = Color(0.843137, 0.843137, 0.843137, 1)
+theme_override_font_sizes/font_size = 32
+text = "1"
+horizontal_alignment = 1
+
+[node name="KeyboardIcon" type="TextureRect" parent="ControllerID"]
+visible = false
+layout_mode = 0
+offset_top = -2.0
+offset_right = 50.0
+offset_bottom = 32.0
+texture = ExtResource("6_tfr6w")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="ControlType" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 50.0
+offset_top = 65.0
+offset_right = 100.0
+offset_bottom = 95.0
+
+[node name="FaceButtons" type="TextureRect" parent="ControlType"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_right = 40.0
+offset_bottom = 30.0
+texture = ExtResource("7_bde5i")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Dpad" type="TextureRect" parent="ControlType"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_right = 40.0
+offset_bottom = 30.0
+texture = ExtResource("8_ttiup")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="LeftStick" type="TextureRect" parent="ControlType"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_right = 40.0
+offset_bottom = 30.0
+texture = ExtResource("9_fpkai")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="RightStick" type="TextureRect" parent="ControlType"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_right = 40.0
+offset_bottom = 30.0
+texture = ExtResource("10_k1gxd")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Keys" type="Control" parent="ControlType"]
+visible = false
+anchors_preset = 0
+offset_left = 5.0
+offset_right = 45.0
+offset_bottom = 30.0
+
+[node name="UpKey" type="TextureRect" parent="ControlType/Keys"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = -5.0
+offset_right = 30.0
+offset_bottom = 15.0
+texture = ExtResource("11_sa86u")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="RightKey" type="TextureRect" parent="ControlType/Keys"]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 10.0
+offset_right = 46.0
+offset_bottom = 30.0
+texture = ExtResource("11_sa86u")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="DownKey" type="TextureRect" parent="ControlType/Keys"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 30.0
+offset_bottom = 30.0
+texture = ExtResource("11_sa86u")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="LeftKey" type="TextureRect" parent="ControlType/Keys"]
+layout_mode = 0
+offset_left = -6.0
+offset_top = 10.0
+offset_right = 14.0
+offset_bottom = 30.0
+texture = ExtResource("11_sa86u")
+expand_mode = 1
+stretch_mode = 4

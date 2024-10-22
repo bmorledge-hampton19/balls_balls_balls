@@ -1,14 +1,30 @@
 class_name Ball
 extends Area2D
 
+var currentTime: float = 0.0
+
+@export var collisionShape2D: CollisionShape2D
 @export var shapeCaster: ShapeCast2D
+@export var teamColor: ColorRect
+@export var ballSprite: TextureRect
 @export var baseSpeed: float = 100
 @export var additiveAcceleration: float = 0
 @export var multiplicativeAcceleration: float = 1 # Note: Alongisde additive acceleration, framerate affects acceleration.
 @export var direction := Vector2(0,1)
 var fullVelocity: Vector2:
 	get: return direction * (baseSpeed + decayingSpeed)
-var radius: float = 4.9
+var radius: float = 5.0:
+	get: return radius
+	set(value):
+		radius = value
+		(collisionShape2D.shape as CircleShape2D).radius = radius - 0.1
+		(shapeCaster.shape as CircleShape2D).radius = radius - 0.1
+		teamColor.position = Vector2(-radius*1.4, -radius*1.4)
+		teamColor.size = Vector2(radius*2.8, radius*2.8)
+		ballSprite.position = Vector2(-radius, -radius)
+		ballSprite.size = Vector2(radius*2, radius*2)
+		trail.width = radius
+
 var decayingSpeedBase: float = 0
 var decayingSpeed: float:
 	get: 
@@ -17,6 +33,7 @@ var decayingSpeed: float:
 var decayingSpeedDuration: float
 var decayingSpeedTimeRemaining: float
 
+var collisionNormal: Vector2
 var newDirection: Vector2
 
 var goalsEncompassing: Array[Area2D]
@@ -30,14 +47,49 @@ func resetDecayingSpeed(newSpeed: float, duration: float = 2):
 
 signal onBallInGoal(ball: Ball)
 
+var trail: Trail
+var time
+
+class PriorPoint:
+	var position: Vector2
+	var creationTime: float
+	var isActive: bool
+	var isCollision: bool
+	func _init(p_position: Vector2, p_creationTime: float, p_isActive: bool, p_isCollision: bool):
+		position = p_position
+		creationTime = p_creationTime
+		isActive = p_isActive
+		isCollision = p_isCollision
+
+var priorPoints: Array[PriorPoint]	
+var timeSinceLastTrailUpdate: float
+
+func updateColor(newColor: Color):
+	teamColor.color = newColor
+	if trail != null: trail.updateColor(newColor)
+	
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	pass
 
+func _notification(what):
+	if (what == NOTIFICATION_PREDELETE):
+		if is_instance_valid(trail): trail.queue_free()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float):
+
+	currentTime += delta
+
+	processMovement(delta)
+	
+	checkForGoals()
+
+	if trail != null: processTrails()
+
+
+func processMovement(delta: float):
 
 	var collisionsThisFrame = 0
 
@@ -89,19 +141,24 @@ func _process(delta: float):
 			else:
 				handleWallCollision(priorityCollisionIndex)
 			
-			
-			if priorityCollisionDistance > radius:
-				var collisionPoint := shapeCaster.get_collision_point(priorityCollisionIndex)
-				var destination := collisionPoint - (collisionPoint-global_position).normalized()*(radius+0.1)
+			var collisionPoint := shapeCaster.get_collision_point(priorityCollisionIndex)
+			var destination := collisionPoint + shapeCaster.get_collision_normal(priorityCollisionIndex)*(radius+0.1)
+			if priorityCollisionDistance >= radius:
 				remainingDistance -= (global_position-destination).length()
-				global_position = destination
-			else:
-				var collisionPoint := shapeCaster.get_collision_point(priorityCollisionIndex)
-				global_position = collisionPoint - (collisionPoint-global_position).normalized()*(radius+0.1)
+			global_position = destination
 
 			direction = newDirection
+			print(newDirection)
+
+			if trail != null:
+				if len(priorPoints) > 1 and not priorPoints[-1].isCollision:
+					trail.set_point_position(len(trail.points)-1, position)
+					priorPoints[-1].isActive = false
+				else: trail.add_point(position)
+				priorPoints.append(PriorPoint.new(position, currentTime, true, true))
 
 			collisionsThisFrame += 1
+			if collisionsThisFrame > 2: print(str(collisionsThisFrame) + " collisions!")
 			if collisionsThisFrame/delta > 1000:
 				print("EXPLODE!")
 				for goal in goalsEncompassing: goal.area_exited.emit(self)
@@ -111,39 +168,21 @@ func _process(delta: float):
 		else:
 			global_position += remainingDistance*direction
 			remainingDistance = 0
-	
-	shapeCaster.target_position = shapeCaster.position
-	shapeCaster.force_shapecast_update()
-	var currentGoals: Array[Area2D] = []
-
-	for i in len(shapeCaster.collision_result):
-		var collider := shapeCaster.get_collider(i) as Area2D
-		print(collider)
-		if collider.get_collision_layer_value(3):
-			currentGoals.append(collider)
-
-	for goal in goalsEncompassing:
-		if goal not in currentGoals:
-			goal.area_exited.emit(self)
-			goalsEncompassing.erase(goal)
-
-	for goal in currentGoals:
-		if goal not in goalsEncompassing:
-			goal.area_entered.emit(self)
-			goalsEncompassing.append(goal)
 
 
 func handleBumperCollision(i: int):
 	print("Collided with bumper!")
 	var _bumper := shapeCaster.get_collider(i).get_parent() as Bumper
-	newDirection = shapeCaster.get_collision_normal(i)
+	collisionNormal = shapeCaster.get_collision_normal(i)
+	newDirection = collisionNormal
 	resetDecayingSpeed(baseSpeed)
 
 
 func handlePaddleCollision(i: int):
 	var paddle := shapeCaster.get_collider(i) as Paddle
 
-	var normalAngle := shapeCaster.get_collision_normal(i).angle()
+	collisionNormal = shapeCaster.get_collision_normal(i)
+	var normalAngle := collisionNormal.angle()
 	var paddleAngle := paddle.global_rotation
 	var topLeftCorner := paddle.global_position
 	var distanceFromTopLeftCorner := (shapeCaster.get_collision_point(i) - topLeftCorner).length()
@@ -194,8 +233,55 @@ func handlePaddleCollision(i: int):
 
 func handleWallCollision(i):
 	print("Collided with wall")
-	var _wall := shapeCaster.get_collider(i).get_parent() as Wall
-	var normalVector := shapeCaster.get_collision_normal(i)
-	newDirection = (-direction).rotated((-direction).angle_to(normalVector)*2)
+	var wall := shapeCaster.get_collider(i).get_parent() as Wall
+	var normalAngle := wall.rotation
+	if abs(angle_difference(direction.angle_to(Vector2(0,1)), normalAngle)) < PI/2:
+		normalAngle += PI
+	collisionNormal = Vector2.from_angle(normalAngle-PI/2)
+	print(collisionNormal)
+	newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
 
 	
+func checkForGoals():
+
+	shapeCaster.target_position = shapeCaster.position
+	shapeCaster.force_shapecast_update()
+	var currentGoals: Array[Area2D] = []
+
+	for i in len(shapeCaster.collision_result):
+		var collider := shapeCaster.get_collider(i) as Area2D
+		print(collider)
+		if collider.get_collision_layer_value(3):
+			currentGoals.append(collider)
+
+	for goal in goalsEncompassing:
+		if goal not in currentGoals:
+			goal.area_exited.emit(self)
+			goalsEncompassing.erase(goal)
+
+	for goal in currentGoals:
+		if goal not in goalsEncompassing:
+			goal.area_entered.emit(self)
+			goalsEncompassing.append(goal)
+
+
+func processTrails():
+	
+	var firstValidPointPos := 0
+	for point in priorPoints:
+		if currentTime - point.creationTime > 0.5:
+			if point.isActive and firstValidPointPos != 0: trail.remove_point(0)
+			firstValidPointPos += 1
+		else:
+			if firstValidPointPos == 0: break
+			if point.isActive: trail.remove_point(0)
+			else: trail.set_point_position(0, point.position) 
+			break
+
+	if priorPoints: priorPoints = priorPoints.slice(firstValidPointPos)
+
+	priorPoints.append(PriorPoint.new(position, currentTime, true, false))
+	if len(priorPoints) > 2 and not priorPoints[-2].isCollision:
+		trail.set_point_position(len(trail.points)-1, position)
+		priorPoints[-2].isActive = false
+	else: trail.add_point(position)

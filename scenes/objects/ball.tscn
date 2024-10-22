@@ -1,33 +1,22 @@
-[gd_scene load_steps=4 format=3 uid="uid://crc10cctsupco"]
+[gd_scene load_steps=5 format=3 uid="uid://crc10cctsupco"]
 
 [ext_resource type="Script" path="res://scripts/playfield/Ball.gd" id="1_t78ab"]
+[ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="2_tx8ws"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ivbdl"]
 resource_local_to_scene = true
 radius = 4.9
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_2rn00"]
-radius = 4.9
+radius = 5.0
 
-[node name="Ball" type="Area2D" node_paths=PackedStringArray("shapeCaster")]
+[node name="Ball" type="Area2D" node_paths=PackedStringArray("collisionShape2D", "shapeCaster", "teamColor", "ballSprite")]
 collision_mask = 0
 script = ExtResource("1_t78ab")
+collisionShape2D = NodePath("CollisionShape2D")
 shapeCaster = NodePath("ShapeCast2D")
-
-[node name="ColorRect" type="ColorRect" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -5.0
-offset_top = -5.0
-offset_right = 5.0
-offset_bottom = 5.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
+teamColor = NodePath("TeamColor")
+ballSprite = NodePath("BallSprite")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_ivbdl")
@@ -39,3 +28,25 @@ target_position = Vector2(0, 5)
 collision_mask = 30
 collide_with_areas = true
 collide_with_bodies = false
+
+[node name="TeamColor" type="ColorRect" parent="."]
+material = ExtResource("2_tx8ws")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BallSprite" type="TextureRect" parent="."]
+offset_left = -5.0
+offset_top = -5.0
+offset_right = 5.0
+offset_bottom = 5.0
+pivot_offset = Vector2(5, 5)
+expand_mode = 2

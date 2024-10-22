@@ -10,13 +10,15 @@
 [ext_resource type="Texture2D" uid="uid://cvdebbnonaban" path="res://images/controller_prompts/S_Key_Dark.png" id="8_x2bra"]
 [ext_resource type="Texture2D" uid="uid://dgq14lmdju2u0" path="res://images/controller_prompts/A_Key_Dark.png" id="9_56mpk"]
 
-[node name="Prompts" type="Control" node_paths=PackedStringArray("controlStickControl", "controlStickTextureRect", "clockwiseArrow", "faceButtonsControl", "faceButtonTextureRect", "dpadControl", "dpadButtonTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "upKeyHighlight", "rightKeyHighlight", "downKeyHighlight", "leftKeyHighlight")]
+[node name="Prompts" type="Control" node_paths=PackedStringArray("controlStickControl", "controlStickTextureRect", "rotatingArrow", "faceButtonsControl", "faceButtonTextureRect", "dpadControl", "dpadButtonTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "upKeyHighlight", "rightKeyHighlight", "downKeyHighlight", "leftKeyHighlight")]
 layout_mode = 3
 anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 100.0
 script = ExtResource("1_ggmtv")
 controlStickControl = NodePath("ControlStick")
 controlStickTextureRect = NodePath("ControlStick/ControlStick")
-clockwiseArrow = NodePath("ControlStick/ClockwiseArrow")
+rotatingArrow = NodePath("ControlStick/RotatingArrow")
 faceButtonsControl = NodePath("FaceButtons")
 faceButtonTextureRect = NodePath("FaceButtons/PositionalButtonPrompt")
 dpadControl = NodePath("Dpad")
@@ -48,7 +50,7 @@ offset_bottom = 90.0
 texture = ExtResource("2_e65lw")
 expand_mode = 1
 
-[node name="ClockwiseArrow" type="TextureRect" parent="ControlStick"]
+[node name="RotatingArrow" type="TextureRect" parent="ControlStick"]
 modulate = Color(0.54902, 0.54902, 0.54902, 1)
 layout_mode = 0
 offset_right = 100.0

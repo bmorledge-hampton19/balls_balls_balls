@@ -39,10 +39,10 @@ func reset():
 	# I can't just delete them because they're used as blueprints
 	# ... when a joypad connects
 	# This skips UI actions so it doesn't mess them up.
-	for action in core_actions:
-		for e in InputMap.action_get_events(action):
-			if _is_joypad_event(e) and !is_ui_action(action):
-				e.device = 8
+	# for action in core_actions:
+	# 	for e in InputMap.action_get_events(action):
+	# 		if _is_joypad_event(e) and !is_ui_action(action):
+	# 			e.device = 8
 
 	# create actions for gamepads that connect in the future
 	# also clean up when gamepads disconnect

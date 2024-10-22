@@ -19,9 +19,11 @@ const VERTICAL_FRACTIONS := {BOTTOM: 1, MIDDLE: 0.9, TOP: 0.8}
 const HORIZONTAL_MARGIN := 10
 var leftBoundaries: Dictionary
 var rightBoundaries: Dictionary
+var polygon: PolygonGuide.Polygon
 
 
-func initPaddles(polygon: PolygonGuide.Polygon, p_team: Team):
+func initPaddles(p_polygon: PolygonGuide.Polygon, p_team: Team):
+	polygon = p_polygon
 	team = p_team
 	updateBoundaries()
 	var teamSize := len(team.players)
@@ -95,6 +97,7 @@ func initPaddles(polygon: PolygonGuide.Polygon, p_team: Team):
 
 
 func changePolygon(newPolygon: PolygonGuide.Polygon, transitionDuration: float):
+	polygon = newPolygon
 	for paddle in paddles:
 		paddle.changePolygon(newPolygon, transitionDuration)
 
@@ -147,27 +150,33 @@ func processPaddles(delta):
 func updateBoundaries():
 
 	for verticalPosition in [BOTTOM, MIDDLE, TOP]:
-		if team.rightInnerAngle <= 90:
-			rightBoundaries[verticalPosition] = (
-				team.sideLength - HORIZONTAL_MARGIN -
-				(1-VERTICAL_FRACTIONS[verticalPosition])*cos(team.rightInnerAngle)*team.rightVertex.macroRadius
-			)
-		else:
-			rightBoundaries[verticalPosition] = (
-				team.sideLength - HORIZONTAL_MARGIN +
-				(1-VERTICAL_FRACTIONS[verticalPosition])*cos(180-team.rightInnerAngle)*team.rightVertex.macroRadius
-			)
 
-		if team.leftInnerAngle <= 90:
-			leftBoundaries[verticalPosition] = (
-				HORIZONTAL_MARGIN +
-				(1-VERTICAL_FRACTIONS[verticalPosition])*cos(team.leftInnerAngle)*team.leftVertex.macroRadius
-			)
+		if polygon.sides == 2 and (not paddles or not paddles[0].transitioning):
+			rightBoundaries[verticalPosition] = team.sideLength - HORIZONTAL_MARGIN
+			leftBoundaries[verticalPosition] = HORIZONTAL_MARGIN
+		
 		else:
-			leftBoundaries[verticalPosition] = (
-				HORIZONTAL_MARGIN -
-				(1-VERTICAL_FRACTIONS[verticalPosition])*cos(180-team.leftInnerAngle)*team.leftVertex.macroRadius
-			)
+			if team.rightInnerAngle <= 90:
+				rightBoundaries[verticalPosition] = (
+					team.sideLength - HORIZONTAL_MARGIN -
+					(1-VERTICAL_FRACTIONS[verticalPosition])*cos(team.rightInnerAngle)*team.rightVertex.macroRadius
+				)
+			else:
+				rightBoundaries[verticalPosition] = (
+					team.sideLength - HORIZONTAL_MARGIN +
+					(1-VERTICAL_FRACTIONS[verticalPosition])*cos(180-team.rightInnerAngle)*team.rightVertex.macroRadius
+				)
+
+			if team.leftInnerAngle <= 90:
+				leftBoundaries[verticalPosition] = (
+					HORIZONTAL_MARGIN +
+					(1-VERTICAL_FRACTIONS[verticalPosition])*cos(team.leftInnerAngle)*team.leftVertex.macroRadius
+				)
+			else:
+				leftBoundaries[verticalPosition] = (
+					HORIZONTAL_MARGIN -
+					(1-VERTICAL_FRACTIONS[verticalPosition])*cos(180-team.leftInnerAngle)*team.leftVertex.macroRadius
+				)
 
 
 func groupHasFinishedMoving(paddleGroup: Array[Paddle]) -> bool:

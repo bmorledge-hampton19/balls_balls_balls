@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://cks5u0fxfp4ym"]
+
+[ext_resource type="Script" path="res://scripts/main_menu/PlayerSelector.gd" id="1_44ovi"]
+[ext_resource type="PackedScene" uid="uid://cbsdcdinyu7k2" path="res://scenes/objects/prompts.tscn" id="2_by4re"]
+[ext_resource type="PackedScene" uid="uid://cxiab0g3k5g85" path="res://scenes/objects/playerDisplay.tscn" id="3_xfk3i"]
+
+[node name="PlayerSelector" type="MarginContainer" node_paths=PackedStringArray("prompts", "playerDisplay")]
+custom_minimum_size = Vector2(120, 120)
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("1_44ovi")
+prompts = NodePath("Prompts")
+playerDisplay = NodePath("PlayerDisplay")
+
+[node name="Prompts" parent="." instance=ExtResource("2_by4re")]
+layout_mode = 2
+
+[node name="PlayerDisplay" parent="." instance=ExtResource("3_xfk3i")]
+visible = false
+layout_mode = 2

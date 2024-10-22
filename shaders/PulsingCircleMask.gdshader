@@ -8,7 +8,6 @@ uniform float pulseMax : hint_range(0.0, 1.0) = 0.5;
 void fragment() {
 	float dist = distance(vec2(0.5, 0.5), vec2(mix(0.5, UV.x, 1), UV.y));
 	vec4 orig_color = texture(TEXTURE, UV);
-	COLOR.rgb = orig_color.rgb;
 	float meanPulse = (pulseMax + pulseMin) / 2.0;
 	float pulseDeviation = meanPulse-pulseMin;
 	float pulseCurrent = meanPulse + cos(TIME*2.0)*pulseDeviation;

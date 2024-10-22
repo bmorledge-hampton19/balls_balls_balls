@@ -23,11 +23,17 @@ class InputSet:
 	var inputArray: Array[String]
 
 	var inputPressed: Dictionary
+	var totalTimePressed: Dictionary
+	var nextJustPressedTime: Dictionary
+	var inputJustPressed: Dictionary
 
-	var timeSinceLastCircleInput: float
-	var nextCircleInput: String
-	var consecutiveCircleInputs: int = 0
-	signal onCompletedCircle(inputSet: InputSet)
+	var timeSinceLastClockwiseInput: float
+	var nextClockwiseInput: String
+	var consecutiveClockwiseInputs: int = 0
+	var timeSinceLastCounterclockwiseInput: float
+	var nextCounterclockwiseInput: String
+	var consecutiveCounterclockwiseInputs: int = 0
+	signal onCompletedCircle(inputSet: InputSet, clockwise: bool)
 
 	var device: int
 
@@ -44,56 +50,99 @@ class InputSet:
 
 		inputArray = [upInput, rightInput, downInput, leftInput]
 
-		inputPressed[upInput] = false
-		inputPressed[downInput] = false
-		inputPressed[rightInput] = false
-		inputPressed[leftInput] = false
+		for input in inputArray:
+			inputPressed[input] = false
+			inputJustPressed[input] = false
+
+
 
 		device = p_device
 
 	func processInput(delta: float):
 
-		inputPressed[upInput] = MultiplayerInput.is_action_pressed(device, upInput)
-		inputPressed[downInput] = MultiplayerInput.is_action_pressed(device, downInput)
-		inputPressed[rightInput] = MultiplayerInput.is_action_pressed(device, rightInput)
-		inputPressed[leftInput] = MultiplayerInput.is_action_pressed(device, leftInput)
+		for input in inputArray:
+			inputPressed[input] = MultiplayerInput.is_action_pressed(device, input)
 
-		timeSinceLastCircleInput += delta
+			if inputPressed[input]:
+				if totalTimePressed[input] == 0:
+					inputJustPressed[input] = true
+					nextJustPressedTime[input] = 0.5
+				elif totalTimePressed[input] >= nextJustPressedTime[input]:
+					inputJustPressed[input] = true
+					nextJustPressedTime[input] = nextJustPressedTime[input] + 0.2
+				else:
+					inputJustPressed[input] = false
+				totalTimePressed[input] += delta
+			else:
+				totalTimePressed[input] = 0
+				inputJustPressed[input] = false
+
+		timeSinceLastClockwiseInput += delta
+		timeSinceLastCounterclockwiseInput += delta
+		if timeSinceLastClockwiseInput > 0.75: consecutiveClockwiseInputs = 0
+		if timeSinceLastCounterclockwiseInput > 0.75: consecutiveCounterclockwiseInputs = 0
 
 		var justPressedInputs: Array[String] = []
 		for input in inputArray:
 			if MultiplayerInput.is_action_just_pressed(device, input): justPressedInputs.append(input)
 
-		if timeSinceLastCircleInput > 0.75: consecutiveCircleInputs = 0
+		while consecutiveClockwiseInputs > 0 and justPressedInputs.size() > 0:
 
-		while consecutiveCircleInputs > 0 and justPressedInputs.size() > 0:
+			if nextClockwiseInput in justPressedInputs:
 
-			if nextCircleInput in justPressedInputs:
+				timeSinceLastClockwiseInput = 0
+				justPressedInputs.erase(nextClockwiseInput)
+				consecutiveClockwiseInputs += 1
 
-				timeSinceLastCircleInput = 0
-				justPressedInputs.erase(nextCircleInput)
-				consecutiveCircleInputs += 1
-
-				if consecutiveCircleInputs == 5:
-					onCompletedCircle.emit(self)
-					consecutiveCircleInputs = 0
+				if consecutiveClockwiseInputs == 5:
+					onCompletedCircle.emit(self, true)
+					consecutiveClockwiseInputs = 0
 				else:
-					match nextCircleInput:
-						upInput: nextCircleInput = rightInput
-						rightInput: nextCircleInput = downInput
-						downInput: nextCircleInput = leftInput
-						leftInput: nextCircleInput = upInput
+					match nextClockwiseInput:
+						upInput: nextClockwiseInput = rightInput
+						rightInput: nextClockwiseInput = downInput
+						downInput: nextClockwiseInput = leftInput
+						leftInput: nextClockwiseInput = upInput
 
 			else:
-				consecutiveCircleInputs = 0
+				consecutiveClockwiseInputs = 0
 		
-		if consecutiveCircleInputs == 0 and justPressedInputs.size() > 0:
-			timeSinceLastCircleInput = 0
+		while consecutiveCounterclockwiseInputs > 0 and justPressedInputs.size() > 0:
+
+			if nextCounterclockwiseInput in justPressedInputs:
+
+				timeSinceLastCounterclockwiseInput = 0
+				justPressedInputs.erase(nextCounterclockwiseInput)
+				consecutiveCounterclockwiseInputs += 1
+
+				if consecutiveCounterclockwiseInputs == 5:
+					onCompletedCircle.emit(self, false)
+					consecutiveCounterclockwiseInputs = 0
+				else:
+					match nextCounterclockwiseInput:
+						upInput: nextCounterclockwiseInput = leftInput
+						rightInput: nextCounterclockwiseInput = upInput
+						downInput: nextCounterclockwiseInput = rightInput
+						leftInput: nextCounterclockwiseInput = downInput
+
+			else:
+				consecutiveCounterclockwiseInputs = 0
+
+		if consecutiveClockwiseInputs == 0 and justPressedInputs.size() > 0:
+			timeSinceLastClockwiseInput = 0
 			for inputIndex in range(3,-1,-1):
 				if inputArray[inputIndex] in justPressedInputs:
-					if consecutiveCircleInputs == 0: nextCircleInput = inputArray[inputIndex - 3]
-					consecutiveCircleInputs += 1
-				elif consecutiveCircleInputs > 0: break
+					if consecutiveClockwiseInputs == 0: nextClockwiseInput = inputArray[inputIndex - 3]
+					consecutiveClockwiseInputs += 1
+				elif consecutiveClockwiseInputs > 0: break
+		
+		if consecutiveCounterclockwiseInputs == 0 and justPressedInputs.size() > 0:
+			timeSinceLastCounterclockwiseInput = 0
+			for inputIndex in range(4):
+				if inputArray[inputIndex] in justPressedInputs:
+					if consecutiveCounterclockwiseInputs == 0: nextCounterclockwiseInput = inputArray[inputIndex - 1]
+					consecutiveCounterclockwiseInputs += 1
+				elif consecutiveCounterclockwiseInputs > 0: break
 
 
 	func assignPlayer(player: Player):
@@ -103,9 +152,10 @@ class InputSet:
 		assignedPlayer = null
 
 var inputSets: Array[InputSet]
-signal onAnyCircle(inputSet: InputSet)
+signal onAnyCircle(inputSet: InputSet, clockwise: bool)
 
 func _ready():
+
 	inputSets.append(InputSet.new(WASD, -1))
 	inputSets.append(InputSet.new(IJKL, -1))
 	inputSets.append(InputSet.new(ARROW_KEYS, -1))
@@ -118,11 +168,14 @@ func _ready():
 
 	for inputSet in inputSets:
 		inputSet.onCompletedCircle.connect(
-			func(iS: InputSet): onAnyCircle.emit(iS)
+			func(iS: InputSet, clockwise: bool): onAnyCircle.emit(iS, clockwise)
 		)
 
 	onAnyCircle.connect(
-		func(iS: InputSet): print(iS.name + " on input device " + str(iS.device) + " completed a circle!")
+		func(iS: InputSet, clockwise):
+			if clockwise: print(iS.name + " on input device " + str(iS.device) + " completed a clockwise circle!")
+			else: print(iS.name + " on input device " + str(iS.device) + " completed a counterclockwise circle!")
+
 	)
 
 func _process(delta):

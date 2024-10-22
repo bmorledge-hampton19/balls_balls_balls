@@ -1,0 +1,21 @@
+[gd_resource type="VisualShader" load_steps=3 format=3 uid="uid://daqh8pe7gj7ls"]
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_3qaxp"]
+
+[sub_resource type="VisualShaderNodeTexture2DArray" id="VisualShaderNodeTexture2DArray_npda7"]
+
+[resource]
+code = "shader_type canvas_item;
+render_mode blend_mix;
+
+
+
+"
+graph_offset = Vector2(-145.08, 57.49)
+mode = 1
+flags/light_only = false
+nodes/fragment/0/position = Vector2(380, 120)
+nodes/fragment/2/node = SubResource("VisualShaderNodeTexture_3qaxp")
+nodes/fragment/2/position = Vector2(-80, 100)
+nodes/fragment/3/node = SubResource("VisualShaderNodeTexture2DArray_npda7")
+nodes/fragment/3/position = Vector2(140, 180)

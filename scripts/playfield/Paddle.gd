@@ -16,13 +16,13 @@ var polygonWidthMultiplierDelta
 var teamSizeWidthMultiplier: float
 const TEAM_SIZE_WIDTH_MULTIPLIERS := {
 	1 : 1.0,
-	2 : 0.9,
-	3 : 0.85,
-	4 : 0.8,
-	5 : 0.775,
-	6 : 0.75,
-	7 : 0.725,
-	8 : 0.7
+	2 : 0.8,
+	3 : 0.7,
+	4 : 0.625,
+	5 : 0.55,
+	6 : 0.5,
+	7 : 0.45,
+	8 : 0.4
 }
 
 var _width: float
@@ -33,8 +33,14 @@ var baseHeight := 10
 var height: float:
 	get: return baseHeight
 
+var baseSpeed := 150.0
+var polygonSpeedMultiplier: float
+var oldPolygonSpeedMultiplier: float
+var polygonSpeedMultiplierDelta: float
+var _speed: float
+var speed: float:
+	get: return _speed
 
-var speed := 150.0
 var movable := true
 var moving := false
 enum {NONE, LEFT, RIGHT}
@@ -66,7 +72,7 @@ func _ready():
 
 
 func initPaddle(
-	p_verticalFraction: int, polygon: PolygonGuide.Polygon, p_team: Team, p_player: Player,
+	p_verticalFraction: float, polygon: PolygonGuide.Polygon, p_team: Team, p_player: Player,
 	xPosFraction: float, p_leftBoundary: float, p_rightBoundary: float
 ):
 
@@ -77,8 +83,11 @@ func initPaddle(
 	rightBoundary = p_rightBoundary
 
 	polygonWidthMultiplier = polygon.paddleWidthMultiplier
+	polygonSpeedMultiplier = polygon.paddleSpeedMultiplier
 	teamSizeWidthMultiplier = TEAM_SIZE_WIDTH_MULTIPLIERS[len(team.players)]
 	updateWidthAndHeight()
+	_speed = baseSpeed * polygonSpeedMultiplier
+	print("Init paddle at " + str(position))
 	position.x = leftBoundary + ((rightBoundary-width)-leftBoundary)*xPosFraction
 
 	updateDirectionKeys()
@@ -119,6 +128,9 @@ func changePolygon(newPolygon: PolygonGuide.Polygon, p_transitionDuration: float
 	var targetPolygonWidthMultiplier := newPolygon.paddleWidthMultiplier
 	polygonWidthMultiplierDelta = targetPolygonWidthMultiplier - oldPolygonWidthMultiplier
 
+	oldPolygonSpeedMultiplier = polygonSpeedMultiplier
+	var targetPolygonSpeedMultiplier := newPolygon.paddleSpeedMultiplier
+	polygonSpeedMultiplierDelta = targetPolygonSpeedMultiplier - oldPolygonSpeedMultiplier
 
 func processTransitions(delta):
 
@@ -131,12 +143,13 @@ func processTransitions(delta):
 		transitionFraction = transitionTimeElapsed/transitionDuration
 
 		polygonWidthMultiplier = oldPolygonWidthMultiplier + polygonWidthMultiplierDelta*transitionFraction
+		polygonSpeedMultiplier = oldPolygonSpeedMultiplier + polygonSpeedMultiplierDelta*transitionFraction
 
 	updateWidthAndHeight()
 	
 
 func updateWidthAndHeight():
-	_width = baseWidth * teamSizeWidthMultiplier * polygonWidthMultiplier
+	_width = baseWidth * teamSizeWidthMultiplier * polygonWidthMultiplier * verticalFraction**2
 	collider.shape.size.x = width
 	collider.position.x = width/2
 	color.size.x = width
@@ -163,36 +176,36 @@ func checkForValidPos() -> bool:
 			position.x = leftBoundary + 0.1
 	else:
 		var overlap := leftOfPaddle.position.x + leftOfPaddle.width - position.x
-		if overlap > 0:
+		if overlap > 0.01:
 			validPos = false
 			if atBoundary:
-				leftOfPaddle.position.x -= overlap - 0.1
+				leftOfPaddle.position.x -= overlap + 0.01
 				leftOfPaddle.atBoundary = true
 			elif leftOfPaddle.atBoundary:
-				position.x += overlap + 0.1
+				position.x += overlap + 0.01
 				atBoundary = false
 			else:
-				leftOfPaddle.position.x -= overlap/2 - 0.1
-				position.x += overlap/2 + 0.1
+				leftOfPaddle.position.x -= overlap/2 + 0.01
+				position.x += overlap/2 + 0.01
 
 	if rightOfPaddle == null:
 		if position.x + width > rightBoundary:
 			validPos = false
 			atBoundary = true
-			position.x = rightBoundary - width - 0.1
+			position.x = rightBoundary - width - 0.01
 	else:
 		var overlap := position.x + width - rightOfPaddle.position.x
-		if overlap > 0:
+		if overlap > 0.01:
 			validPos = false
 			if atBoundary:
-				rightOfPaddle.position.x += overlap + 0.1
+				rightOfPaddle.position.x += overlap + 0.01
 				rightOfPaddle.atBoundary = true
 			elif rightOfPaddle.atBoundary:
-				position.x -= overlap - 0.1
+				position.x -= overlap + 0.01
 				atBoundary = false
 			else:
-				rightOfPaddle.position.x += overlap/2 + 0.1
-				position.x -= overlap/2 - 0.1
+				rightOfPaddle.position.x += overlap/2 + 0.01
+				position.x -= overlap/2 + 0.01
 
 	return validPos
 
@@ -207,6 +220,7 @@ func processInput(delta: float):
 
 	moving = false
 	if movable:
+		_speed = baseSpeed*polygonSpeedMultiplier
 		if player.isInputPressed(leftKey) or player.isInputPressed(leftKeyAlt):
 			remainingDistance -= speed*delta
 			direction = LEFT
@@ -224,21 +238,19 @@ func moveUntilCollision():
 
 		if rightOfPaddle in connectedPaddles: return
 
-		elif rightOfPaddle != null:
+		elif rightOfPaddle != null and rightOfPaddle.position.x - (position.x + width) < remainingDistance:
 
-			if rightOfPaddle.position.x - (position.x + width) < remainingDistance:
+			moveConnectedPaddles(rightOfPaddle.position.x - (position.x + width))
 
-				moveConnectedPaddles(rightOfPaddle.position.x - (position.x + width))
+			if rightOfPaddle.remainingDistance <= 0:
 
-				if rightOfPaddle.remainingDistance <= 0:
+				var leftPaddles: Array[Paddle] = connectedPaddles
+				var rightPaddles: Array[Paddle] = rightOfPaddle.connectedPaddles
 
-					var leftPaddles: Array[Paddle] = connectedPaddles
-					var rightPaddles: Array[Paddle] = rightOfPaddle.connectedPaddles
-
-					connectPaddles(leftPaddles, rightPaddles)
+				connectPaddles(leftPaddles, rightPaddles)
 		
 		elif rightBoundary - (position.x + width) < remainingDistance:
-				
+
 			moveConnectedPaddles(rightBoundary - (position.x + width), true)
 
 		else:
@@ -249,21 +261,19 @@ func moveUntilCollision():
 
 		if leftOfPaddle in connectedPaddles: return
 
-		elif leftOfPaddle != null:
+		elif leftOfPaddle != null and (leftOfPaddle.position.x + width) - position.x > remainingDistance:
 
-			if (leftOfPaddle.position.x + width) - position.x > remainingDistance:
+			moveConnectedPaddles((leftOfPaddle.position.x + width) - position.x)
 
-				moveConnectedPaddles((leftOfPaddle.position.x + width) - position.x)
+			if leftOfPaddle.remainingDistance >= 0:
 
-				if leftOfPaddle.remainingDistance >= 0:
+				var leftPaddles: Array[Paddle] = leftOfPaddle.connectedPaddles
+				var rightPaddles: Array[Paddle] = connectedPaddles
 
-					var leftPaddles: Array[Paddle] = leftOfPaddle.connectedPaddles
-					var rightPaddles: Array[Paddle] = connectedPaddles
-
-					connectPaddles(leftPaddles, rightPaddles)
+				connectPaddles(leftPaddles, rightPaddles)
 		
 		elif leftBoundary - position.x > remainingDistance:
-				
+
 			moveConnectedPaddles(leftBoundary - position.x, true)
 
 		else:
@@ -284,7 +294,7 @@ func moveConnectedPaddles(distanceToMove: float, movingToBoundary := false):
 func connectPaddles(leftPaddles: Array[Paddle], rightPaddles: Array[Paddle]):
 	var newRemainingDistance = (
 		(leftPaddles[0].remainingDistance*len(leftPaddles) + rightPaddles[0].remainingDistance*len(rightPaddles)) /
-		(len(leftPaddles) + len(rightPaddles))
+		float(len(leftPaddles) + len(rightPaddles))
 	)
 
 	for leftPaddle in leftPaddles:
@@ -293,3 +303,4 @@ func connectPaddles(leftPaddles: Array[Paddle], rightPaddles: Array[Paddle]):
 	for rightPaddle in rightPaddles:
 		rightPaddle.remainingDistance = newRemainingDistance
 		rightPaddle.connectedPaddles += leftPaddles
+
