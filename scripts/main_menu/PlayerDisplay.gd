@@ -1,6 +1,7 @@
 class_name PlayerDisplay
 extends Node
 
+@export var bumper: Bumper
 @export var teamColorRect: ColorRect
 @export var teamText: Label
 @export var playerIconTextureRect: TextureRect
@@ -49,7 +50,6 @@ func _ready():
 func initPlayerDisplay(p_player: Player):
 	player = p_player
 
-	print(player.teamColor)
 	teamColorRect.color = player.teamColor
 	teamText.text = "Team " + str(PlayerManager.teamColors.find(player.teamColor) + 1)
 
@@ -122,5 +122,3 @@ func _process(_delta):
 		teamColorRect.color = player.teamColor
 		teamText.text = "Team " + str(PlayerManager.teamColors.find(player.teamColor) + 1)
 		ball.updateColor(player.teamColor)
-
-

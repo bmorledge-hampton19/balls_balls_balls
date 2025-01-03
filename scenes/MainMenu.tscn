@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://c24d33ihtpoy1"]
+[gd_scene load_steps=20 format=3 uid="uid://c24d33ihtpoy1"]
 
 [ext_resource type="Script" path="res://scripts/main_menu/TitleText.gd" id="1_migqa"]
 [ext_resource type="Script" path="res://scripts/main_menu/MainMenu.gd" id="1_w6426"]
@@ -6,29 +6,26 @@
 [ext_resource type="PackedScene" uid="uid://crc10cctsupco" path="res://scenes/objects/ball.tscn" id="3_37xhp"]
 [ext_resource type="PackedScene" uid="uid://brbfliohi7w1j" path="res://scenes/objects/trail.tscn" id="4_ug8hl"]
 [ext_resource type="PackedScene" uid="uid://cks5u0fxfp4ym" path="res://scenes/objects/playerSelector.tscn" id="4_x1jtl"]
-[ext_resource type="PackedScene" uid="uid://bs24t7qhmm0um" path="res://scenes/Playfield.tscn" id="6_akwr5"]
 [ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="7_2oqtu"]
+[ext_resource type="PackedScene" uid="uid://bngtx6rr0whah" path="res://scenes/objects/bumper.tscn" id="7_4j35b"]
+[ext_resource type="Script" path="res://scripts/global/Background.gd" id="7_bi61m"]
+[ext_resource type="Shader" path="res://shaders/TrailCG.gdshader" id="7_gygmx"]
 [ext_resource type="Script" path="res://scripts/main_menu/PlayButton.gd" id="7_is6uv"]
-[ext_resource type="Shader" uid="uid://daqh8pe7gj7ls" path="res://shaders/test.tres" id="7_ns2lu"]
+[ext_resource type="PackedScene" uid="uid://cerylx43rxt76" path="res://scenes/objects/background_ball.tscn" id="8_588we"]
 [ext_resource type="Texture2D" uid="uid://cstnwm2meqb70" path="res://images/controller_prompts/Steam_Start.png" id="8_d78bl"]
+[ext_resource type="Script" path="res://scripts/global/VariableTimer.gd" id="8_humx3"]
 [ext_resource type="Texture2D" uid="uid://b5bh4n2hlrd6o" path="res://images/controller_prompts/Enter_Alt_Key_Dark.png" id="9_pnuq0"]
 [ext_resource type="Shader" path="res://shaders/RadialRainbow.gdshader" id="10_j8gro"]
 [ext_resource type="Texture2D" uid="uid://chxlsftx1v4as" path="res://images/player_icons/circle.png" id="11_q641m"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_24j7c"]
+shader = ExtResource("7_gygmx")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1eim3"]
 shader = ExtResource("10_j8gro")
 shader_parameter/speed = 1.0
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_u02f5"]
-shader = ExtResource("7_ns2lu")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ymxfs"]
-shader = ExtResource("7_ns2lu")
-
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_5pq4g"]
-blend_mode = 1
-
-[node name="MainMenu" type="Control" node_paths=PackedStringArray("theBallZone", "trailsControl", "playerSelectorGrid", "playButton")]
+[node name="MainMenu" type="Control" node_paths=PackedStringArray("theBallZone", "trailsCanvasGroup", "playerSelectorGrid", "playButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,14 +34,51 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_w6426")
 theBallZone = NodePath("MainViewport/TheBallZone")
-trailsControl = NodePath("MainViewport/Trails")
+trailsCanvasGroup = NodePath("MainViewport/Trails")
 wallPrefab = ExtResource("2_2g2sq")
 ballPrefab = ExtResource("3_37xhp")
 trailPrefab = ExtResource("4_ug8hl")
 playerSelectorPrefab = ExtResource("4_x1jtl")
 playerSelectorGrid = NodePath("MainViewport/PlayerSelectors")
 playButton = NodePath("MainViewport/PlayButton")
-playfieldScene = ExtResource("6_akwr5")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+anchor_mode = 0
+
+[node name="Background" type="ColorRect" parent="." node_paths=PackedStringArray("backgroundBallsControl")]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.052
+anchor_top = -0.481
+anchor_right = 1.052
+anchor_bottom = 1.481
+offset_left = -0.079998
+offset_top = -0.259979
+offset_right = 0.0799561
+offset_bottom = 0.259888
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+script = ExtResource("7_bi61m")
+backgroundBallPrefab = ExtResource("8_588we")
+backgroundBallsControl = NodePath("BackgroundBalls")
+
+[node name="BackgroundBalls" type="Control" parent="Background"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SpawnBackgroundBall" type="Timer" parent="Background"]
+autostart = true
+script = ExtResource("8_humx3")
+baseTime = 0.15
+timeDeviation = 0.05
+
+[node name="ChangeFlow" type="Timer" parent="Background"]
+autostart = true
+script = ExtResource("8_humx3")
+baseTime = 15.0
+timeDeviation = 5.0
 
 [node name="MainViewport" type="Control" parent="."]
 layout_mode = 1
@@ -61,17 +95,14 @@ grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(480, 270)
 
-[node name="Background" type="ColorRect" parent="MainViewport"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="Foreground" type="ColorRect" parent="MainViewport"]
+layout_mode = 0
+offset_right = 960.0
+offset_bottom = 540.0
 color = Color(0, 0, 0, 1)
 
-[node name="Trails" type="Control" parent="MainViewport"]
-anchors_preset = 0
+[node name="Trails" type="CanvasGroup" parent="MainViewport"]
+material = SubResource("ShaderMaterial_24j7c")
 
 [node name="TheBallZone" type="Control" parent="MainViewport"]
 layout_mode = 1
@@ -88,13 +119,14 @@ offset_right = 960.0
 offset_bottom = -10.0
 staticWall = true
 sideLength = 960.0
+flipped = true
 
 [node name="RightWall" parent="MainViewport/TheBallZone" instance=ExtResource("2_2g2sq")]
 offset_left = 970.0
 offset_right = 1510.0
 rotation = 1.5708
 staticWall = true
-sideLength = 540.0
+flipped = true
 
 [node name="BottomWall" parent="MainViewport/TheBallZone" instance=ExtResource("2_2g2sq")]
 offset_top = 540.0
@@ -104,10 +136,24 @@ staticWall = true
 sideLength = 960.0
 
 [node name="LeftWall" parent="MainViewport/TheBallZone" instance=ExtResource("2_2g2sq")]
-offset_right = 540.0
 rotation = 1.5708
 staticWall = true
-sideLength = 540.0
+
+[node name="TopLeftBumper" parent="MainViewport/TheBallZone" instance=ExtResource("7_4j35b")]
+
+[node name="TopRightBumper" parent="MainViewport/TheBallZone" instance=ExtResource("7_4j35b")]
+offset_left = 960.0
+offset_right = 960.0
+
+[node name="BottomRightBumper" parent="MainViewport/TheBallZone" instance=ExtResource("7_4j35b")]
+offset_left = 960.0
+offset_top = 540.0
+offset_right = 960.0
+offset_bottom = 540.0
+
+[node name="BottomLeftBumper" parent="MainViewport/TheBallZone" instance=ExtResource("7_4j35b")]
+offset_top = 540.0
+offset_bottom = 540.0
 
 [node name="TitleText" type="RichTextLabel" parent="MainViewport"]
 layout_mode = 1
@@ -133,14 +179,26 @@ theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 8
 
-[node name="PlayButton" type="Control" parent="MainViewport" node_paths=PackedStringArray("coolRainbowProgressCircle")]
+[node name="PlayButton" type="Control" parent="MainViewport" node_paths=PackedStringArray("coolRainbowProgressCircle", "backgroundBall", "playText", "addTeamsLabel", "buttonPrompts")]
+layout_mode = 3
 anchors_preset = 0
 offset_left = 430.0
-offset_top = 420.0
+offset_top = 445.0
 offset_right = 530.0
-offset_bottom = 520.0
+offset_bottom = 545.0
 script = ExtResource("7_is6uv")
-coolRainbowProgressCircle = NodePath("Progress")
+coolRainbowProgressCircle = NodePath("CoolRainbowProgressCircle")
+backgroundBall = NodePath("Ball")
+playText = NodePath("PlayLabel")
+addTeamsLabel = NodePath("AddTeamsLabel")
+buttonPrompts = NodePath("ButtonPrompts")
+
+[node name="Bumper" parent="MainViewport/PlayButton" instance=ExtResource("7_4j35b")]
+offset_left = 50.0
+offset_top = 50.0
+offset_right = 50.0
+offset_bottom = 50.0
+radius = 36.0
 
 [node name="Ball" type="ColorRect" parent="MainViewport/PlayButton"]
 material = ExtResource("7_2oqtu")
@@ -148,7 +206,7 @@ layout_mode = 0
 offset_right = 100.0
 offset_bottom = 100.0
 
-[node name="Label" type="Label" parent="MainViewport/PlayButton"]
+[node name="PlayLabel" type="Label" parent="MainViewport/PlayButton"]
 layout_mode = 0
 offset_top = 20.0
 offset_right = 100.0
@@ -157,6 +215,21 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 28
 text = "PLAY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AddTeamsLabel" type="Label" parent="MainViewport/PlayButton"]
+visible = false
+layout_mode = 0
+offset_left = 18.0
+offset_top = 48.0
+offset_right = 82.0
+offset_bottom = 83.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 0
+theme_override_font_sizes/font_size = 16
+text = "add more
+teams"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -198,7 +271,7 @@ texture = ExtResource("9_pnuq0")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="Progress" type="TextureProgressBar" parent="MainViewport/PlayButton"]
+[node name="CoolRainbowProgressCircle" type="TextureProgressBar" parent="MainViewport/PlayButton"]
 material = SubResource("ShaderMaterial_1eim3")
 layout_mode = 0
 offset_left = 10.0
@@ -224,46 +297,5 @@ offset_top = 470.0
 offset_right = 940.0
 offset_bottom = 520.0
 
-[node name="CanvasGroup" type="CanvasGroup" parent="MainViewport"]
-material = SubResource("ShaderMaterial_u02f5")
-
-[node name="Control" type="Control" parent="MainViewport"]
-visible = false
-material = SubResource("ShaderMaterial_ymxfs")
-anchors_preset = 0
-offset_right = 958.0
-offset_bottom = 538.0
-
-[node name="ColorRect4" type="ColorRect" parent="MainViewport/Control"]
-layout_mode = 0
-offset_left = 342.0
-offset_top = 214.0
-offset_right = 445.0
-offset_bottom = 305.0
-
-[node name="ColorRect" type="ColorRect" parent="MainViewport/Control"]
-material = SubResource("CanvasItemMaterial_5pq4g")
-layout_mode = 0
-offset_left = 450.0
-offset_top = 250.0
-offset_right = 490.0
-offset_bottom = 290.0
-color = Color(0, 0, 1, 1)
-
-[node name="ColorRect2" type="ColorRect" parent="MainViewport/Control"]
-material = SubResource("CanvasItemMaterial_5pq4g")
-layout_mode = 0
-offset_left = 468.0
-offset_top = 224.0
-offset_right = 508.0
-offset_bottom = 264.0
-color = Color(0, 1, 0, 1)
-
-[node name="ColorRect3" type="ColorRect" parent="MainViewport/Control"]
-material = SubResource("CanvasItemMaterial_5pq4g")
-layout_mode = 0
-offset_left = 478.0
-offset_top = 240.0
-offset_right = 518.0
-offset_bottom = 280.0
-color = Color(0, 0, 1, 1)
+[connection signal="timeout" from="Background/SpawnBackgroundBall" to="Background" method="addBackgroundBall"]
+[connection signal="timeout" from="Background/ChangeFlow" to="Background" method="initiateFlowChange"]

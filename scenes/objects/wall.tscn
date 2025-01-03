@@ -1,23 +1,52 @@
-[gd_scene load_steps=3 format=3 uid="uid://cd0f3kaj2vli3"]
+[gd_scene load_steps=7 format=3 uid="uid://cd0f3kaj2vli3"]
 
 [ext_resource type="Script" path="res://scripts/playfield/Wall.gd" id="1_tpmo8"]
+[ext_resource type="Shader" path="res://shaders/WallShader.gdshader" id="2_3hcqd"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ldxuy"]
+seed = -764572415
+fractal_octaves = 1
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_psbaw"]
+width = 1100
+seamless = true
+noise = SubResource("FastNoiseLite_ldxuy")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mvgfc"]
+resource_local_to_scene = true
+shader = ExtResource("2_3hcqd")
+shader_parameter/width = 540.0
+shader_parameter/flipped = 0.0
+shader_parameter/noiseOffset = Vector2(0.261701, 0.199793)
+shader_parameter/noise = SubResource("NoiseTexture2D_psbaw")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7w8gn"]
 resource_local_to_scene = true
-size = Vector2(351, 10)
+size = Vector2(540, 10)
 
-[node name="Wall" type="Control" node_paths=PackedStringArray("area", "collider")]
+[node name="Wall" type="Control" node_paths=PackedStringArray("visual", "area", "collider")]
 layout_mode = 3
 anchors_preset = 0
+offset_right = 540.0
 script = ExtResource("1_tpmo8")
-area = NodePath("BottomWall")
-collider = NodePath("BottomWall/Collider")
+visual = NodePath("Visual")
+area = NodePath("Area")
+collider = NodePath("Area/Collider")
+sideLength = 540.0
 
-[node name="BottomWall" type="Area2D" parent="."]
+[node name="Visual" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_mvgfc")
+layout_mode = 1
+offset_right = 540.0
+offset_bottom = 10.0
+color = Color(1, 1, 1, 0)
+
+[node name="Area" type="Area2D" parent="."]
+visible = false
 collision_layer = 16
 collision_mask = 0
 
-[node name="Collider" type="CollisionShape2D" parent="BottomWall"]
-position = Vector2(175.5, 5)
+[node name="Collider" type="CollisionShape2D" parent="Area"]
+position = Vector2(270, 5)
 shape = SubResource("RectangleShape2D_7w8gn")
 one_way_collision_margin = 0.0

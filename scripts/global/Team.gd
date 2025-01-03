@@ -5,6 +5,8 @@ extends Control
 @export var goalShader: ColorRect
 @export var goalCollider: CollisionPolygon2D
 @export var paddleManager: PaddleManager
+@export var particleEmitterControl: Control
+@export var particleEmitterPrefab: PackedScene
 
 var _leftVertexTracker: VertexTracker
 var _rightVertexTracker: VertexTracker
@@ -27,7 +29,7 @@ var angle: float:
 		return angle_difference(0, leftVertexAngle + vertexAngleDifference/2)
 
 
-var livesRemaining: int = 5
+var livesRemaining: int = 1
 var ballsInGoal: Dictionary
 
 var color: Color
@@ -149,10 +151,17 @@ func onBallExitGoal(ball: Area2D):
 
 
 func checkBall(ball: Ball):
-	if goal.to_local(ball.global_position).y > ball.radius:
+	var localBallPos = goal.to_local(ball.global_position)
+	if localBallPos.y > ball.radius:
+
+		if ball.lastPlayer != null:
+			if ball.lastPlayer.teamColor == color: ball.lastPlayer.goals -= 1
+			else: ball.lastPlayer.goals += 1
+			ball.lastPlayer.onGoal.emit(ball.lastPlayer.goals)
+
 		print("GOOOOOOOOOOOOAL!!!")
 		ballsInGoal.erase(ball)
-		ball.onBallInGoal.emit(ball)
+		ball.onBallInGoal.emit(ball, self)
 		livesRemaining -= 1
 		onLivesChanged.emit(livesRemaining)
 		if livesRemaining == 0:
@@ -161,3 +170,7 @@ func checkBall(ball: Ball):
 				print("Encompassement: " + str(goal.to_local(otherBall.global_position).y))
 				if goal.to_local(otherBall.global_position).y >= otherBall.radius/2: otherBall.onBallInGoal.emit(otherBall)
 			eliminateTeam.emit(self)
+
+func addLives(livesToAdd: int):
+	livesRemaining += livesToAdd
+	onLivesChanged.emit(livesRemaining)

@@ -2,8 +2,31 @@
 
 [ext_resource type="Script" path="res://scripts/playfield/LivesCounter.gd" id="1_qem5k"]
 
-[node name="LivesCounter" type="Label"]
+[node name="Control" type="Control" node_paths=PackedStringArray("mainCounter", "bonusCounter")]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 3
+anchors_preset = 0
+size_flags_horizontal = 4
+script = ExtResource("1_qem5k")
+mainCounter = NodePath("LivesCounter/MainCounter")
+bonusCounter = NodePath("LivesCounter/BonusCounter")
+
+[node name="LivesCounter" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = -13.0
+offset_right = 42.0
+offset_bottom = 24.0
+size_flags_horizontal = 4
+theme_override_constants/separation = 5
+
+[node name="MainCounter" type="Label" parent="LivesCounter"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "10"
 horizontal_alignment = 1
-script = ExtResource("1_qem5k")
+
+[node name="BonusCounter" type="Label" parent="LivesCounter"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "+5"
+horizontal_alignment = 1

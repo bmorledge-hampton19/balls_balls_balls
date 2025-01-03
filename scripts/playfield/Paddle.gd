@@ -1,8 +1,11 @@
 class_name Paddle
-extends Area2D
+extends Node2D
 
+@export var pivot: Area2D
 @export var collider: CollisionShape2D
 @export var color: ColorRect
+@export var texture: TextureRect
+@export var chargingNode: ColorRect
 
 var team: Team
 var player: Player
@@ -66,6 +69,23 @@ var verticalFraction: float
 var leftBoundary: float
 var rightBoundary: float
 
+var chargingSpin: bool
+var chargeDuration: float
+var chargeTimeElasped: float
+var chargingClockwise: bool
+
+var spinning: bool
+var spinDuration: float
+var spinTimeRemaining: float
+var clockwiseSpin: bool
+var initialRotation: float
+var rotationDelta: float
+
+var alphaChanging: bool
+var alphaChangeDuration: float
+var alphaChangeTimeElapsed: float
+var originalAlpha: float
+var alphaDelta: float
 
 func _ready():
 	pass
@@ -90,7 +110,15 @@ func initPaddle(
 	print("Init paddle at " + str(position))
 	position.x = leftBoundary + ((rightBoundary-width)-leftBoundary)*xPosFraction
 
+	player.inputSet.onCompletedCircle.connect(initiateCharge)
 	updateDirectionKeys()
+
+	color.color = team.color
+	chargingNode.color = team.color
+	if player.icon == PlayerManager.PlayerIcon.CIRCLE:
+		texture.hide()
+	else:
+		texture.texture = player.texture
 
 
 func updateDirectionKeys():
@@ -150,9 +178,11 @@ func processTransitions(delta):
 
 func updateWidthAndHeight():
 	_width = baseWidth * teamSizeWidthMultiplier * polygonWidthMultiplier * verticalFraction**2
+	pivot.position.x = width/2
 	collider.shape.size.x = width
-	collider.position.x = width/2
 	color.size.x = width
+	color.position.x = -width/2
+	color.material.set_shader_parameter("width", width)
 
 	position.y = -team.height*(1-verticalFraction)-height
 	
@@ -161,9 +191,11 @@ func updateWidthAndHeight():
 
 func forceUpdateWidth(newWidth: float):
 	_width = newWidth
+	pivot.position.x = width/2
 	collider.shape.size.x = width
-	collider.position.x = width/2
 	color.size.x = width
+	color.position.x = -width/2
+	color.material.set_shader_parameter("width", width)
 
 
 func checkForValidPos() -> bool:
@@ -231,6 +263,67 @@ func processInput(delta: float):
 			moving = true
 		if Input.is_key_pressed(player.sdInput): team.eliminateTeam.emit(team)
 
+	if chargingSpin:
+		chargeTimeElasped += delta
+		if chargeTimeElasped > chargeDuration:
+			chargingNode.hide()
+			initiateSpin(chargingClockwise)
+			chargingSpin = false
+		else:
+			chargingNode.material.set_shader_parameter("innerSpiralProgress", chargeTimeElasped/chargeDuration)
+
+	if spinning:
+		spinTimeRemaining -= delta
+		if spinTimeRemaining <= 0:
+			spinTimeRemaining = 0
+			spinning = false
+			changeTextureAlpha(0, 2)
+		var spinFraction: float = (spinDuration-spinTimeRemaining)/spinDuration
+		pivot.rotation = initialRotation + rotationDelta*spinFraction
+	
+	if alphaChanging:
+		alphaChangeTimeElapsed += delta
+		if alphaChangeTimeElapsed > alphaChangeDuration:
+			alphaChangeTimeElapsed = alphaChangeDuration
+			alphaChanging = false
+		var alphaChangeRatio = alphaChangeTimeElapsed/alphaChangeDuration
+		texture.self_modulate = Color(texture.self_modulate,originalAlpha + alphaDelta*alphaChangeRatio)
+
+
+func initiateCharge(_inputSet, clockwise: bool):
+	if chargingSpin or spinning: return
+
+	chargingSpin = true
+	chargeDuration = 0.5
+	chargeTimeElasped = 0
+	chargingClockwise = clockwise
+
+	chargingNode.show()
+	chargingNode.material.set_shader_parameter("innerSpiralProgress", 0.0)
+	chargingNode.material.set_shader_parameter("spiralRotationSpeed", 0.5)
+	if chargingClockwise: chargingNode.material.set_shader_parameter("reverse", 1.0)
+	else: chargingNode.material.set_shader_parameter("reverse", -1.0)
+
+	changeTextureAlpha(1, chargeDuration)
+
+
+func initiateSpin(clockwise: bool):
+	spinning = true
+	spinDuration = width/150.0
+	spinTimeRemaining = spinDuration
+	clockwiseSpin = clockwise
+	initialRotation = pivot.rotation
+	if clockwise: rotationDelta = PI
+	else: rotationDelta = -PI
+
+
+func changeTextureAlpha(targetAlpha: float, p_alphaChangeDuration: float):
+	alphaChanging = true
+	alphaChangeDuration = p_alphaChangeDuration
+	alphaChangeTimeElapsed = 0
+	originalAlpha = texture.self_modulate.a
+	alphaDelta = targetAlpha-originalAlpha
+	
 
 func moveUntilCollision():
 
@@ -303,4 +396,3 @@ func connectPaddles(leftPaddles: Array[Paddle], rightPaddles: Array[Paddle]):
 	for rightPaddle in rightPaddles:
 		rightPaddle.remainingDistance = newRemainingDistance
 		rightPaddle.connectedPaddles += leftPaddles
-

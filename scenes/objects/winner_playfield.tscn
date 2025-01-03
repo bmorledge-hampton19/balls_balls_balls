@@ -1,0 +1,327 @@
+[gd_scene load_steps=18 format=3 uid="uid://dqcbmnw2epd0h"]
+
+[ext_resource type="Script" path="res://scripts/misc/WinnerScreen.gd" id="1_51466"]
+[ext_resource type="PackedScene" uid="uid://crc10cctsupco" path="res://scenes/objects/ball.tscn" id="2_lsyxq"]
+[ext_resource type="PackedScene" uid="uid://brbfliohi7w1j" path="res://scenes/objects/trail.tscn" id="3_yyxri"]
+[ext_resource type="PackedScene" uid="uid://baw51sfiah781" path="res://scenes/objects/ball_goals_text.tscn" id="4_n8n66"]
+[ext_resource type="Script" path="res://scripts/playfield/Foreground.gd" id="5_xv3xn"]
+[ext_resource type="Shader" path="res://shaders/TheBall.gdshader" id="6_vopv4"]
+[ext_resource type="Script" path="res://scripts/playfield/TheBall.gd" id="7_wh173"]
+[ext_resource type="PackedScene" uid="uid://dtoyv1n8ll5pk" path="res://scenes/objects/inward_pulse.tscn" id="8_phwbm"]
+[ext_resource type="Shader" path="res://shaders/PlayfieldGrid.gdshader" id="9_wiyem"]
+[ext_resource type="Texture2D" uid="uid://cstnwm2meqb70" path="res://images/controller_prompts/Steam_Start.png" id="10_5de7n"]
+[ext_resource type="Texture2D" uid="uid://b5bh4n2hlrd6o" path="res://images/controller_prompts/Enter_Alt_Key_Dark.png" id="11_1apvt"]
+[ext_resource type="Shader" path="res://shaders/TrailCG.gdshader" id="12_r8v8i"]
+[ext_resource type="PackedScene" uid="uid://cd0f3kaj2vli3" path="res://scenes/objects/wall.tscn" id="13_lx0j4"]
+[ext_resource type="PackedScene" uid="uid://bngtx6rr0whah" path="res://scenes/objects/bumper.tscn" id="14_w7u5c"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_f02ab"]
+resource_local_to_scene = true
+shader = ExtResource("6_vopv4")
+shader_parameter/brightness = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pfnx4"]
+shader = ExtResource("9_wiyem")
+shader_parameter/distortionIntensity = 0.15
+shader_parameter/distortionVariation = 0.2
+shader_parameter/gridLineFrequency = 100.0
+shader_parameter/gridLineWidth = 10.0
+shader_parameter/gridLineXOffset = 45.0
+shader_parameter/gridLineYOffset = 45.0
+shader_parameter/gridSaturation = 0.5
+shader_parameter/centerOffset = Vector2(0, 0)
+shader_parameter/visibilityCutoff = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hkwyc"]
+shader = ExtResource("12_r8v8i")
+
+[node name="WinnerPlayfield" type="Control" node_paths=PackedStringArray("camera", "background", "theBall", "ballsControl", "trailsCG", "winningTeamText", "restartPromptText", "restartPrormptSlash")]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -270.0
+offset_right = 480.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(480, 270)
+script = ExtResource("1_51466")
+camera = NodePath("")
+background = NodePath("")
+theBall = NodePath("Foreground/TheBall")
+ballPrefab = ExtResource("2_lsyxq")
+ballsControl = NodePath("TheBallZone")
+trailPrefab = ExtResource("3_yyxri")
+trailsCG = NodePath("Trails")
+ballGoalsTextPrefab = ExtResource("4_n8n66")
+winningTeamText = NodePath("Foreground/WinnerText/WinningTeam")
+restartPromptText = NodePath("Foreground/WinnerText/RestartPrompt")
+restartPrormptSlash = NodePath("Foreground/WinnerText/ButtonPrompts/Slash")
+
+[node name="Foreground" type="Polygon2D" parent="." node_paths=PackedStringArray("grid", "theBall")]
+clip_children = 1
+polygon = PackedVector2Array(0, 0, 315, 0, 480, 98, 647, 0, 960, 0, 960, 540, 648, 540, 480, 440, 312, 540, 0, 540)
+script = ExtResource("5_xv3xn")
+grid = NodePath("Grid")
+theBall = NodePath("TheBall")
+
+[node name="Background" type="ColorRect" parent="Foreground"]
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0, 0, 0, 1)
+
+[node name="InwardPulses" type="Control" parent="Foreground"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 960.0
+offset_bottom = 540.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TheBall" type="ColorRect" parent="Foreground" node_paths=PackedStringArray("inwardPulsesControl")]
+material = SubResource("ShaderMaterial_f02ab")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 426.0
+offset_top = 216.0
+offset_right = 534.0
+offset_bottom = 324.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7_wh173")
+inwardPulsesControl = NodePath("../InwardPulses")
+inwardPulsePrefab = ExtResource("8_phwbm")
+
+[node name="Grid" type="ColorRect" parent="Foreground"]
+material = SubResource("ShaderMaterial_pfnx4")
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0, 0, 0, 1)
+
+[node name="WinnerText" type="Control" parent="Foreground"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="WinningTeam" type="Label" parent="Foreground/WinnerText"]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 135.0
+offset_right = 720.0
+offset_bottom = 185.0
+theme_override_font_sizes/font_size = 48
+text = "[COLOR] TEAM WINS!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RestartPrompt" type="Label" parent="Foreground/WinnerText"]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 352.0
+offset_right = 720.0
+offset_bottom = 402.0
+theme_override_font_sizes/font_size = 48
+text = "PRESS         TO RESTART"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ButtonPrompts" type="Control" parent="Foreground/WinnerText"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 392.0
+offset_top = 361.0
+offset_right = 492.0
+offset_bottom = 393.0
+
+[node name="StartButton" type="TextureRect" parent="Foreground/WinnerText/ButtonPrompts"]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+texture = ExtResource("10_5de7n")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Slash" type="Label" parent="Foreground/WinnerText/ButtonPrompts"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = -6.0
+offset_right = 53.0
+offset_bottom = 41.0
+theme_override_font_sizes/font_size = 48
+text = "/"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnterKey" type="TextureRect" parent="Foreground/WinnerText/ButtonPrompts"]
+layout_mode = 0
+offset_left = 44.0
+offset_right = 76.0
+offset_bottom = 32.0
+texture = ExtResource("11_1apvt")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Trails" type="CanvasGroup" parent="."]
+material = SubResource("ShaderMaterial_hkwyc")
+
+[node name="TheBallZone" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Features" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Walls" type="Control" parent="Features"]
+anchors_preset = 0
+
+[node name="TopLeftWall" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_top = -10.0
+offset_right = 305.0
+staticWall = true
+sideLength = 305.0
+flipped = true
+
+[node name="TopRightWall" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 655.0
+offset_top = -10.0
+offset_right = 960.0
+staticWall = true
+sideLength = 305.0
+flipped = true
+
+[node name="RightWall" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 970.0
+offset_right = 1510.0
+rotation = 1.5708
+staticWall = true
+flipped = true
+
+[node name="BottomLeftWall" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 305.0
+offset_top = 550.0
+offset_right = 610.0
+offset_bottom = 550.0
+rotation = 3.14159
+staticWall = true
+sideLength = 305.0
+flipped = true
+
+[node name="BottomRightWall" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 960.0
+offset_top = 550.0
+offset_right = 1265.0
+offset_bottom = 550.0
+rotation = 3.14159
+staticWall = true
+sideLength = 305.0
+flipped = true
+
+[node name="LeftWall" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = -10.0
+offset_top = 540.0
+offset_right = 530.0
+offset_bottom = 540.0
+rotation = 4.71239
+staticWall = true
+flipped = true
+
+[node name="Upper Left Wedge" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 310.0
+offset_top = -9.0
+offset_right = 510.0
+offset_bottom = -9.0
+rotation = 0.523599
+staticWall = true
+sideLength = 200.0
+flipped = true
+
+[node name="Upper Right Wedge" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 477.0
+offset_top = 91.0
+offset_right = 677.0
+offset_bottom = 91.0
+rotation = -0.523599
+staticWall = true
+sideLength = 200.0
+flipped = true
+
+[node name="Lower Left Wedge" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 483.0
+offset_top = 449.0
+offset_right = 683.0
+offset_bottom = 449.0
+rotation = 2.61799
+staticWall = true
+sideLength = 200.0
+flipped = true
+
+[node name="Lower Right Wedge" parent="Features/Walls" instance=ExtResource("13_lx0j4")]
+offset_left = 650.0
+offset_top = 549.0
+offset_right = 850.0
+offset_bottom = 549.0
+rotation = -2.61799
+staticWall = true
+sideLength = 200.0
+flipped = true
+
+[node name="Bumpers" type="Control" parent="Features"]
+anchors_preset = 0
+
+[node name="Top Left Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+
+[node name="Top Right Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+offset_left = 960.0
+offset_right = 960.0
+
+[node name="Bottom Left Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+offset_top = 540.0
+offset_bottom = 540.0
+
+[node name="Bottom Right Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+offset_left = 960.0
+offset_top = 540.0
+offset_right = 960.0
+offset_bottom = 540.0
+
+[node name="Upper Wedge Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+offset_left = 480.0
+offset_top = 98.0
+offset_right = 480.0
+offset_bottom = 98.0
+
+[node name="Bottom Wedge Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+offset_left = 480.0
+offset_top = 440.0
+offset_right = 480.0
+offset_bottom = 440.0
+
+[node name="Left Central Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+offset_left = 240.0
+offset_top = 270.0
+offset_right = 240.0
+offset_bottom = 270.0
+radius = 20.0
+
+[node name="Right Central Bumper" parent="Features/Bumpers" instance=ExtResource("14_w7u5c")]
+offset_left = 720.0
+offset_top = 270.0
+offset_right = 720.0
+offset_bottom = 270.0
+radius = 20.0

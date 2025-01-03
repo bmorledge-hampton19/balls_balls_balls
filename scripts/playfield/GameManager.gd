@@ -1,6 +1,8 @@
 class_name GameManager
 extends Control
 
+@export var camera: Camera2D
+
 var polygon: PolygonGuide.Polygon
 
 @export var leftScoreboard: Scoreboard
@@ -29,6 +31,9 @@ var playfieldWidthDelta: float
 @export var verticesControl: Control
 var vertices: Array[Vertex]
 
+@export var playfieldBackground: Foreground
+@export var theBall: TheBall
+
 @export var wallPrefab: PackedScene
 @export var wallsControl: Control
 var walls: Dictionary
@@ -43,14 +48,34 @@ var bumpers: Dictionary
 
 @export var ballManager: BallManager
 
+@export var titleText: TitleText
+var titleTextBalls := 3
+var reduceTitleTextBallsTimer := Timer.new()
+
 var standardTransitionDuration := 10.0
 
+var radiusIncreasePerLostTeam: float
+var maxRadiusIncreaseFromTime: float = 54
+var radiusIncreaseFromTimeSoFar: float
+var timeBetweenRadiusIncreases: float = 30
+var timeUntilRadiusIncrease: float = 30
+
+@export var winnerPlayfieldPrefab: PackedScene
+var transitioningToWinners
 
 func _ready():
 
+	ResourceLoader.load_threaded_request("res://scenes/WinnerScreen.tscn")
+
+	ScreenShaker.setCamera(camera)
+
 	var activeTeamColors := PlayerManager.getActiveTeamColors()
 	polygon = PolygonGuide.polygons[len(activeTeamColors)]
+	radiusIncreasePerLostTeam = 54.0/(len(activeTeamColors)-2)
 	var teamNum := 0
+
+	for player in PlayerManager.playersByInputSet.values():
+		player.goals = 0
 
 	if polygon.sides > 2:
 
@@ -74,6 +99,8 @@ func _ready():
 				PlayerManager.activePlayersByTeamColor[teamColor], teamColor
 			)
 			leftScoreboard.addLivesCounter(teamColor, newTeam)
+			for player in PlayerManager.activePlayersByTeamColor[teamColor]:
+				rightScoreboard.addGoalsCounter(player)
 			
 			teamNum += 1
 
@@ -81,6 +108,8 @@ func _ready():
 
 		leftScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
 		rightScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+		leftScoreboard.beginFade(0)
+		rightScoreboard.beginFade(0)
 
 		for angle in [
 			polygon.internalAngle/2, -polygon.internalAngle/2,
@@ -98,6 +127,8 @@ func _ready():
 			PlayerManager.activePlayersByTeamColor[activeTeamColors[0]], activeTeamColors[0]
 		)
 		leftScoreboard.addLivesCounter(activeTeamColors[0], newTeam)
+		for player in PlayerManager.activePlayersByTeamColor[activeTeamColors[0]]:
+				rightScoreboard.addGoalsCounter(player)
 
 		newTeam = teamPrefab.instantiate()
 		teams[vertices[1]] = newTeam
@@ -107,6 +138,8 @@ func _ready():
 			PlayerManager.activePlayersByTeamColor[activeTeamColors[1]], activeTeamColors[1]
 		)
 		leftScoreboard.addLivesCounter(activeTeamColors[1], newTeam)
+		for player in PlayerManager.activePlayersByTeamColor[activeTeamColors[1]]:
+				rightScoreboard.addGoalsCounter(player)
 
 		var newWall: Wall = wallPrefab.instantiate()
 		walls[vertices[0]] = newWall
@@ -118,6 +151,7 @@ func _ready():
 		wallsControl.add_child(newWall)
 		newWall.initWall(vertices[2], vertices[3])
 
+		ballManager.burstSpawns = true
 	
 	for vertex in vertices:
 		bumpers[vertex] = bumperPrefab.instantiate()
@@ -132,6 +166,13 @@ func _ready():
 	else:
 		updatePlayfieldCenter(polygon.macroRadius)
 	updatePlayfieldWidth(polygon.maxWidth)
+
+	ballManager.off = true
+	reduceTitleTextBallsTimer.timeout.connect(reduceTitleTextBalls)
+	reduceTitleTextBallsTimer.wait_time = 1
+	reduceTitleTextBallsTimer.one_shot = true
+	add_child(reduceTitleTextBallsTimer)
+	reduceTitleTextBallsTimer.start()
 
 
 func removeVertex(vertex: Vertex):
@@ -170,7 +211,18 @@ func checkBumpers():
 
 
 func reduceBoard(eliminatedTeam: Team):
+
 	if not eliminatedTeam in teams.values(): return
+
+	if polygon.sides == 2:
+		var winningTeam: Team
+		if teams.values()[0] == eliminatedTeam: winningTeam = teams.values()[1]
+		else: winningTeam = teams.values()[0]
+		PlayerManager.winningTeamColor = winningTeam.color
+		get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/WinnerScreen.tscn"))
+		teams.clear()
+		return
+
 	var newVertexArray: Array[Vertex] = []
 	var vertexToEliminateIndex: int
 	polygon = PolygonGuide.polygons[polygon.sides-1]
@@ -195,12 +247,18 @@ func reduceBoard(eliminatedTeam: Team):
 	checkBumpers()
 
 	for vertex in teams:
-		if teams[vertex] as Team == eliminatedTeam:
+		var team = teams[vertex] as Team
+		if team == eliminatedTeam:
 			vertexToEliminateIndex = vertices.find(vertex)
+			leftScoreboard.fadeOutLivesCounter(team)
 		else:
-			(teams[vertex] as Team).changePolygon(polygon, standardTransitionDuration)
+			team.changePolygon(polygon, standardTransitionDuration)
+			team.addLives(1)
+			leftScoreboard.livesCounters[team].showBonusCounter(1)
 
 	if polygon.sides > 2:
+
+		theBall.initiateGrowth(3, radiusIncreasePerLostTeam/3.0)
 
 		var currentVertexIndex: int
 		if vertexToEliminateIndex == 1: currentVertexIndex = -1
@@ -243,6 +301,8 @@ func reduceBoard(eliminatedTeam: Team):
 
 		leftScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
 		rightScoreboard.textControl.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+		leftScoreboard.beginFade(4)
+		rightScoreboard.beginFade(4)
 
 		var bottomWallVertex: Vertex
 		var leftTeamVertex: Vertex
@@ -311,12 +371,17 @@ func reduceBoard(eliminatedTeam: Team):
 
 		newVertexArray = [bottomWallVertex, rightTeamVertex, topWallVertex, leftTeamVertex]
 
+		ballManager.prepForFinale(standardTransitionDuration*0.25)
+		prepForFinale(teams[leftTeamVertex], teams[rightTeamVertex])
+
 	teams.erase(vertices[vertexToEliminateIndex])
 	vertices = newVertexArray
 	for vertex in vertices:
 		while vertex.reducingChild != null:
 			pathReducingVertex(vertex.reducingChild)
 			vertex = vertex.reducingChild
+	for player in PlayerManager.activePlayersByTeamColor[eliminatedTeam.color]:
+		ballManager.queuePlayerControlledBall(player)
 	eliminatedTeam.queue_free()
 
 
@@ -402,20 +467,88 @@ func pathReducingVertex(reducingVertex: Vertex):
 	reducingVertex.changePolygon(polygon, targetAngle, reducingVertex.reducingTimeRemaining, direction, targetMacroRadius)
 
 
-func _process(delta):
+func reduceTitleTextBalls():
+
+	if titleTextBalls > 0: reduceTitleTextBallsTimer.start()
 	
+	titleTextBalls -= 1
+
+	if titleTextBalls == -1:
+		for team in teams.values():
+			team.paddleManager.fadePaddleTextures()
+	elif titleTextBalls == 0:
+		titleText.characters = [
+			'G','o','!'
+		]
+		ballManager.off = false
+		titleText.updateText()
+	elif titleTextBalls == 1:
+		titleText.characters = [
+			'B', 'a', 'l', 'l', 's',
+		]
+		titleText.size.y = 117
+		titleText.position.y = 211
+		titleText.updateText()
+	elif titleTextBalls == 2:
+		titleText.characters = [
+			'B', 'a', 'l', 'l', 's', ' ',
+			'B', 'a', 'l', 'l', 's',
+		]
+		titleText.size.y = 234
+		titleText.position.y = 153
+		titleText.updateText()
+
+
+func getAllVertices() -> Array[Vertex]:
+	var allVertices: Array[Vertex]
+	for vertex in vertices:
+		allVertices.append(vertex)
+		while vertex.reducingChild != null:
+			vertex = vertex.reducingChild
+			allVertices.append(vertex)
+	allVertices.sort_custom(
+		func(vertex1: Vertex, vertex2: Vertex): 
+			return angle_difference(vertex1.rotation, 0) < angle_difference(vertex2.rotation, 0)
+	)
+	return allVertices
+
+
+func _process(delta):
+
+	
+	timeUntilRadiusIncrease -= delta
+	if timeUntilRadiusIncrease <= 0:
+		var radiusIncrease = (maxRadiusIncreaseFromTime - radiusIncreaseFromTimeSoFar) * 0.25
+		theBall.initiateGrowth(1, radiusIncrease)
+		timeUntilRadiusIncrease = timeBetweenRadiusIncreases
+		radiusIncreaseFromTimeSoFar = radiusIncrease
+
 	if transitioning:
 
 		transitionTimeElapsed += delta
 		if transitionTimeElapsed >= transitionDuration:
 			transitionTimeElapsed = transitionDuration
 			transitioning = false
+			if polygon.sides == 2:
+				ballManager.off = false
 		transitionFraction = transitionTimeElapsed/transitionDuration
 
 		var playfieldCenter = oldCenterHeight + centerHeightDelta*transitionFraction
 		updatePlayfieldCenter(playfieldCenter)
 		var playfieldWidth = oldPlayfieldWidth + playfieldWidthDelta*transitionFraction
 		updatePlayfieldWidth(playfieldWidth)
+	
+	if titleTextBalls == -1:
+		var newAlpha = titleText.self_modulate.a - 0.5*delta
+		if newAlpha < 0:
+			newAlpha = 0
+			titleTextBalls = -1
+		titleText.self_modulate = Color(titleText.self_modulate, newAlpha)
+
+	var vertexPositions: Array[Vector2]
+	for vertex in getAllVertices():
+		vertexPositions.append(playfieldBackground.to_local(vertex.global_position))
+	playfieldBackground.polygon = PackedVector2Array(vertexPositions)
 
 
 func updatePlayfieldCenter(playfieldCenter: float):
@@ -425,6 +558,8 @@ func updatePlayfieldCenter(playfieldCenter: float):
 
 	boundaries.minYOffset = -playfieldCenter - 0.1
 	boundaries.maxYOffset = 540-playfieldCenter + 0.1
+
+	playfieldBackground.updateCenter(playfieldCenter)
 
 
 func updatePlayfieldWidth(playfieldWidth: float):
@@ -436,3 +571,35 @@ func updatePlayfieldWidth(playfieldWidth: float):
 
 	boundaries.minXOffset = -480 + scoreBoardWidth - 0.1
 	boundaries.maxXOffset = 480 - scoreBoardWidth + 0.1
+
+
+func prepForFinale(leftTeam: Team, rightTeam: Team, instant: bool = false):
+	timeUntilRadiusIncrease = 99999
+
+	if instant: playfieldBackground.grid.hide()
+	else: playfieldBackground.suckGrid(standardTransitionDuration)
+	playfieldBackground.bringTheBallToFront()
+
+
+	leftTeam.onLivesChanged.connect(func(_lives): playfieldBackground.leftLives.addShake())
+	playfieldBackground.leftLives.livesLabel.text = str(leftTeam.livesRemaining)
+	leftTeam.onLivesChanged.connect(func(lives): playfieldBackground.leftLives.updateText(lives))
+	leftTeam.onLivesChanged.connect(func(_lives): playfieldBackground.modulateDividerSpeed(true, 2))
+
+	rightTeam.onLivesChanged.connect(func(_lives): playfieldBackground.rightLives.addShake())
+	playfieldBackground.rightLives.livesLabel.text = str(rightTeam.livesRemaining)
+	rightTeam.onLivesChanged.connect(func(lives): playfieldBackground.rightLives.updateText(lives))
+	rightTeam.onLivesChanged.connect(func(_lives): playfieldBackground.modulateDividerSpeed(false, 2))
+	
+	if instant: playfieldBackground.finalTwoControl.modulate.a = 1
+	else: playfieldBackground.fadeInFinalTwoGraphics(
+		leftTeam, rightTeam, standardTransitionDuration*0.25, standardTransitionDuration
+	)
+
+	if instant: theBall.forceSizeChange(200, 0)
+	else: theBall.forceSizeChange(200, 10)
+
+
+func beginTransitionToWinnerScreen():
+	ballManager.explodeAllBalls()
+	ScreenShaker.addShake(40, -1)

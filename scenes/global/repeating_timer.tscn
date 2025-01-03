@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://chvh1r8x4sgh8"]
+
+[ext_resource type="Script" path="res://scripts/global/VariableTimer.gd" id="1_vdayy"]
+
+[node name="RepeatingTimer" type="Node"]
+script = ExtResource("1_vdayy")
+baseTime = 1.0

@@ -1,3 +1,4 @@
+class_name TitleText
 extends RichTextLabel
 
 var characters: Array[String] = [

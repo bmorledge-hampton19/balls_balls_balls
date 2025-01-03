@@ -1,15 +1,85 @@
-[gd_scene load_steps=11 format=3 uid="uid://bs24t7qhmm0um"]
+[gd_scene load_steps=41 format=3 uid="uid://bs24t7qhmm0um"]
 
+[ext_resource type="Script" path="res://scripts/global/Background.gd" id="1_4nob6"]
 [ext_resource type="Script" path="res://scripts/playfield/GameManager.gd" id="1_upxls"]
+[ext_resource type="PackedScene" uid="uid://cerylx43rxt76" path="res://scenes/objects/background_ball.tscn" id="2_0hk7t"]
 [ext_resource type="PackedScene" uid="uid://bwggye1f527c4" path="res://scenes/objects/vertex.tscn" id="2_vw8r0"]
 [ext_resource type="PackedScene" uid="uid://cd0f3kaj2vli3" path="res://scenes/objects/wall.tscn" id="3_a1nbd"]
+[ext_resource type="Script" path="res://scripts/global/VariableTimer.gd" id="3_ob1jp"]
 [ext_resource type="PackedScene" uid="uid://cabfjmylr6pau" path="res://scenes/objects/team.tscn" id="4_jc0af"]
 [ext_resource type="PackedScene" uid="uid://bngtx6rr0whah" path="res://scenes/objects/bumper.tscn" id="5_m3awi"]
 [ext_resource type="Script" path="res://scripts/playfield/BallManager.gd" id="6_dlowe"]
+[ext_resource type="Script" path="res://scripts/playfield/Foreground.gd" id="6_m2wok"]
+[ext_resource type="Shader" path="res://shaders/TheBall.gdshader" id="7_iiurb"]
 [ext_resource type="PackedScene" uid="uid://crc10cctsupco" path="res://scenes/objects/ball.tscn" id="7_k45d6"]
 [ext_resource type="Script" path="res://scripts/playfield/Scoreboard.gd" id="7_n8whm"]
 [ext_resource type="PackedScene" uid="uid://brbfliohi7w1j" path="res://scenes/objects/trail.tscn" id="8_gkjmk"]
+[ext_resource type="Script" path="res://scripts/playfield/TheBall.gd" id="8_nbse7"]
+[ext_resource type="PackedScene" uid="uid://dqcbmnw2epd0h" path="res://scenes/objects/winner_playfield.tscn" id="9_12p7l"]
 [ext_resource type="PackedScene" uid="uid://ciaregb1hgvj7" path="res://scenes/objects/livesCounter.tscn" id="9_685es"]
+[ext_resource type="PackedScene" uid="uid://dtoyv1n8ll5pk" path="res://scenes/objects/inward_pulse.tscn" id="9_isxvy"]
+[ext_resource type="Shader" path="res://shaders/PlayfieldGrid.gdshader" id="10_608cd"]
+[ext_resource type="Shader" path="res://shaders/borders/TopPulsingBorder.gdshader" id="11_qcy7n"]
+[ext_resource type="Shader" path="res://shaders/borders/RightPulsingBorder.gdshader" id="12_e1vdj"]
+[ext_resource type="Shader" path="res://shaders/borders/LeftPulsingBorder.gdshader" id="13_3d0fp"]
+[ext_resource type="Shader" path="res://shaders/Midline.gdshader" id="13_8ebgl"]
+[ext_resource type="Shader" path="res://shaders/borders/BottomPulsingBorder.gdshader" id="13_uy354"]
+[ext_resource type="Script" path="res://scripts/playfield/FinalTwoLives.gd" id="15_gjkjg"]
+[ext_resource type="PackedScene" uid="uid://ccyr86hu00pb3" path="res://scenes/objects/goal_particle_emitter.tscn" id="17_5ydfx"]
+[ext_resource type="PackedScene" uid="uid://c2mwqjo6mpvw" path="res://scenes/objects/explosion_particle_emitter.tscn" id="18_v7xg4"]
+[ext_resource type="PackedScene" uid="uid://cqvkfn7sebgpn" path="res://scenes/objects/ball_controller.tscn" id="22_plt2h"]
+[ext_resource type="PackedScene" uid="uid://cidtpgewej2ee" path="res://scenes/objects/goalsCounter.tscn" id="23_23fkd"]
+[ext_resource type="Script" path="res://scripts/main_menu/TitleText.gd" id="23_nlfim"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h7n8l"]
+resource_local_to_scene = true
+shader = ExtResource("7_iiurb")
+shader_parameter/brightness = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4r3i4"]
+shader = ExtResource("10_608cd")
+shader_parameter/distortionIntensity = 0.15
+shader_parameter/distortionVariation = 0.2
+shader_parameter/gridLineFrequency = 100.0
+shader_parameter/gridLineWidth = 10.0
+shader_parameter/gridLineXOffset = 45.0
+shader_parameter/gridLineYOffset = 45.0
+shader_parameter/gridSaturation = 0.5
+shader_parameter/centerOffset = Vector2(0, 0)
+shader_parameter/visibilityCutoff = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_exirg"]
+shader = ExtResource("13_8ebgl")
+shader_parameter/width = 10.0
+shader_parameter/height = 540.0
+shader_parameter/radius = 5.0
+shader_parameter/distanceBetweenBalls = 15.0
+shader_parameter/offset = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yf6dn"]
+shader = ExtResource("13_8ebgl")
+shader_parameter/width = 10.0
+shader_parameter/height = 540.0
+shader_parameter/radius = 5.0
+shader_parameter/distanceBetweenBalls = 15.0
+shader_parameter/offset = 0.0
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_80ueh"]
+frequency = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6qek3"]
+shader = ExtResource("11_qcy7n")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yin7e"]
+shader = ExtResource("12_e1vdj")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nsleg"]
+shader = ExtResource("13_3d0fp")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7xy4y"]
+shader = ExtResource("13_uy354")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jm00m"]
 
 [node name="Viewport" type="Control"]
 layout_mode = 3
@@ -19,16 +89,45 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Camera2D" type="Camera2D" parent="."]
+anchor_mode = 0
+
+[node name="Background" type="ColorRect" parent="." node_paths=PackedStringArray("backgroundBallsControl")]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_left = -0.052
+anchor_top = -0.481
+anchor_right = 1.052
+anchor_bottom = 1.481
+offset_left = -0.079998
+offset_top = -0.259979
+offset_right = 0.0799561
+offset_bottom = 0.259888
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
+script = ExtResource("1_4nob6")
+backgroundBallPrefab = ExtResource("2_0hk7t")
+backgroundBallsControl = NodePath("BackgroundBalls")
 
-[node name="Game" type="Control" parent="." node_paths=PackedStringArray("leftScoreboard", "rightScoreboard", "playField", "verticesControl", "wallsControl", "teamsControl", "bumpersControl", "ballManager")]
+[node name="BackgroundBalls" type="Control" parent="Background"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SpawnBackgroundBall" type="Timer" parent="Background"]
+autostart = true
+script = ExtResource("3_ob1jp")
+baseTime = 0.15
+timeDeviation = 0.05
+
+[node name="ChangeFlow" type="Timer" parent="Background"]
+autostart = true
+script = ExtResource("3_ob1jp")
+baseTime = 15.0
+timeDeviation = 5.0
+
+[node name="Game" type="Control" parent="." node_paths=PackedStringArray("camera", "leftScoreboard", "rightScoreboard", "playField", "verticesControl", "playfieldBackground", "theBall", "wallsControl", "teamsControl", "bumpersControl", "ballManager", "titleText")]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -43,11 +142,14 @@ grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(480, 270)
 script = ExtResource("1_upxls")
+camera = NodePath("../Camera2D")
 leftScoreboard = NodePath("LeftScoreboard")
 rightScoreboard = NodePath("RightScoreboard")
 playField = NodePath("PlayField")
 vertexPrefab = ExtResource("2_vw8r0")
 verticesControl = NodePath("PlayField/Vertices")
+playfieldBackground = NodePath("PlayField/PlayFieldBackground")
+theBall = NodePath("PlayField/PlayFieldBackground/TheBall")
 wallPrefab = ExtResource("3_a1nbd")
 wallsControl = NodePath("PlayField/Walls")
 teamPrefab = ExtResource("4_jc0af")
@@ -55,6 +157,8 @@ teamsControl = NodePath("PlayField/Teams")
 bumperPrefab = ExtResource("5_m3awi")
 bumpersControl = NodePath("PlayField/Bumpers")
 ballManager = NodePath("PlayField/BallManager")
+titleText = NodePath("TitleText")
+winnerPlayfieldPrefab = ExtResource("9_12p7l")
 
 [node name="PlayField" type="Control" parent="Game"]
 layout_mode = 1
@@ -81,10 +185,196 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="PlayFieldBackground" type="Polygon2D" parent="Game/PlayField" node_paths=PackedStringArray("grid", "inwardPulsesControl", "theBall", "finalTwoControl", "leftDivider", "rightDivider", "leftLives", "rightLives")]
+clip_children = 1
+script = ExtResource("6_m2wok")
+grid = NodePath("Grid")
+inwardPulsesControl = NodePath("InwardPulses")
+theBall = NodePath("TheBall")
+finalTwoControl = NodePath("FinalTwoGraphics")
+leftDivider = NodePath("FinalTwoGraphics/LeftDivider")
+rightDivider = NodePath("FinalTwoGraphics/RightDivider")
+leftLives = NodePath("FinalTwoGraphics/LeftLives")
+rightLives = NodePath("FinalTwoGraphics/RightLives")
+
+[node name="Background" type="ColorRect" parent="Game/PlayField/PlayFieldBackground"]
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0, 0, 0, 1)
+
+[node name="InwardPulses" type="Control" parent="Game/PlayField/PlayFieldBackground"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 960.0
+offset_bottom = 540.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TheBall" type="ColorRect" parent="Game/PlayField/PlayFieldBackground" node_paths=PackedStringArray("inwardPulsesControl")]
+material = SubResource("ShaderMaterial_h7n8l")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 426.0
+offset_top = 216.0
+offset_right = 534.0
+offset_bottom = 324.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("8_nbse7")
+inwardPulsesControl = NodePath("../InwardPulses")
+inwardPulsePrefab = ExtResource("9_isxvy")
+
+[node name="Grid" type="ColorRect" parent="Game/PlayField/PlayFieldBackground"]
+material = SubResource("ShaderMaterial_4r3i4")
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0, 0, 0, 1)
+
+[node name="FinalTwoGraphics" type="Control" parent="Game/PlayField/PlayFieldBackground"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 3
+anchors_preset = 0
+
+[node name="LeftDivider" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics"]
+material = SubResource("ShaderMaterial_exirg")
+layout_mode = 0
+offset_left = 470.0
+offset_right = 480.0
+offset_bottom = 540.0
+
+[node name="RightDivider" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics"]
+material = SubResource("ShaderMaterial_yf6dn")
+layout_mode = 0
+offset_left = 480.0
+offset_right = 490.0
+offset_bottom = 540.0
+
+[node name="LeftLives" type="Control" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics" node_paths=PackedStringArray("livesLabel")]
+anchors_preset = 0
+offset_left = 310.0
+offset_top = 10.0
+offset_right = 438.0
+offset_bottom = 138.0
+script = ExtResource("15_gjkjg")
+livesLabel = NodePath("Label")
+noise = SubResource("FastNoiseLite_80ueh")
+
+[node name="Label" type="Label" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/LeftLives"]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 128.0
+theme_override_font_sizes/font_size = 64
+text = "99"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TopBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/LeftLives"]
+material = SubResource("ShaderMaterial_6qek3")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.156
+offset_bottom = 0.0319996
+grow_horizontal = 2
+
+[node name="RightBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/LeftLives"]
+material = SubResource("ShaderMaterial_yin7e")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.844
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -0.0320053
+grow_horizontal = 2
+
+[node name="LeftBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/LeftLives"]
+material = SubResource("ShaderMaterial_nsleg")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.156
+anchor_bottom = 1.0
+offset_right = 0.0319996
+grow_horizontal = 2
+
+[node name="BottomBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/LeftLives"]
+material = SubResource("ShaderMaterial_7xy4y")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.844
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -0.0320053
+grow_horizontal = 2
+
+[node name="RightLives" type="Control" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics" node_paths=PackedStringArray("livesLabel")]
+anchors_preset = 0
+offset_left = 522.0
+offset_top = 10.0
+offset_right = 650.0
+offset_bottom = 138.0
+script = ExtResource("15_gjkjg")
+livesLabel = NodePath("Label")
+noise = SubResource("FastNoiseLite_80ueh")
+
+[node name="Label" type="Label" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/RightLives"]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 128.0
+theme_override_font_sizes/font_size = 64
+text = "99"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TopBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/RightLives"]
+material = SubResource("ShaderMaterial_6qek3")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.156
+offset_bottom = 0.0319996
+grow_horizontal = 2
+
+[node name="RightBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/RightLives"]
+material = SubResource("ShaderMaterial_yin7e")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.844
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -0.0320053
+grow_horizontal = 2
+
+[node name="LeftBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/RightLives"]
+material = SubResource("ShaderMaterial_nsleg")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.156
+anchor_bottom = 1.0
+offset_right = 0.0319996
+grow_horizontal = 2
+
+[node name="BottomBorder" type="ColorRect" parent="Game/PlayField/PlayFieldBackground/FinalTwoGraphics/RightLives"]
+material = SubResource("ShaderMaterial_7xy4y")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.844
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -0.0320053
+grow_horizontal = 2
+
 [node name="Walls" type="Control" parent="Game/PlayField"]
 anchors_preset = 0
 offset_right = 960.0
 offset_bottom = 540.0
+
+[node name="ParticleEmitters" type="Control" parent="Game/PlayField"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="Teams" type="Control" parent="Game/PlayField"]
 anchors_preset = 0
@@ -96,7 +386,7 @@ anchors_preset = 0
 offset_right = 960.0
 offset_bottom = 540.0
 
-[node name="BallManager" type="Control" parent="Game/PlayField" node_paths=PackedStringArray("ballsControl", "trailsControl")]
+[node name="BallManager" type="Control" parent="Game/PlayField" node_paths=PackedStringArray("ballsControl", "trailsCanvasGroup", "background", "particleEmittersControl", "theBall", "individualBurstSpawnTimer", "burstActivationTimer")]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -108,25 +398,81 @@ grow_vertical = 2
 script = ExtResource("6_dlowe")
 ballPrefab = ExtResource("7_k45d6")
 ballsControl = NodePath("Balls")
+ballControllerPrefab = ExtResource("22_plt2h")
 trailPrefab = ExtResource("8_gkjmk")
-trailsControl = NodePath("Trails")
+trailsCanvasGroup = NodePath("Trails")
+background = NodePath("../../../Background")
+goalParticleEmitter = ExtResource("17_5ydfx")
+explosionParticleEmitter = ExtResource("18_v7xg4")
+particleEmittersControl = NodePath("../ParticleEmitters")
+theBall = NodePath("../PlayFieldBackground/TheBall")
+individualBurstSpawnTimer = NodePath("IndividualBurstSpawn")
+burstActivationTimer = NodePath("BurstActivation")
+
+[node name="Trails" type="CanvasGroup" parent="Game/PlayField/BallManager"]
 
 [node name="Balls" type="Control" parent="Game/PlayField/BallManager"]
 anchors_preset = 0
 
-[node name="Trails" type="Control" parent="Game/PlayField/BallManager"]
-anchors_preset = 0
+[node name="IndividualBurstSpawn" type="Timer" parent="Game/PlayField/BallManager"]
+wait_time = 0.2
 
-[node name="LeftScoreboard" type="ColorRect" parent="Game" node_paths=PackedStringArray("textControl")]
+[node name="BurstActivation" type="Timer" parent="Game/PlayField/BallManager"]
+one_shot = true
+script = ExtResource("3_ob1jp")
+baseTime = 3.0
+timeDeviation = 0.5
+
+[node name="LeftScoreboard" type="ColorRect" parent="Game" node_paths=PackedStringArray("textControl", "title")]
+material = SubResource("ShaderMaterial_jm00m")
 layout_mode = 1
 anchors_preset = -1
 anchor_bottom = 1.0
 offset_right = 210.0
 grow_vertical = 2
-color = Color(0.400698, 0.400698, 0.400698, 1)
+color = Color(0, 0, 0, 1)
 script = ExtResource("7_n8whm")
 textControl = NodePath("Team Lives")
+title = NodePath("Team Lives/Title")
 livesCounterPrefab = ExtResource("9_685es")
+
+[node name="TopBorder" type="ColorRect" parent="Game/LeftScoreboard"]
+material = SubResource("ShaderMaterial_6qek3")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.037
+offset_bottom = 0.0200005
+grow_horizontal = 2
+
+[node name="RightBorder" type="ColorRect" parent="Game/LeftScoreboard"]
+material = SubResource("ShaderMaterial_yin7e")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.905
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -0.0500031
+grow_horizontal = 2
+
+[node name="LeftBorder" type="ColorRect" parent="Game/LeftScoreboard"]
+material = SubResource("ShaderMaterial_nsleg")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.095
+anchor_bottom = 1.0
+offset_right = 0.0499992
+grow_horizontal = 2
+
+[node name="BottomBorder" type="ColorRect" parent="Game/LeftScoreboard"]
+material = SubResource("ShaderMaterial_7xy4y")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.963
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -0.0200195
+grow_horizontal = 2
 
 [node name="Team Lives" type="VBoxContainer" parent="Game/LeftScoreboard"]
 layout_mode = 1
@@ -134,6 +480,7 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 77.0
 grow_horizontal = 2
+theme_override_constants/separation = 0
 
 [node name="Title" type="Label" parent="Game/LeftScoreboard/Team Lives"]
 layout_mode = 2
@@ -141,7 +488,7 @@ theme_override_font_sizes/font_size = 50
 text = "Lives"
 horizontal_alignment = 1
 
-[node name="RightScoreboard" type="ColorRect" parent="Game" node_paths=PackedStringArray("textControl")]
+[node name="RightScoreboard" type="ColorRect" parent="Game" node_paths=PackedStringArray("textControl", "title")]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 1.0
@@ -150,25 +497,79 @@ anchor_bottom = 1.0
 offset_left = -210.0
 grow_horizontal = 0
 grow_vertical = 2
-color = Color(0.400698, 0.400698, 0.400698, 1)
+color = Color(0, 0, 0, 1)
 script = ExtResource("7_n8whm")
-textControl = NodePath("Team Lives")
+textControl = NodePath("Goals")
+title = NodePath("Goals/Title")
+goalsCounterPrefab = ExtResource("23_23fkd")
 
-[node name="Team Lives" type="VBoxContainer" parent="Game/RightScoreboard"]
+[node name="TopBorder" type="ColorRect" parent="Game/RightScoreboard"]
+material = SubResource("ShaderMaterial_6qek3")
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.037
+offset_bottom = 0.0200005
+grow_horizontal = 2
+
+[node name="RightBorder" type="ColorRect" parent="Game/RightScoreboard"]
+material = SubResource("ShaderMaterial_yin7e")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.905
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -0.0500031
+grow_horizontal = 2
+
+[node name="LeftBorder" type="ColorRect" parent="Game/RightScoreboard"]
+material = SubResource("ShaderMaterial_nsleg")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.095
+anchor_bottom = 1.0
+offset_right = 0.0499992
+grow_horizontal = 2
+
+[node name="BottomBorder" type="ColorRect" parent="Game/RightScoreboard"]
+material = SubResource("ShaderMaterial_7xy4y")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.963
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -0.0200195
+grow_horizontal = 2
+
+[node name="Goals" type="VBoxContainer" parent="Game/RightScoreboard"]
+layout_mode = 1
+anchors_preset = -1
 anchor_right = 1.0
 offset_bottom = 77.0
 grow_horizontal = 2
 
-[node name="Title" type="Label" parent="Game/RightScoreboard/Team Lives"]
+[node name="Title" type="Label" parent="Game/RightScoreboard/Goals"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 50
 text = "Goals"
 horizontal_alignment = 1
 
-[node name="TeamLives1" type="Label" parent="Game/RightScoreboard/Team Lives"]
+[node name="TitleText" type="RichTextLabel" parent="Game"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "10"
-horizontal_alignment = 1
+offset_left = 280.0
+offset_top = 93.0
+offset_right = 680.0
+offset_bottom = 444.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/normal_font_size = 120
+bbcode_enabled = true
+text = "[center]Balls Balls Balls[/center]"
+fit_content = true
+scroll_active = false
+script = ExtResource("23_nlfim")
+
+[connection signal="timeout" from="Background/SpawnBackgroundBall" to="Background" method="addBackgroundBall"]
+[connection signal="timeout" from="Background/ChangeFlow" to="Background" method="initiateFlowChange"]
+[connection signal="timeout" from="Game/PlayField/BallManager/IndividualBurstSpawn" to="Game/PlayField/BallManager" method="spawnBall"]
+[connection signal="timeout" from="Game/PlayField/BallManager/BurstActivation" to="Game/PlayField/BallManager" method="activateAllBalls"]

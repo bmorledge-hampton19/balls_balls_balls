@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3 uid="uid://cidtpgewej2ee"]
+
+[ext_resource type="Script" path="res://scripts/playfield/GoalsCounter.gd" id="1_1lmde"]
+[ext_resource type="Texture2D" uid="uid://b2y4r4ft4560u" path="res://images/player_icons/360_A.png" id="1_o41pv"]
+
+[node name="GoalsCounter" type="Control" node_paths=PackedStringArray("textureRect", "label")]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 210.0
+offset_bottom = 30.0
+script = ExtResource("1_1lmde")
+textureRect = NodePath("TextureRect")
+label = NodePath("Label")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 65.0
+offset_right = 90.0
+offset_bottom = 25.0
+texture = ExtResource("1_o41pv")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 98.0
+offset_right = 138.0
+offset_bottom = 32.0
+theme_override_font_sizes/font_size = 28
+text = "23"

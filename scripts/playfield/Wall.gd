@@ -3,8 +3,12 @@ class_name Wall
 extends Control
 
 @export var staticWall: bool = false
+@export var visual: ColorRect
 @export var area: Area2D
 @export var collider: CollisionShape2D
+
+# @export var particleEmittersControl: Control
+# @export var particleEmitterPrefab: PackedScene
 
 var _leftVertexTracker: VertexTracker
 var _rightVertexTracker: VertexTracker
@@ -20,9 +24,19 @@ var rightInnerAngle: float
 	get: return size.x
 	set(value):
 		size.x = value
+		if not visual or not collider: return
+		visual.size.x = sideLength
+		visual.material.set_shader_parameter("width", sideLength)
 		collider.position.x = sideLength/2
 		collider.position.y = 5
 		collider.shape.size.x = sideLength
+@export var flipped: bool:
+	set(value):
+		flipped = value
+		if not visual: return
+		if flipped: visual.material.set_shader_parameter("flipped", 1.0)
+		else: visual.material.set_shader_parameter("flipped", 0.0)
+
 var height: float
 
 var reducing: bool
@@ -36,13 +50,16 @@ func initWall(p_leftVertex: Vertex, p_rightVertex: Vertex):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	sideLength = sideLength
+	flipped = flipped
+	visual.material.set_shader_parameter("noiseOffset", Vector2(randf(),randf()))
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 	if staticWall or Engine.is_editor_hint(): return
 	updateWallControl()
+	
 
 func updateWallControl():
 
@@ -71,3 +88,12 @@ func updateWallControl():
 
 		if leftInnerAngle < 90: height = sin(leftInnerAngle)*leftVertex.macroRadius
 		else: height = sin(rightInnerAngle)*rightVertex.macroRadius
+
+# func spawnParticlesFromCollision(ball: Ball, collisionPoint: Vector2):
+# 	var particleEmitter: CPUParticles2D = particleEmitterPrefab.instantiate()
+# 	particleEmittersControl.add_child(particleEmitter)
+# 	particleEmitter.global_position = collisionPoint
+# 	var emissionAngle := ball.fullVelocity.normalized().angle() - rotation
+# 	emissionAngle = clampf(angle_difference(0, emissionAngle),-11.0/12.0*PI,-1.0/12.0*PI)
+# 	particleEmitter.direction = Vector2.from_angle(emissionAngle)
+	

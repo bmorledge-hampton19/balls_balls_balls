@@ -1,14 +1,27 @@
-[gd_scene load_steps=3 format=3 uid="uid://bngtx6rr0whah"]
+[gd_scene load_steps=6 format=3 uid="uid://bngtx6rr0whah"]
 
 [ext_resource type="Script" path="res://scripts/playfield/Bumper.gd" id="1_igjff"]
+[ext_resource type="PackedScene" uid="uid://cpxmj844n1pgo" path="res://scenes/objects/single_pulse.tscn" id="2_jyyit"]
+[ext_resource type="Shader" path="res://shaders/PulsingRainbow.gdshader" id="2_pcx8e"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_asq4e"]
 resource_local_to_scene = true
 
-[node name="Bumper" type="Control"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1no7v"]
+resource_local_to_scene = true
+shader = ExtResource("2_pcx8e")
+shader_parameter/speed = 0.25
+shader_parameter/extraSaturation = 0.0
+shader_parameter/value = 1.0
+
+[node name="Bumper" type="Control" node_paths=PackedStringArray("collisionShape", "pulsesControl", "texture")]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_igjff")
+collisionShape = NodePath("Area/CollisionShape2D")
+pulsesControl = NodePath("Pulses")
+pulsePrefab = ExtResource("2_jyyit")
+texture = NodePath("MainTexture")
 
 [node name="Area" type="Area2D" parent="."]
 collision_layer = 8
@@ -16,3 +29,18 @@ collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area"]
 shape = SubResource("CircleShape2D_asq4e")
+
+[node name="Pulses" type="Control" parent="."]
+anchors_preset = 0
+offset_left = -50.0
+offset_top = -50.0
+offset_right = -50.0
+offset_bottom = -50.0
+
+[node name="MainTexture" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_1no7v")
+layout_mode = 0
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0

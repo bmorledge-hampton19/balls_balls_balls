@@ -102,6 +102,11 @@ func changePolygon(newPolygon: PolygonGuide.Polygon, transitionDuration: float):
 		paddle.changePolygon(newPolygon, transitionDuration)
 
 
+func fadePaddleTextures():
+	for paddle in paddles:
+		paddle.changeTextureAlpha(0, 2)
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.

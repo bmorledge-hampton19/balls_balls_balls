@@ -8,6 +8,7 @@ resource_local_to_scene = true
 radius = 4.9
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_2rn00"]
+resource_local_to_scene = true
 radius = 5.0
 
 [node name="Ball" type="Area2D" node_paths=PackedStringArray("collisionShape2D", "shapeCaster", "teamColor", "ballSprite")]

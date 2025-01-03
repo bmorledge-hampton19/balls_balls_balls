@@ -6,6 +6,4 @@ func _ready():
 	pass # Replace with function body.
 
 func updateColor(newColor: Color):
-	gradient.set_color(0, Color(newColor, 0.1))
-	gradient.set_color(1, Color(newColor, 1))
-	gradient.set_color(2, Color(newColor, 1))
+	material.set_shader_parameter("teamColor", newColor)

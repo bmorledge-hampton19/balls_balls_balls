@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://cabfjmylr6pau"]
+[gd_scene load_steps=9 format=3 uid="uid://cabfjmylr6pau"]
 
 [ext_resource type="Script" path="res://scripts/global/Team.gd" id="1_25hma"]
 [ext_resource type="Shader" path="res://shaders/goal.gdshader" id="2_gowim"]
+[ext_resource type="PackedScene" uid="uid://ccyr86hu00pb3" path="res://scenes/objects/goal_particle_emitter.tscn" id="2_uoy4j"]
 [ext_resource type="Script" path="res://scripts/playfield/PaddleManager.gd" id="3_rumxq"]
 [ext_resource type="PackedScene" uid="uid://dn5fpyl6dbako" path="res://scenes/objects/paddle.tscn" id="4_5dvrg"]
 
@@ -15,7 +16,7 @@ shader = ExtResource("2_gowim")
 shader_parameter/density = 0.0
 shader_parameter/noiseTexture = SubResource("NoiseTexture2D_mhneu")
 
-[node name="Team" type="Control" node_paths=PackedStringArray("goal", "goalShader", "goalCollider", "paddleManager")]
+[node name="Team" type="Control" node_paths=PackedStringArray("goal", "goalShader", "goalCollider", "paddleManager", "particleEmitterControl")]
 layout_mode = 3
 anchors_preset = 7
 anchor_left = 0.5
@@ -31,6 +32,11 @@ goal = NodePath("Goal")
 goalShader = NodePath("GoalShader")
 goalCollider = NodePath("Goal/GoalCollider")
 paddleManager = NodePath("PaddleManager")
+particleEmitterControl = NodePath("ParticleEmitterControl")
+particleEmitterPrefab = ExtResource("2_uoy4j")
+
+[node name="ParticleEmitterControl" type="Control" parent="."]
+anchors_preset = 0
 
 [node name="GoalShader" type="ColorRect" parent="."]
 material = SubResource("ShaderMaterial_xbply")

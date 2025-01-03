@@ -2,7 +2,7 @@ class_name MainMenu
 extends Node
 
 @export var theBallZone: Control
-@export var trailsControl: Control
+@export var trailsCanvasGroup: CanvasGroup
 @export var wallPrefab: PackedScene
 @export var ballPrefab: PackedScene
 @export var trailPrefab: PackedScene
@@ -10,15 +10,14 @@ extends Node
 @export var playerSelectorGrid: GridContainer
 
 @export var playButton: PlayButton
-@export var playfieldScene: PackedScene
 
 var playerSelectors: Array[PlayerSelector]
 var ballsByPlayer: Dictionary
 
-func attemptAddPlayer(inputSet: InputSets.InputSet, _direction: bool):
-	if inputSet.assignedPlayer != null and inputSet.assignedPlayer.active: return
+func attemptAddPlayer(inputSet: InputSets.InputSet, _direction: bool, activePlayer: Player = null):
+	if activePlayer == null and inputSet.assignedPlayer != null and inputSet.assignedPlayer.active: return
 	if playerSelectors[-1].player != null: return
-	playerSelectors[-1].transitionToPlayerDisplay(inputSet)
+	playerSelectors[-1].transitionToPlayerDisplay(inputSet, activePlayer)
 
 	var newBall: Ball = ballPrefab.instantiate()
 	var newTrail: Trail = trailPrefab.instantiate()
@@ -30,13 +29,13 @@ func attemptAddPlayer(inputSet: InputSets.InputSet, _direction: bool):
 	ballsByPlayer[playerSelectors[-1].player] = newBall
 
 	theBallZone.add_child(newBall)
-	trailsControl.add_child(newTrail)
+	trailsCanvasGroup.add_child(newTrail)
 	playerSelectors[-1].playerDisplay.ball = newBall
 
 	newBall.baseSpeed = 200
 
-	if randi_range(0,1): newBall.direction = Vector2.from_angle(randf_range(0.1,PI))
-	else: newBall.direction = Vector2.from_angle(randf_range(0.1,PI)*-1)
+	if randi_range(0,1): newBall.baseSpeedDirection = Vector2.from_angle(randf_range(0.1,PI-0.1))
+	else: newBall.baseSpeedDirection = Vector2.from_angle(randf_range(0.1,PI-0.1)*-1)
 
 	if len(playerSelectors) < 16: addPlayerSelector()
 
@@ -55,11 +54,16 @@ func removePlayerSelector(playerSelector: PlayerSelector):
 	if playerSelectors[-1].player != null: addPlayerSelector()
 
 func startGame():
-	ResourceLoader.load_threaded_get(playfieldScene.resource_path)
+	print(Time.get_ticks_msec())
+	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Playfield.tscn"))
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	addPlayerSelector()
 	InputSets.onAnyCircle.connect(attemptAddPlayer)
 	playButton.onFullProgressCircle.connect(startGame)
-	ResourceLoader.load_threaded_request(playfieldScene.resource_path)
+	ResourceLoader.load_threaded_request("res://scenes/Playfield.tscn")
+
+	for teamColor in PlayerManager.activePlayersByTeamColor:
+		for player in PlayerManager.activePlayersByTeamColor[teamColor]:
+			attemptAddPlayer(player.inputSet, true, player)

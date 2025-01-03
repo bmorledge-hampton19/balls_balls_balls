@@ -6,16 +6,19 @@ extends Node
 
 var player: Player = null
 
-func transitionToPlayerDisplay(inputSet: InputSets.InputSet):
+func transitionToPlayerDisplay(inputSet: InputSets.InputSet, activePlayer: Player = null):
 	prompts.hide()
-	player = PlayerManager.getPlayerForInputSet(inputSet)
+	if activePlayer == null: player = PlayerManager.getPlayerForInputSet(inputSet)
+	else: player = activePlayer
 	playerDisplay.initPlayerDisplay(player)
 	playerDisplay.show()
 	playerDisplay.set_process(true)
+	playerDisplay.bumper.activate()
 
 func transitionToPrompts():
 	playerDisplay.hide()
 	playerDisplay.set_process(false)
+	playerDisplay.bumper.deactivate()
 	PlayerManager.deactivatePlayer(player)
 	player = null
 	prompts.hide()
@@ -25,3 +28,4 @@ func _ready():
 	prompts.show()
 	playerDisplay.hide()
 	playerDisplay.set_process(false)
+	playerDisplay.bumper.deactivate()

@@ -11,6 +11,17 @@ const teamColors: Array[Color] = [
 	Color.SADDLE_BROWN,
 ]
 
+const teamColorNames: Dictionary = {
+	Color.RED : "RED",
+	Color.ORANGE : "ORANGE",
+	Color.YELLOW : "YELLOW",
+	Color.FOREST_GREEN : "GREEN",
+	Color.CYAN : "BLUE",
+	Color.PURPLE : "PURPLE",
+	Color.HOT_PINK : "PINK",
+	Color.SADDLE_BROWN : "BROWN",
+}
+
 enum PlayerIcon {
 	CIRCLE,
 	BASKETBALL, FOOTBALL, SOCCER_BALL, TENNIS_BALL,
@@ -119,7 +130,7 @@ func getPlayerIconTexture(playerIcon: PlayerIcon) -> Texture2D:
 			return preload(playerIconDir + "mitochondria.png")
 		PlayerIcon.RADIOACTIVE:
 			return preload(playerIconDir + "radioactive.png")
-		
+
 		_:
 			return preload("res://icon.svg")
 
@@ -128,6 +139,7 @@ var isIconActive: Dictionary
 var playersByInputSet: Dictionary
 var activePlayersByTeamColor: Dictionary
 
+var winningTeamColor: Color
 
 func _ready():
 	# print(Input.get_connected_joypads())
@@ -140,7 +152,7 @@ func _ready():
 		isIconActive[playerIcon] = false
 	for teamColor in teamColors:
 		activePlayersByTeamColor[teamColor] = [] as Array[Player]
-	# initTestPlayers()
+	initBalancedTestPlayers()
 
 func _process(_delta):
 	pass
@@ -203,7 +215,8 @@ func getPlayerForInputSet(inputSet: InputSets.InputSet) -> Player:
 		if len(activePlayersByTeamColor[player.teamColor]) >= 8: player.teamColor = getLeastActiveTeamColor()
 	else:
 		player = getNewPlayer(inputSet)
-	activePlayersByTeamColor[player.teamColor].append(player)
+	if player not in activePlayersByTeamColor[player.teamColor]:
+		activePlayersByTeamColor[player.teamColor].append(player)
 	player.active = true
 	return player
 
@@ -220,19 +233,28 @@ func clearPlayers():
 	activePlayersByTeamColor.clear()
 
 
-func initTestPlayers():
-			forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(teamColors[0], InputSets.inputSets[1], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(teamColors[0], InputSets.inputSets[2], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(teamColors[0], InputSets.inputSets[3], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(teamColors[0], InputSets.inputSets[4], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(teamColors[0], InputSets.inputSets[5], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(teamColors[0], InputSets.inputSets[6], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(teamColors[0], InputSets.inputSets[7], getInactivePlayerIcon(), KEY_ENTER)
-			forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[8], getInactivePlayerIcon(), KEY_Z)
-			forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[9], getInactivePlayerIcon(), KEY_X)
-			# forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[10], getInactivePlayerIcon(), KEY_C)
-			# forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[11], getInactivePlayerIcon(), KEY_V)
-			# forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[12], getInactivePlayerIcon(), KEY_B)
-			# forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[13], getInactivePlayerIcon(), KEY_N)
-			# forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[14], getInactivePlayerIcon(), KEY_M)
+func initLopsidedTestPlayers():
+	forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[1], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[2], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[3], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[4], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[5], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[6], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[7], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[8], getInactivePlayerIcon(), KEY_Z)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[9], getInactivePlayerIcon(), KEY_X)
+
+func initBalancedTestPlayers():
+	forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[1], getInactivePlayerIcon(), KEY_Z)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[2], getInactivePlayerIcon(), KEY_X)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[3], getInactivePlayerIcon(), KEY_C)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[4], getInactivePlayerIcon(), KEY_V)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[5], getInactivePlayerIcon(), KEY_B)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[6], getInactivePlayerIcon(), KEY_N)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[7], getInactivePlayerIcon(), KEY_M)
+
+func initDuel():
+	forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[1], getInactivePlayerIcon(), KEY_Z)

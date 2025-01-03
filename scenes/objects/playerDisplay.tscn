@@ -1,7 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://cxiab0g3k5g85"]
+[gd_scene load_steps=15 format=3 uid="uid://cxiab0g3k5g85"]
 
 [ext_resource type="Script" path="res://scripts/main_menu/PlayerDisplay.gd" id="1_qexq1"]
 [ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="2_a0fqo"]
+[ext_resource type="PackedScene" uid="uid://bngtx6rr0whah" path="res://scenes/objects/bumper.tscn" id="2_u13d7"]
 [ext_resource type="Shader" path="res://shaders/CircleMask.gdshader" id="3_rqenc"]
 [ext_resource type="Texture2D" uid="uid://hme6gheo7qpq" path="res://images/player_icons/PS3_Triangle.png" id="4_gqwh7"]
 [ext_resource type="Texture2D" uid="uid://6wu1uwdmjdso" path="res://images/controller_prompts/Generic_Controller.png" id="5_p2plo"]
@@ -21,12 +22,13 @@ shader_parameter/location_x = 0.5
 shader_parameter/location_y = 0.5
 shader_parameter/invert_mask = false
 
-[node name="Player" type="Control" node_paths=PackedStringArray("teamColorRect", "teamText", "playerIconTextureRect", "controllerIconTextureRect", "controllerNumLabel", "keyboardIconTextureRect", "faceButtonsTextureRect", "dpadTextureRect", "leftStickTextureRect", "rightStickTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "closeButton")]
+[node name="Player" type="Control" node_paths=PackedStringArray("bumper", "teamColorRect", "teamText", "playerIconTextureRect", "controllerIconTextureRect", "controllerNumLabel", "keyboardIconTextureRect", "faceButtonsTextureRect", "dpadTextureRect", "leftStickTextureRect", "rightStickTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "closeButton")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 100.0
 offset_bottom = 100.0
 script = ExtResource("1_qexq1")
+bumper = NodePath("Bumper")
 teamColorRect = NodePath("TeamColor")
 teamText = NodePath("TeamText")
 playerIconTextureRect = NodePath("PlayerIcon")
@@ -43,6 +45,13 @@ rightKeyTextureRect = NodePath("ControlType/Keys/RightKey")
 downKeyTextureRect = NodePath("ControlType/Keys/DownKey")
 leftKeyTextureRect = NodePath("ControlType/Keys/LeftKey")
 closeButton = NodePath("CloseButton")
+
+[node name="Bumper" parent="." instance=ExtResource("2_u13d7")]
+offset_left = 50.0
+offset_top = 42.0
+offset_right = 50.0
+offset_bottom = 42.0
+radius = 18.0
 
 [node name="TeamColor" type="ColorRect" parent="."]
 material = ExtResource("2_a0fqo")

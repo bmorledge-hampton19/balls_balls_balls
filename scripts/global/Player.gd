@@ -17,6 +17,10 @@ var icon: PlayerManager.PlayerIcon
 var texture: Texture2D:
 	get: return PlayerManager.getPlayerIconTexture(icon)
 
+var goals: int
+@warning_ignore("unused_signal")
+signal onGoal(goals: int)
+
 func _init(p_teamColor: Color, p_inputSet: InputSets.InputSet, p_icon: PlayerManager.PlayerIcon):
 	teamColor = p_teamColor
 	inputSet = p_inputSet

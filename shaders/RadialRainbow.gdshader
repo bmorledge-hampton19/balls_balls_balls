@@ -11,5 +11,5 @@ vec3 hsv2rgb(vec3 c) {
 
 void fragment() {
 	vec2 pos = vec2(0.5) - UV;
-	COLOR.rgb = hsv2rgb(vec3( ((atan(pos.y, pos.x) - TIME * speed) / (PI*2.0)), 1.0, 1.0));
+	COLOR.rgb = hsv2rgb(vec3( ((atan(pos.y, pos.x) - TIME * speed) / (TAU)), 1.0, 1.0));
 }

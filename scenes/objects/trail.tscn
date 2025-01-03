@@ -1,21 +1,23 @@
-[gd_scene load_steps=5 format=3 uid="uid://brbfliohi7w1j"]
+[gd_scene load_steps=6 format=3 uid="uid://brbfliohi7w1j"]
 
 [ext_resource type="Script" path="res://scripts/global/Trail.gd" id="1_kf3p0"]
+[ext_resource type="Shader" path="res://shaders/TrailLine.gdshader" id="1_x4lk6"]
 
-[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_qy7xc"]
-blend_mode = 1
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_23imx"]
+resource_local_to_scene = true
+shader = ExtResource("1_x4lk6")
+shader_parameter/teamColor = Color(1, 1, 1, 1)
 
 [sub_resource type="Curve" id="Curve_kyxy1"]
 _data = [Vector2(0, 0), 0.0, 1.4, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [sub_resource type="Gradient" id="Gradient_51we3"]
-resource_local_to_scene = true
 offsets = PackedFloat32Array(0, 0.674641, 1)
-colors = PackedColorArray(1, 1, 1, 0.0980392, 1, 1, 1, 1, 1, 1, 1, 1)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 
 [node name="Trail" type="Line2D"]
-material = SubResource("CanvasItemMaterial_qy7xc")
+material = SubResource("ShaderMaterial_23imx")
 width_curve = SubResource("Curve_kyxy1")
 gradient = SubResource("Gradient_51we3")
 joint_mode = 2

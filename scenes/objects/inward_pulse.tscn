@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://dtoyv1n8ll5pk"]
+
+[ext_resource type="Shader" path="res://shaders/InwardPulse.gdshader" id="1_0xgqh"]
+[ext_resource type="Script" path="res://scripts/playfield/Pulse.gd" id="2_75vu8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0on7i"]
+resource_local_to_scene = true
+shader = ExtResource("1_0xgqh")
+shader_parameter/elapsedTime = 0.0
+shader_parameter/pulseSpeed = 0.5
+shader_parameter/ballRadius = 0.0
+
+[node name="InwardPulse" type="ColorRect"]
+material = SubResource("ShaderMaterial_0on7i")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -210.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_75vu8")
