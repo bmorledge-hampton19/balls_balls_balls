@@ -1,6 +1,8 @@
 class_name Ball
 extends Area2D
 
+enum {TOP, BOTTOM}
+
 var currentTime: float = 0.0
 
 @export var collisionShape2D: CollisionShape2D
@@ -23,12 +25,12 @@ var direction: Vector2:
 		if fullVelocity.length() > 0.1: return fullVelocity.normalized()
 		else: return baseSpeedDirection
 
-var radius: float = 5.0:
+@export var radius: float = 5.0:
 	get: return radius
 	set(value):
 		radius = value
-		(collisionShape2D.shape as CircleShape2D).radius = radius - 0.1
-		(shapeCaster.shape as CircleShape2D).radius = radius - 0.1
+		(collisionShape2D.shape as CircleShape2D).radius = radius
+		(shapeCaster.shape as CircleShape2D).radius = radius
 		teamColor.position = Vector2(-radius*1.4, -radius*1.4)
 		teamColor.size = Vector2(radius*2.8, radius*2.8)
 		ballSprite.position = Vector2(-radius, -radius)
@@ -133,6 +135,27 @@ func updateColor(newColor: Color):
 	teamColor.color = newColor
 	if trail != null: trail.updateColor(newColor)
 	if ballController != null: ballController.thrustParticleEmitter.color = newColor
+	if powerupParticleEmitter != null: powerupParticleEmitter.color = newColor
+
+var powerupType: PowerupManager.Type
+var powerupParticleEmitter: CPUParticles2D:
+	set(value):
+		powerupParticleEmitter = value
+		while powerupType == PowerupManager.Type.NONE: powerupType = PowerupManager.Type.values().pick_random()
+		add_child(powerupParticleEmitter)
+		move_child(powerupParticleEmitter,0)
+		updateColor(teamColor.color)
+
+var stuckToWhichPaddle: Paddle:
+	set(value):
+		stuckToWhichPaddle = value
+		if stuckToWhichPaddle != null:
+			stuckToWhichPaddle.stuckBalls.append(self)
+var stuckCenterRatio: float
+var stuckToTopOrBottom: int
+
+var isClone: bool
+var timeUntilClone: float
 
 
 # Called when the node enters the scene tree for the first time.
@@ -147,6 +170,7 @@ func _notification(what):
 func _process(delta: float):
 
 	currentTime += delta
+	timeUntilClone -= delta
 
 	processBaseAcceleration(delta)
 
@@ -426,6 +450,8 @@ func processBehavior(delta):
 
 func processMovement(delta: float):
 
+	if stuckToWhichPaddle != null: return
+
 	var collisionsThisFrame = 0
 
 	var remainingDistance := fullVelocity.length()*delta
@@ -450,6 +476,7 @@ func processMovement(delta: float):
 				if collider.get_collision_layer_value(4):
 					if not collisionIsBumper or competingDistance <= priorityCollisionDistance:
 						collisionIsBumper = true
+						collisionIsPaddle = false
 						priorityCollisionDistance = competingDistance
 						priorityCollisionIndex = i
 
@@ -460,7 +487,7 @@ func processMovement(delta: float):
 						priorityCollisionIndex = i
 				
 				elif collider.get_collision_layer_value(5) and not collisionIsBumper and not collisionIsPaddle:
-					if competingDistance <= priorityCollisionDistance:
+					if competingDistance <= priorityCollisionDistance and isValidWallCollision(i):
 						priorityCollisionDistance = competingDistance
 						priorityCollisionIndex = i
 
@@ -470,11 +497,17 @@ func processMovement(delta: float):
 				handleBumperCollision(priorityCollisionIndex)
 			elif collisionIsPaddle:
 				handlePaddleCollision(priorityCollisionIndex)
+				if stuckToWhichPaddle != null:
+					return
 			else:
 				handleWallCollision(priorityCollisionIndex)
-			
+
+			# NOTE: This is helpful if an object has clipped inside a ball but is not guaranteed to avoid future collisions.
+			# 		For most use-cases, it's fine, but the innaccuracy is worth noting. (Really, my collision system
+			#		just isn't quite sophisticated enough to handle collisions between two moving objects... How is
+			#		this achieved normally? It sounds HARD...)
 			var collisionPoint := shapeCaster.get_collision_point(priorityCollisionIndex)
-			var destination := collisionPoint + shapeCaster.get_collision_normal(priorityCollisionIndex)*(radius+0.1)
+			var destination := collisionPoint + collisionNormal*(radius+0.49)
 			if priorityCollisionDistance >= radius:
 				remainingDistance -= (global_position-destination).length()
 			global_position = destination
@@ -494,11 +527,20 @@ func processMovement(delta: float):
 				priorPoints.append(PriorPoint.new(position, currentTime, true, true, direction))
 
 			collisionsThisFrame += 1
-			# if collisionsThisFrame > 2: print(str(collisionsThisFrame) + " collisions!")
+			if collisionsThisFrame >= 2: print(str(collisionsThisFrame) + " collisions!")
 			if collisionsThisFrame > 10 and collisionsThisFrame/delta > 100:
 				for goal in goalsEncompassing: goal.area_exited.emit(self)
 				onBallExplosion.emit(self)
 				return
+			
+			if collisionIsPaddle: 
+				var paddle: Paddle = shapeCaster.get_collider(priorityCollisionIndex).get_parent()
+				if (paddle.powerupDurations[PowerupManager.Type.DUPLICATOR]
+					and not paddle.powerupDurations[PowerupManager.Type.STICKY]):
+					PowerupManager.cloneBall(self)
+					paddle.powerupDurations[PowerupManager.Type.DUPLICATOR] = (
+						maxf(paddle.powerupDurations[PowerupManager.Type.DUPLICATOR]-0.2,0)
+					)
 
 		else:
 			global_position += remainingDistance*direction
@@ -522,27 +564,28 @@ func handlePaddleCollision(i: int):
 	var paddleArea = shapeCaster.get_collider(i) as Area2D
 	var paddle := paddleArea.get_parent() as Paddle
 	collisionNormal = shapeCaster.get_collision_normal(i)
+	var collisionPoint := shapeCaster.get_collision_point(i)
 
 	if ballController == null: 
 		updateColor(paddle.team.color)
 		ballSprite.texture = paddle.player.texture
 	lastPlayer = paddle.player
 
-	if not paddle.spinning: handleStaticPaddleCollision(i, paddle)
-	else: handleSpinningPaddleCollision(i, paddle, paddleArea)
+	if not paddle.spinning: handleStaticPaddleCollision(collisionPoint, paddle)
+	else: handleSpinningPaddleCollision(collisionPoint, paddle, paddleArea)
 
-func handleStaticPaddleCollision(i: int, paddle: Paddle):
+func handleStaticPaddleCollision(collisionPoint: Vector2, paddle: Paddle):
 
 	var normalAngle := collisionNormal.angle()
 	var paddleAngle := paddle.global_rotation
 	var topLeftCorner := paddle.global_position
-	var distanceFromTopLeftCorner := (shapeCaster.get_collision_point(i) - topLeftCorner).length()
+	var distanceFromTopLeftCorner := (collisionPoint - topLeftCorner).length()
 	var topRightCorner :=  paddle.global_position + paddle.width * Vector2.from_angle(paddleAngle)
-	var distanceFromTopRightCorner := (shapeCaster.get_collision_point(i) - topRightCorner).length()
+	var distanceFromTopRightCorner := (collisionPoint - topRightCorner).length()
 	var bottomLeftCorner := paddle.global_position + paddle.height * Vector2.from_angle(paddleAngle + PI/2)
-	var distanceFromBottomLeftCorner := (shapeCaster.get_collision_point(i) - bottomLeftCorner).length()
+	var distanceFromBottomLeftCorner := (collisionPoint - bottomLeftCorner).length()
 	var bottomRightCorner := bottomLeftCorner + paddle.width * Vector2.from_angle(paddleAngle)
-	var distanceFromBottomRightCorner := (shapeCaster.get_collision_point(i) - bottomRightCorner).length()
+	var distanceFromBottomRightCorner := (collisionPoint - bottomRightCorner).length()
 	var paddleWidth := (topRightCorner-topLeftCorner).length()
 	var minDistance = min(
 		distanceFromTopLeftCorner, distanceFromTopRightCorner,
@@ -550,45 +593,68 @@ func handleStaticPaddleCollision(i: int, paddle: Paddle):
 	)
 
 	if abs(angle_difference(normalAngle,paddleAngle-PI/2)) < 0.1:
-		# print("Hit top of paddle!")
+		print("Hit top of paddle!")
 		var centerRatio := (distanceFromTopLeftCorner - paddleWidth/2)/(paddleWidth/2)
-		# print(centerRatio)
-		newDirection = Vector2.from_angle(normalAngle + PI * 3/8 * centerRatio)
+		if paddle.powerupDurations[PowerupManager.Type.STICKY]:
+			stuckToWhichPaddle = paddle
+			stuckCenterRatio = centerRatio
+			stuckToTopOrBottom = TOP
+			resetDecayingSpeed(0)
+		else:
+			if paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
+				resetDecayingSpeed(baseSpeed*2, 5.0)
+			newDirection = Vector2.from_angle(normalAngle + PI * 3/8 * centerRatio)
 	elif abs(angle_difference(normalAngle,paddleAngle+PI/2)) < 0.1:
-		# print("Hit bottom of paddle!")
+		print("Hit bottom of paddle!")
 		var centerRatio := (distanceFromBottomLeftCorner - paddleWidth/2)/(paddleWidth/2)
-		newDirection = Vector2.from_angle(normalAngle - PI * 3/8 * centerRatio)
+		if paddle.powerupDurations[PowerupManager.Type.STICKY]:
+			stuckToWhichPaddle = paddle
+			stuckCenterRatio = centerRatio
+			stuckToTopOrBottom = BOTTOM
+			resetDecayingSpeed(0)
+		else:
+			if paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
+				resetDecayingSpeed(baseSpeed*2, 5.0)
+			newDirection = Vector2.from_angle(normalAngle - PI * 3/8 * centerRatio)
 	elif minDistance == distanceFromTopLeftCorner:
-		# print("Hit left-top side of paddle")
+		print("Hit left-top side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle - PI * 7/8)
 		if paddle.direction == paddle.LEFT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed(paddle.speed*1.1-baseSpeed)
-			else: resetDecayingSpeed(paddle.speed*.1)
+			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
+			resetDecayingSpeed(baseSpeed, 5.0)
 	elif minDistance == distanceFromBottomLeftCorner:
-		# print("Hit left-bottom side of paddle")
+		print("Hit left-bottom side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle + PI * 7/8)
 		if paddle.direction == paddle.LEFT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed(paddle.speed*1.1-baseSpeed)
-			else: resetDecayingSpeed(paddle.speed*.1)
+			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
+			resetDecayingSpeed(baseSpeed, 5.0)
 	elif minDistance == distanceFromTopRightCorner:
-		# print("Hit right-top side of paddle")
+		print("Hit right-top side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle - PI * 1/8)
 		if paddle.direction == paddle.RIGHT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed(paddle.speed*1.1-baseSpeed)
-			else: resetDecayingSpeed(paddle.speed*.1)
+			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
+			resetDecayingSpeed(baseSpeed, 5.0)
 	elif minDistance == distanceFromBottomRightCorner:
-		# print("Hit right-bottom side of paddle")
+		print("Hit right-bottom side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle + PI * 1/8)
 		if paddle.direction == paddle.RIGHT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed(paddle.speed*1.1-baseSpeed)
-			else: resetDecayingSpeed(paddle.speed*.1)
+			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
+			resetDecayingSpeed(baseSpeed, 5.0)
 	else:
 		print("Wat")
 
 
-func handleSpinningPaddleCollision(i: int, paddle: Paddle, paddleArea: Area2D):
+func handleSpinningPaddleCollision(collisionPoint: Vector2, paddle: Paddle, paddleArea: Area2D):
 
-	var localCollisionPoint = paddleArea.to_local(shapeCaster.get_collision_point(i))
+	var localCollisionPoint = paddleArea.to_local(collisionPoint)
 	var paddlePointVelocity := Vector2.ZERO
 	if (
 		(paddle.clockwiseSpin and (localCollisionPoint.x > 0) == (localCollisionPoint.y > 0))
@@ -617,21 +683,70 @@ func handleSpinningPaddleCollision(i: int, paddle: Paddle, paddleArea: Area2D):
 		abs(angle_difference(paddlePointVelocity.angle(), collisionNormal.angle())) <= PI/2
 	):
 		newDirection = ((paddlePointVelocity + fullVelocity.length()*collisionNormal)/2).normalized()
-		if baseSpeed < paddlePointVelocity.length(): resetDecayingSpeed(paddlePointVelocity.length()*1.1-baseSpeed, 8)
-		else: resetDecayingSpeed(paddlePointVelocity.length()*.1, 8)
+		if baseSpeed < paddlePointVelocity.length():
+			resetDecayingSpeed((paddlePointVelocity.length()*1.1-baseSpeed)*paddle.ballBoost, 8)
+		else:
+			resetDecayingSpeed(paddlePointVelocity.length()*.1*paddle.ballBoost, 8)
 	else:
 		newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
+
+
+func unstick():
+	
+	reorientBallToStuckPaddle(false)
+	var paddleAngle = stuckToWhichPaddle.global_rotation
+
+	if stuckToTopOrBottom == TOP:
+		newDirection = Vector2.from_angle(paddleAngle-PI/2 + PI * 3/8 * stuckCenterRatio)
+	elif stuckToTopOrBottom == BOTTOM:
+		newDirection = Vector2.from_angle(paddleAngle+PI/2 - PI * 3/8 * stuckCenterRatio)
+	baseSpeedDirection = baseSpeedDirection.rotated(direction.angle_to(newDirection))
+
+	if stuckToWhichPaddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER]:
+		resetDecayingSpeed(baseSpeed*2, 5.0)
+	else:
+		resetDecayingSpeed(baseSpeed*0.5, 3.0)
+
+	if stuckToWhichPaddle.powerupDurations[PowerupManager.Type.DUPLICATOR]:
+		PowerupManager.cloneBall(self)
+
+	stuckToWhichPaddle = null
+
+
+func reorientBallToStuckPaddle(withJitter := true):
+
+	var paddleLocalPosition := Vector2(stuckToWhichPaddle.width/2+stuckToWhichPaddle.width/2*(stuckCenterRatio), -radius-0.49)
+	if stuckToTopOrBottom == BOTTOM:
+		paddleLocalPosition.y += stuckToWhichPaddle.height + radius*2 + 0.98
+	if withJitter: paddleLocalPosition += stuckToWhichPaddle.colorPosOffset
+	global_position = stuckToWhichPaddle.to_global(paddleLocalPosition)
+
+
+func isValidWallCollision(i):
+	var wall := shapeCaster.get_collider(i).get_parent() as Wall
+	var normalAngle := wall.rotation
+	var collidingWithMainFace: bool = (
+		abs(abs(angle_difference(shapeCaster.get_collision_normal(i).angle(),normalAngle))-PI/2) < PI/4
+	)
+	return collidingWithMainFace
 
 
 func handleWallCollision(i):
 	# print("Collided with wall")
 	var wall := shapeCaster.get_collider(i).get_parent() as Wall
-	onBallHitWall.emit(self, shapeCaster.get_collision_point(i))
 	var normalAngle := wall.rotation
-	if abs(angle_difference(direction.angle_to(Vector2(0,1)), normalAngle)) < PI/2:
-		normalAngle += PI
-	collisionNormal = Vector2.from_angle(normalAngle-PI/2)
-	# print(collisionNormal)
+	if wall.flipped: normalAngle += PI
+	normalAngle -= PI/2
+	onBallHitWall.emit(self, shapeCaster.get_collision_point(i))
+	# Not sure why this was here in the first place? I think it's unnecessary and also kinda wrong.
+	# if abs(angle_difference(direction.angle_to(Vector2(0,1)), normalAngle)) < PI/2:
+	# 	normalAngle += PI
+	if abs(angle_difference(shapeCaster.get_collision_normal(i).angle(), normalAngle)) < PI/16:
+		collisionNormal = Vector2.from_angle(normalAngle)
+		# print("Normal wall collision")
+	else:
+		collisionNormal = shapeCaster.get_collision_normal(i)
+		# print("FUNKY wall collision! (Probably a corner)")
 	newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
 
 	

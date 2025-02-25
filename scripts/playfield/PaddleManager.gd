@@ -123,7 +123,10 @@ func processPaddles(delta):
 			paddle.rightBoundary = rightBoundaries[verticalPosition]
 
 	for paddle in paddles:
+		paddle.frameBeginPos = paddle.global_position
 		paddle.processTransitions(delta)
+		paddle.processPowerups(delta)
+		paddle.updateWidthAndHeight()
 
 	for verticalPosition in [BOTTOM, MIDDLE, TOP]:
 		var paddleGroup: Array[Paddle] = paddleGroupsByLayer[verticalPosition]
@@ -144,12 +147,15 @@ func processPaddles(delta):
 
 	for paddle in paddles:
 		paddle.processInput(delta)
-	
+
 	for paddleGroup in [bottomLayerPaddles, middleLayerPaddles, topLayerPaddles]:
 		while not groupHasFinishedMoving(paddleGroup):
 			for paddle in paddleGroup:
 				if paddle.remainingDistance != 0:
 					paddle.moveUntilCollision()
+
+	for paddle in paddles:
+		paddle.processStuckBalls()
 
 
 func updateBoundaries():

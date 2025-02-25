@@ -12,9 +12,13 @@ var playerBallRespawnTimers: Dictionary
 @export var trailPrefab: PackedScene
 @export var trailsCanvasGroup: CanvasGroup
 
-@export var averageSpawnTime: float = 5
-@export var spawnTimeDeviation: float = 2.5
-@export var extraSpawnTimePerBall: float = 1
+@export var powerupParticleEmitterPrefab: PackedScene
+
+var averageSpawnTime: float
+var spawnTimeDeviation: float:
+	get: return averageSpawnTime / 2
+var extraSpawnTimePerBall: float:
+	get: return averageSpawnTime / 5
 
 var random = RandomNumberGenerator.new()
 var timeUntilNextSpawn: float = 0
@@ -22,17 +26,18 @@ var ballBehaviorWeightDict := {
 	Ball.Behavior.IDLE : 0,
 	Ball.Behavior.CONSTANT_LINEAR : 100,
 	Ball.Behavior.ACCEL_LINEAR : 10,
-	Ball.Behavior.CONSTANT_SPIRAL : 10,
-	Ball.Behavior.ACCEL_SPIRAL : 10,
-	Ball.Behavior.START_AND_STOP : 10,
-	Ball.Behavior.START_AND_STOP_AND_CHANGE_DIRECTION : 10,
+	Ball.Behavior.CONSTANT_SPIRAL : 5,
+	Ball.Behavior.ACCEL_SPIRAL : 5,
+	Ball.Behavior.START_AND_STOP : 5,
+	Ball.Behavior.START_AND_STOP_AND_CHANGE_DIRECTION : 5,
 	Ball.Behavior.DRIFT : 10,
 }
 var ballBehaviorWeights: Array[float]
 var erraticBehaviorProbability := 0.3
 
-@export var averageSpawnSpeed: float = 50
-@export var spawnSpeedDeviation: float = 10
+var averageSpawnSpeed: float
+var spawnSpeedDeviation: float:
+	get: return averageSpawnSpeed / 5
 @export var baseFadeInTime: float = 3
 @export var additiveAcceleration: float = 1
 @export var theBallScaleFactor: float = 0.5
@@ -51,6 +56,27 @@ var individualBurstSpawnCount: int
 @export var burstActivationTimer: VariableTimer
 
 func _ready():
+
+	PowerupManager.ballManager = self
+	PowerupManager.particleControl = particleEmittersControl
+
+	averageSpawnSpeed = Settings.getSettingValue(Settings.Setting.BALL_SPEED)
+
+	averageSpawnTime = 1.0/Settings.getSettingValue(Settings.Setting.SPAWN_RATE)
+
+	ballBehaviorWeightDict[Ball.Behavior.ACCEL_LINEAR] = \
+		Settings.getSettingValue(Settings.Setting.LINEAR_ACCEL_SPAWN_RATE)
+	ballBehaviorWeightDict[Ball.Behavior.CONSTANT_SPIRAL] = \
+		Settings.getSettingValue(Settings.Setting.SPIRALING_SPAWN_RATE)/2.0
+	ballBehaviorWeightDict[Ball.Behavior.ACCEL_SPIRAL] = \
+		Settings.getSettingValue(Settings.Setting.SPIRALING_SPAWN_RATE)/2.0
+	ballBehaviorWeightDict[Ball.Behavior.START_AND_STOP] = \
+		Settings.getSettingValue(Settings.Setting.STOP_AND_START_SPAWN_RATE)/2.0
+	ballBehaviorWeightDict[Ball.Behavior.START_AND_STOP_AND_CHANGE_DIRECTION] = \
+		Settings.getSettingValue(Settings.Setting.STOP_AND_START_SPAWN_RATE)/2.0
+	ballBehaviorWeightDict[Ball.Behavior.DRIFT] = \
+		Settings.getSettingValue(Settings.Setting.DRIFTER_SPAWN_RATE)
+
 	for ballBehavior in Ball.Behavior.values():
 		if ballBehavior not in ballBehaviorWeightDict:
 			ballBehaviorWeights.append(0)
@@ -72,7 +98,9 @@ func _process(delta):
 		else: spawnBall()
 		timeUntilNextSpawn = averageSpawnTime
 		timeUntilNextSpawn += randf_range(-spawnTimeDeviation, spawnTimeDeviation)
-		timeUntilNextSpawn += extraSpawnTimePerBall*len(balls)
+		for ball in balls:
+			if ball.ballController == null: timeUntilNextSpawn += extraSpawnTimePerBall
+		if burstSpawns: timeUntilNextSpawn += burstActivationTimer.wait_time
 
 	var markedForErasure: Array
 	for player in playerBallRespawnTimers:
@@ -129,12 +157,15 @@ func spawnBall(playerController: Player = null):
 		individualBurstSpawnCount += 1
 		if individualBurstSpawnCount >= 8:
 			individualBurstSpawnTimer.stop()
+	
+	if playerController == null and randf() < Settings.getSettingValue(Settings.Setting.POWERUP_FREQUENCY):
+		newBall.powerupParticleEmitter = powerupParticleEmitterPrefab.instantiate()
 
 
 func activateBall(ball: Ball):
 	ball.modulate.a = 1
 	ball.trail.show()
-	ball.resetDecayingSpeed(ball.baseSpeed*0.5)
+	ball.resetDecayingSpeed(ball.baseSpeed*0.4, 1)
 
 	if ball.ballController != null:
 		ball.behavior = Ball.Behavior.PLAYER_CONTROLLED
@@ -143,7 +174,11 @@ func activateBall(ball: Ball):
 		ball.multiplicativeAcceleration = 0
 	else:
 		ball.behavior = random.rand_weighted(ballBehaviorWeights) as Ball.Behavior
-		if randf() < erraticBehaviorProbability: ball.behaviorIntensity = Ball.ERRATIC
+
+		var behaviorIntensity = Settings.getSettingValue(Settings.Setting.BEHAVIOR_INTENSITY)
+		if behaviorIntensity == Settings.ERRATIC: ball.behaviorIntensity = Ball.ERRATIC
+		elif behaviorIntensity == Settings.MIXED:
+			if randf() < erraticBehaviorProbability: ball.behaviorIntensity = Ball.ERRATIC
 
 	spawningBalls.erase(ball)
 
@@ -152,14 +187,53 @@ func activateAllBalls():
 		activateBall(ball)
 
 
+func cloneBall(parent: Ball):
+	if len(balls) > 200 or parent.isClone or parent.timeUntilClone > 0: return # Exponential growth can be crazy!!
+
+	var newBall: Ball = ballPrefab.instantiate()
+	var newTrail: Trail = trailPrefab.instantiate()
+	newBall.trail = newTrail
+	balls[newBall] = null
+	ballsControl.add_child(newBall)
+	trailsCanvasGroup.add_child(newTrail)
+	newBall.onBallInGoal.connect(onBallInGoal)
+	newBall.onBallHitWall.connect(background.spawnBallArc)
+	newBall.onBallExplosion.connect(explodeBall)
+
+	newBall.global_position = parent.global_position
+	newBall.radius = parent.radius
+	newBall.baseSpeed = parent.baseSpeed
+	if randi_range(0,1): newBall.baseSpeedDirection = parent.baseSpeedDirection.rotated(randf_range(PI/16,PI/8))
+	else: newBall.baseSpeedDirection = parent.baseSpeedDirection.rotated(-randf_range(PI/16,PI/8))
+	newBall.additiveAcceleration = parent.additiveAcceleration
+
+	newBall.behavior = parent.behavior
+	newBall.behaviorIntensity = parent.behaviorIntensity
+
+	newBall.powerupType = parent.powerupType
+
+	newBall.updateColor(parent.teamColor.color)
+	newBall.ballSprite.texture = parent.ballSprite.texture
+	newBall.lastPlayer = parent.lastPlayer
+
+	if parent.ballController != null:
+		var ballController: BallController = ballControllerPrefab.instantiate()
+		ballController.player = parent.ballController.player
+		newBall.ballController = ballController
+
+	newBall.isClone = true
+	parent.timeUntilClone = 0.1
+
+
 func deleteBall(ball: Ball):
 	balls.erase(ball)
 	spawningBalls.erase(ball)
 	if ball.ballController != null:
 		queuePlayerControlledBall(ball.ballController.player)
-	ball.queue_free()
+	if ball.stuckToWhichPaddle != null: ball.stuckToWhichPaddle.stuckBalls.erase(ball)
+	if ball.ballController == null: timeUntilNextSpawn -= extraSpawnTimePerBall
 
-	timeUntilNextSpawn -= extraSpawnTimePerBall
+	ball.queue_free()
 	if len(balls) == 0: timeUntilNextSpawn = 0
 
 

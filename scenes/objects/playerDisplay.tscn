@@ -79,16 +79,6 @@ offset_bottom = 60.0
 texture = ExtResource("4_gqwh7")
 expand_mode = 1
 
-[node name="CloseButton" type="TextureButton" parent="."]
-layout_mode = 0
-offset_left = 80.0
-offset_top = -10.0
-offset_right = 100.0
-offset_bottom = 10.0
-texture_normal = ExtResource("12_am6du")
-ignore_texture_size = true
-stretch_mode = 5
-
 [node name="ControllerID" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
@@ -221,3 +211,13 @@ offset_bottom = 30.0
 texture = ExtResource("11_sa86u")
 expand_mode = 1
 stretch_mode = 4
+
+[node name="CloseButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 80.0
+offset_top = -10.0
+offset_right = 100.0
+offset_bottom = 10.0
+texture_normal = ExtResource("12_am6du")
+ignore_texture_size = true
+stretch_mode = 5

@@ -30,6 +30,7 @@
 [ext_resource type="PackedScene" uid="uid://cqvkfn7sebgpn" path="res://scenes/objects/ball_controller.tscn" id="22_plt2h"]
 [ext_resource type="PackedScene" uid="uid://cidtpgewej2ee" path="res://scenes/objects/goalsCounter.tscn" id="23_23fkd"]
 [ext_resource type="Script" path="res://scripts/main_menu/TitleText.gd" id="23_nlfim"]
+[ext_resource type="PackedScene" uid="uid://ecjbcl0yrfhy" path="res://scenes/objects/powerup_particle_emitter.tscn" id="25_p7g6f"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h7n8l"]
 resource_local_to_scene = true
@@ -78,8 +79,6 @@ shader = ExtResource("13_3d0fp")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_7xy4y"]
 shader = ExtResource("13_uy354")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_jm00m"]
 
 [node name="Viewport" type="Control"]
 layout_mode = 3
@@ -401,6 +400,7 @@ ballsControl = NodePath("Balls")
 ballControllerPrefab = ExtResource("22_plt2h")
 trailPrefab = ExtResource("8_gkjmk")
 trailsCanvasGroup = NodePath("Trails")
+powerupParticleEmitterPrefab = ExtResource("25_p7g6f")
 background = NodePath("../../../Background")
 goalParticleEmitter = ExtResource("17_5ydfx")
 explosionParticleEmitter = ExtResource("18_v7xg4")
@@ -424,7 +424,7 @@ baseTime = 3.0
 timeDeviation = 0.5
 
 [node name="LeftScoreboard" type="ColorRect" parent="Game" node_paths=PackedStringArray("textControl", "title")]
-material = SubResource("ShaderMaterial_jm00m")
+clip_children = 2
 layout_mode = 1
 anchors_preset = -1
 anchor_bottom = 1.0
@@ -489,6 +489,7 @@ text = "Lives"
 horizontal_alignment = 1
 
 [node name="RightScoreboard" type="ColorRect" parent="Game" node_paths=PackedStringArray("textControl", "title")]
+clip_children = 2
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 1.0

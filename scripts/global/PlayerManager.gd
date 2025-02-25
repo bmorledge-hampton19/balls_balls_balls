@@ -245,6 +245,25 @@ func initLopsidedTestPlayers():
 	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[8], getInactivePlayerIcon(), KEY_Z)
 	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[9], getInactivePlayerIcon(), KEY_X)
 
+
+func initMassivelyLopsidedTestPlayers():
+	forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[1], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[2], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[3], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[4], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[5], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[6], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(teamColors[0], InputSets.inputSets[7], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[8], getInactivePlayerIcon(), KEY_Z)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[9], getInactivePlayerIcon(), KEY_X)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[10], getInactivePlayerIcon(), KEY_C)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[11], getInactivePlayerIcon(), KEY_V)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[12], getInactivePlayerIcon(), KEY_B)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[13], getInactivePlayerIcon(), KEY_N)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[14], getInactivePlayerIcon(), KEY_M)
+
+
 func initBalancedTestPlayers():
 	forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_BACKSPACE)
 	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[1], getInactivePlayerIcon(), KEY_Z)

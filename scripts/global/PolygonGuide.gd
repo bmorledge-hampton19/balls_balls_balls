@@ -63,7 +63,7 @@ const paddleWidthMultipliers := {
 }
 
 const paddleSpeedMultipliers := {
-	2 : 2,
+	2 : 2.5,
 	3 : 1.7,
 	4 : 1.3,
 	5 : 1,

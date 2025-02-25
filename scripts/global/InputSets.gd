@@ -156,6 +156,8 @@ signal onAnyCircle(inputSet: InputSet, clockwise: bool)
 
 func _ready():
 
+	process_mode = ProcessMode.PROCESS_MODE_ALWAYS
+
 	inputSets.append(InputSet.new(WASD, -1))
 	inputSets.append(InputSet.new(IJKL, -1))
 	inputSets.append(InputSet.new(ARROW_KEYS, -1))

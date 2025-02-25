@@ -17,7 +17,7 @@ resource_local_to_scene = true
 shader = ExtResource("2_3hcqd")
 shader_parameter/width = 540.0
 shader_parameter/flipped = 0.0
-shader_parameter/noiseOffset = Vector2(0.261701, 0.199793)
+shader_parameter/noiseOffset = Vector2(0.0268788, 0.952597)
 shader_parameter/noise = SubResource("NoiseTexture2D_psbaw")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7w8gn"]

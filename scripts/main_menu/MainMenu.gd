@@ -1,6 +1,8 @@
 class_name MainMenu
 extends Node
 
+@export var mainViewport: Control
+
 @export var theBallZone: Control
 @export var trailsCanvasGroup: CanvasGroup
 @export var wallPrefab: PackedScene
@@ -15,6 +17,7 @@ var playerSelectors: Array[PlayerSelector]
 var ballsByPlayer: Dictionary
 
 func attemptAddPlayer(inputSet: InputSets.InputSet, _direction: bool, activePlayer: Player = null):
+	if PauseManager.paused: return
 	if activePlayer == null and inputSet.assignedPlayer != null and inputSet.assignedPlayer.active: return
 	if playerSelectors[-1].player != null: return
 	playerSelectors[-1].transitionToPlayerDisplay(inputSet, activePlayer)
@@ -46,6 +49,7 @@ func addPlayerSelector():
 	playerSelector.playerDisplay.closeButton.pressed.connect(func(): removePlayerSelector(playerSelector))
 
 func removePlayerSelector(playerSelector: PlayerSelector):
+	print("Removing...")
 	ballsByPlayer[playerSelector.player].queue_free()
 	ballsByPlayer.erase(playerSelector.player)
 	playerSelectors.erase(playerSelector)
@@ -56,6 +60,7 @@ func removePlayerSelector(playerSelector: PlayerSelector):
 func startGame():
 	print(Time.get_ticks_msec())
 	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Playfield.tscn"))
+	
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -63,7 +68,27 @@ func _ready():
 	InputSets.onAnyCircle.connect(attemptAddPlayer)
 	playButton.onFullProgressCircle.connect(startGame)
 	ResourceLoader.load_threaded_request("res://scenes/Playfield.tscn")
+	ResourceLoader.load_threaded_request("res://scenes/Credits.tscn")
+	ResourceLoader.load_threaded_request("res://scenes/Settings.tscn")
+
+	PauseManager.pausable = true
 
 	for teamColor in PlayerManager.activePlayersByTeamColor:
 		for player in PlayerManager.activePlayersByTeamColor[teamColor]:
 			attemptAddPlayer(player.inputSet, true, player)
+
+func _process(_delta):
+	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
+		var pauseMenu := PauseManager.pause()
+		pauseMenu.initOptions(["Settings", "Credits", "Resume", "Quit Game"],
+							  [transitionToSettings, transitionToCredits, PauseManager.unpause, get_tree().quit])
+		mainViewport.add_child(pauseMenu)
+
+
+func transitionToSettings():
+	PauseManager.unpause(true)
+	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Settings.tscn"))
+
+func transitionToCredits():
+	PauseManager.unpause()
+	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Credits.tscn"))

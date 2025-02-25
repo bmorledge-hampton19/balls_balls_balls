@@ -1,0 +1,365 @@
+[gd_scene load_steps=34 format=3 uid="uid://b1b0fskl2t5h6"]
+
+[ext_resource type="Script" path="res://scripts/misc/SettingsMenu.gd" id="1_p7ucr"]
+[ext_resource type="PackedScene" uid="uid://br8ipg0uyttmh" path="res://scenes/objects/setting_selector.tscn" id="2_rvcf1"]
+[ext_resource type="PackedScene" uid="uid://dkdx6pcb7uch7" path="res://scenes/objects/setting_ball.tscn" id="3_bsm18"]
+[ext_resource type="PackedScene" uid="uid://brbfliohi7w1j" path="res://scenes/objects/trail.tscn" id="4_18dg4"]
+[ext_resource type="Script" path="res://scripts/global/Background.gd" id="5_cuyf5"]
+[ext_resource type="PackedScene" uid="uid://cerylx43rxt76" path="res://scenes/objects/background_ball.tscn" id="6_ycmn3"]
+[ext_resource type="Script" path="res://scripts/global/VariableTimer.gd" id="7_b8vxw"]
+[ext_resource type="PackedScene" uid="uid://cd0f3kaj2vli3" path="res://scenes/objects/wall.tscn" id="8_5yhuw"]
+[ext_resource type="Shader" path="res://shaders/borders/TopPulsingBorder.gdshader" id="9_c1isg"]
+[ext_resource type="Shader" path="res://shaders/borders/RightPulsingBorder.gdshader" id="10_07knk"]
+[ext_resource type="Shader" path="res://shaders/borders/LeftPulsingBorder.gdshader" id="11_6jknt"]
+[ext_resource type="Shader" path="res://shaders/borders/BottomPulsingBorder.gdshader" id="12_ywo2p"]
+[ext_resource type="Shader" path="res://shaders/TrailCG.gdshader" id="13_h2sir"]
+[ext_resource type="Texture2D" uid="uid://lcio5st45dif" path="res://images/controller_prompts/Steam_Back.png" id="13_wkwof"]
+[ext_resource type="PackedScene" uid="uid://bngtx6rr0whah" path="res://scenes/objects/bumper.tscn" id="14_npl7e"]
+[ext_resource type="Texture2D" uid="uid://deuctllkfwwyq" path="res://images/controller_prompts/Esc_Key_Dark.png" id="14_yuwyh"]
+[ext_resource type="PackedScene" uid="uid://dinwry8qvvplv" path="res://scenes/global/master_input_selector.tscn" id="16_rfrb7"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pjpp4"]
+shader = ExtResource("9_c1isg")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jicex"]
+shader = ExtResource("10_07knk")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_q43fu"]
+shader = ExtResource("11_6jknt")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gri0o"]
+shader = ExtResource("12_ywo2p")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5aqt6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mm0lm"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p8gu6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i8rbt"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xpesb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3oruq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ua7h3"]
+bg_color = Color(0, 0, 0, 0.25098)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_daptk"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xames"]
+bg_color = Color(0, 0, 0, 0.501961)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3i65v"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i2pst"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_24j7c"]
+shader = ExtResource("13_h2sir")
+
+[node name="Settings" type="Control" node_paths=PackedStringArray("camera", "background", "masterInputSelector", "settingSelectorsControl", "settingSelectorLeftColumn", "settingSelectorRightColumn", "settingBallsControl", "trailsCanvasGroup")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_p7ucr")
+camera = NodePath("Camera2D")
+background = NodePath("Background")
+masterInputSelector = NodePath("MainViewport/MasterInputSelector")
+settingSelectorsControl = NodePath("MainViewport/SettingSelectors")
+settingSelectorPrefab = ExtResource("2_rvcf1")
+settingSelectorLeftColumn = NodePath("MainViewport/SettingSelectors/LeftColumn")
+settingSelectorRightColumn = NodePath("MainViewport/SettingSelectors/RightColumn")
+settingBallsControl = NodePath("MainViewport/TheBallZone/settingBalls")
+settingBallPrefab = ExtResource("3_bsm18")
+trailPrefab = ExtResource("4_18dg4")
+trailsCanvasGroup = NodePath("MainViewport/Trails")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+anchor_mode = 0
+
+[node name="Background" type="ColorRect" parent="." node_paths=PackedStringArray("backgroundBallsControl")]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.052
+anchor_top = -0.481
+anchor_right = 1.052
+anchor_bottom = 1.481
+offset_left = -0.079998
+offset_top = -0.259979
+offset_right = 0.0799561
+offset_bottom = 0.259888
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+script = ExtResource("5_cuyf5")
+backgroundBallPrefab = ExtResource("6_ycmn3")
+backgroundBallsControl = NodePath("BackgroundBalls")
+
+[node name="BackgroundBalls" type="Control" parent="Background"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SpawnBackgroundBall" type="Timer" parent="Background"]
+autostart = true
+script = ExtResource("7_b8vxw")
+baseTime = 0.15
+timeDeviation = 0.05
+
+[node name="ChangeFlow" type="Timer" parent="Background"]
+autostart = true
+script = ExtResource("7_b8vxw")
+baseTime = 15.0
+timeDeviation = 5.0
+
+[node name="MainViewport" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -270.0
+offset_right = 480.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(480, 270)
+
+[node name="Foreground" type="ColorRect" parent="MainViewport"]
+layout_mode = 0
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0, 0, 0, 1)
+
+[node name="BackButton" type="Control" parent="MainViewport"]
+anchors_preset = 0
+offset_left = 370.0
+offset_top = 480.0
+offset_right = 590.0
+offset_bottom = 530.0
+
+[node name="TopWall" parent="MainViewport/BackButton" instance=ExtResource("8_5yhuw")]
+offset_right = 220.0
+staticWall = true
+sideLength = 220.0
+
+[node name="RightWall" parent="MainViewport/BackButton" instance=ExtResource("8_5yhuw")]
+offset_left = 220.0
+offset_right = 270.0
+rotation = 1.5708
+staticWall = true
+sideLength = 50.0
+
+[node name="BottomWall" parent="MainViewport/BackButton" instance=ExtResource("8_5yhuw")]
+offset_left = 220.0
+offset_top = 50.0
+offset_right = 440.0
+offset_bottom = 50.0
+rotation = 3.14159
+staticWall = true
+sideLength = 220.0
+
+[node name="LeftWall" parent="MainViewport/BackButton" instance=ExtResource("8_5yhuw")]
+offset_top = 50.0
+offset_right = 50.0
+offset_bottom = 50.0
+rotation = 4.71239
+staticWall = true
+sideLength = 50.0
+
+[node name="TopBorder" type="ColorRect" parent="MainViewport/BackButton"]
+material = SubResource("ShaderMaterial_pjpp4")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.037
+offset_bottom = 18.15
+grow_horizontal = 2
+
+[node name="RightBorder" type="ColorRect" parent="MainViewport/BackButton"]
+material = SubResource("ShaderMaterial_jicex")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.905
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.900009
+grow_horizontal = 2
+
+[node name="LeftBorder" type="ColorRect" parent="MainViewport/BackButton"]
+material = SubResource("ShaderMaterial_q43fu")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.095
+anchor_bottom = 1.0
+offset_right = -0.9
+grow_horizontal = 2
+
+[node name="BottomBorder" type="ColorRect" parent="MainViewport/BackButton"]
+material = SubResource("ShaderMaterial_gri0o")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.963
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -18.15
+grow_horizontal = 2
+
+[node name="ButtonPrompts" type="Control" parent="MainViewport/BackButton"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 95.0
+offset_top = 11.0
+offset_right = 95.0
+offset_bottom = 11.0
+mouse_filter = 2
+
+[node name="BackButton" type="TextureRect" parent="MainViewport/BackButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = -4.0
+offset_right = 52.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("13_wkwof")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Slash" type="Label" parent="MainViewport/BackButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 43.0
+offset_top = -1.0
+offset_right = 75.0
+offset_bottom = 31.0
+theme_override_font_sizes/font_size = 32
+text = "/"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EscKey" type="TextureRect" parent="MainViewport/BackButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 65.0
+offset_top = -4.0
+offset_right = 101.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("14_yuwyh")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Button" type="Button" parent="MainViewport/BackButton"]
+layout_mode = 0
+offset_right = 220.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 40
+theme_override_styles/focus = SubResource("StyleBoxEmpty_5aqt6")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_mm0lm")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_p8gu6")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_i8rbt")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_xpesb")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_3oruq")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ua7h3")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_daptk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xames")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxEmpty_3i65v")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_i2pst")
+text = "Back (          )"
+
+[node name="Trails" type="CanvasGroup" parent="MainViewport"]
+material = SubResource("ShaderMaterial_24j7c")
+
+[node name="TheBallZone" type="Control" parent="MainViewport"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopWall" parent="MainViewport/TheBallZone" instance=ExtResource("8_5yhuw")]
+offset_top = -10.0
+offset_right = 960.0
+offset_bottom = -10.0
+staticWall = true
+sideLength = 960.0
+flipped = true
+
+[node name="RightWall" parent="MainViewport/TheBallZone" instance=ExtResource("8_5yhuw")]
+offset_left = 970.0
+offset_right = 1510.0
+rotation = 1.5708
+staticWall = true
+flipped = true
+
+[node name="BottomWall" parent="MainViewport/TheBallZone" instance=ExtResource("8_5yhuw")]
+offset_top = 540.0
+offset_right = 960.0
+offset_bottom = 540.0
+staticWall = true
+sideLength = 960.0
+
+[node name="LeftWall" parent="MainViewport/TheBallZone" instance=ExtResource("8_5yhuw")]
+rotation = 1.5708
+staticWall = true
+
+[node name="TopLeftBumper" parent="MainViewport/TheBallZone" instance=ExtResource("14_npl7e")]
+
+[node name="TopRightBumper" parent="MainViewport/TheBallZone" instance=ExtResource("14_npl7e")]
+offset_left = 960.0
+offset_right = 960.0
+
+[node name="BottomRightBumper" parent="MainViewport/TheBallZone" instance=ExtResource("14_npl7e")]
+offset_left = 960.0
+offset_top = 540.0
+offset_right = 960.0
+offset_bottom = 540.0
+
+[node name="BottomLeftBumper" parent="MainViewport/TheBallZone" instance=ExtResource("14_npl7e")]
+offset_top = 540.0
+offset_bottom = 540.0
+
+[node name="settingBalls" type="Control" parent="MainViewport/TheBallZone"]
+anchors_preset = 0
+
+[node name="SettingSelectors" type="Control" parent="MainViewport"]
+anchors_preset = 0
+
+[node name="LeftColumn" type="VBoxContainer" parent="MainViewport/SettingSelectors"]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 540.0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="RightColumn" type="VBoxContainer" parent="MainViewport/SettingSelectors"]
+layout_mode = 0
+offset_left = 480.0
+offset_right = 960.0
+offset_bottom = 540.0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="BallBehaviorHeader" type="MarginContainer" parent="MainViewport/SettingSelectors/RightColumn"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Name" type="Label" parent="MainViewport/SettingSelectors/RightColumn/BallBehaviorHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Special Balls:"
+vertical_alignment = 1
+
+[node name="MasterInputSelector" parent="MainViewport" instance=ExtResource("16_rfrb7")]
+
+[connection signal="timeout" from="Background/SpawnBackgroundBall" to="Background" method="addBackgroundBall"]
+[connection signal="timeout" from="Background/ChangeFlow" to="Background" method="initiateFlowChange"]
+[connection signal="pressed" from="MainViewport/BackButton/Button" to="." method="returnToMainMenu"]

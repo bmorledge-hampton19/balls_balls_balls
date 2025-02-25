@@ -1,0 +1,316 @@
+[gd_scene load_steps=8 format=3 uid="uid://dinwry8qvvplv"]
+
+[ext_resource type="Script" path="res://scripts/global/MasterInputSelector.gd" id="1_mgl38"]
+[ext_resource type="Shader" path="res://shaders/BorderedCircleMask.gdshader" id="2_s7lhc"]
+[ext_resource type="Texture2D" uid="uid://hxhy1yn683e" path="res://images/controller_prompts/clockwise_arrow.png" id="3_cpqds"]
+[ext_resource type="Texture2D" uid="uid://6wu1uwdmjdso" path="res://images/controller_prompts/Generic_Controller.png" id="4_c41m2"]
+[ext_resource type="Texture2D" uid="uid://bk1efl4l5c3u8" path="res://images/controller_prompts/XboxOne_Dpad.png" id="5_jvxxm"]
+[ext_resource type="Texture2D" uid="uid://bb6e0i08aawqr" path="res://images/controller_prompts/W_Key_Dark.png" id="6_ewtxx"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4rql3"]
+shader = ExtResource("2_s7lhc")
+shader_parameter/brightness = 0.5
+shader_parameter/outerBoundary = 0.5
+shader_parameter/innerBoundary = 0.45
+
+[node name="MasterInputSelector" type="Control" node_paths=PackedStringArray("shadedBackground", "cwArrow", "ccwArrow", "cwNoInputText", "ccwNoInputText", "cwControllerInputID", "cwControllerNum", "cwControllerInputs", "ccwControllerInputID", "ccwControllerNum", "ccwControllerInputs", "cwKeyboardInputID", "cwUpKey", "cwRightKey", "cwDownKey", "cwLeftKey", "ccwKeyboardInputID", "ccwUpKey", "ccwRightKey", "ccwDownKey", "ccwLeftKey")]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 280.0
+offset_top = 170.0
+offset_right = 680.0
+offset_bottom = 370.0
+script = ExtResource("1_mgl38")
+shadedBackground = NodePath("ShadedBackground")
+cwArrow = NodePath("ClockwiseArrow")
+ccwArrow = NodePath("CounterclockwiseArrow")
+cwNoInputText = NodePath("ClockwiseInputIndicator/NoInputText")
+ccwNoInputText = NodePath("CounterClockwiseInputIndicator2/NoInputText")
+cwControllerInputID = NodePath("ClockwiseInputIndicator/InputID/Controller")
+cwControllerNum = NodePath("ClockwiseInputIndicator/InputID/Controller/ControllerNum")
+cwControllerInputs = NodePath("ClockwiseInputIndicator/InputID/Controller/ControllerInputs")
+ccwControllerInputID = NodePath("CounterClockwiseInputIndicator2/InputID/Controller")
+ccwControllerNum = NodePath("CounterClockwiseInputIndicator2/InputID/Controller/ControllerNum")
+ccwControllerInputs = NodePath("CounterClockwiseInputIndicator2/InputID/Controller/ControllerInputs")
+cwKeyboardInputID = NodePath("ClockwiseInputIndicator/InputID/Keyboard")
+cwUpKey = NodePath("ClockwiseInputIndicator/InputID/Keyboard/UpKey")
+cwRightKey = NodePath("ClockwiseInputIndicator/InputID/Keyboard/RightKey")
+cwDownKey = NodePath("ClockwiseInputIndicator/InputID/Keyboard/DownKey")
+cwLeftKey = NodePath("ClockwiseInputIndicator/InputID/Keyboard/LeftKey")
+ccwKeyboardInputID = NodePath("CounterClockwiseInputIndicator2/InputID/Keyboard")
+ccwUpKey = NodePath("CounterClockwiseInputIndicator2/InputID/Keyboard/UpKey")
+ccwRightKey = NodePath("CounterClockwiseInputIndicator2/InputID/Keyboard/RightKey")
+ccwDownKey = NodePath("CounterClockwiseInputIndicator2/InputID/Keyboard/DownKey")
+ccwLeftKey = NodePath("CounterClockwiseInputIndicator2/InputID/Keyboard/LeftKey")
+
+[node name="ShadedBackground" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = -280.0
+offset_top = -168.0
+offset_right = 680.0
+offset_bottom = 372.0
+mouse_filter = 2
+color = Color(0.25098, 0.25098, 0.25098, 0.501961)
+
+[node name="CircleBackground" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_4rql3")
+layout_mode = 0
+offset_top = -100.0
+offset_right = 400.0
+offset_bottom = 300.0
+
+[node name="Instructions" type="Label" parent="."]
+layout_mode = 0
+offset_left = 50.0
+offset_top = -11.0
+offset_right = 350.0
+offset_bottom = 32.0
+theme_override_font_sizes/font_size = 44
+text = "SEIZE CONTROL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ClockwiseArrow" type="TextureRect" parent="."]
+modulate = Color(0.54902, 0.54902, 0.54902, 1)
+layout_mode = 0
+offset_left = 75.0
+offset_top = 50.0
+offset_right = 175.0
+offset_bottom = 150.0
+pivot_offset = Vector2(50, 50)
+texture = ExtResource("3_cpqds")
+expand_mode = 1
+
+[node name="ClockwiseInputIndicator" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 75.0
+offset_top = 150.0
+offset_right = 175.0
+offset_bottom = 200.0
+
+[node name="NoInputText" type="Label" parent="ClockwiseInputIndicator"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -0.5
+offset_right = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "No Input
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InputID" type="Control" parent="ClockwiseInputIndicator"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 50.0
+
+[node name="Controller" type="Control" parent="ClockwiseInputIndicator/InputID"]
+visible = false
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 50.0
+
+[node name="ControllerIcon" type="TextureRect" parent="ClockwiseInputIndicator/InputID/Controller"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 11.0
+offset_right = 54.0
+offset_bottom = 41.0
+texture = ExtResource("4_c41m2")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="ControllerNum" type="Label" parent="ClockwiseInputIndicator/InputID/Controller"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = -3.0
+offset_right = 22.0
+offset_bottom = 29.0
+theme_override_colors/font_color = Color(0.843137, 0.843137, 0.843137, 1)
+theme_override_font_sizes/font_size = 32
+text = "1"
+horizontal_alignment = 1
+
+[node name="ControllerInputs" type="TextureRect" parent="ClockwiseInputIndicator/InputID/Controller"]
+layout_mode = 0
+offset_left = 50.0
+offset_right = 100.0
+offset_bottom = 50.0
+texture = ExtResource("5_jvxxm")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Keyboard" type="Control" parent="ClockwiseInputIndicator/InputID"]
+visible = false
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 50.0
+
+[node name="UpKey" type="TextureRect" parent="ClockwiseInputIndicator/InputID/Keyboard"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = -5.0
+offset_right = 70.0
+offset_bottom = 35.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="RightKey" type="TextureRect" parent="ClockwiseInputIndicator/InputID/Keyboard"]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 26.0
+offset_right = 102.0
+offset_bottom = 66.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="DownKey" type="TextureRect" parent="ClockwiseInputIndicator/InputID/Keyboard"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 26.0
+offset_right = 70.0
+offset_bottom = 66.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="LeftKey" type="TextureRect" parent="ClockwiseInputIndicator/InputID/Keyboard"]
+layout_mode = 0
+offset_left = -2.0
+offset_top = 26.0
+offset_right = 38.0
+offset_bottom = 66.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="CounterclockwiseArrow" type="TextureRect" parent="."]
+modulate = Color(0.54902, 0.54902, 0.54902, 1)
+layout_mode = 0
+offset_left = 225.0
+offset_top = 50.0
+offset_right = 325.0
+offset_bottom = 150.0
+pivot_offset = Vector2(50, 50)
+texture = ExtResource("3_cpqds")
+expand_mode = 1
+flip_h = true
+
+[node name="CounterClockwiseInputIndicator2" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 225.0
+offset_top = 150.0
+offset_right = 325.0
+offset_bottom = 200.0
+
+[node name="NoInputText" type="Label" parent="CounterClockwiseInputIndicator2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -0.5
+offset_right = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "No Input
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InputID" type="Control" parent="CounterClockwiseInputIndicator2"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 50.0
+
+[node name="Controller" type="Control" parent="CounterClockwiseInputIndicator2/InputID"]
+visible = false
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 50.0
+
+[node name="ControllerIcon" type="TextureRect" parent="CounterClockwiseInputIndicator2/InputID/Controller"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 11.0
+offset_right = 54.0
+offset_bottom = 41.0
+texture = ExtResource("4_c41m2")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="ControllerNum" type="Label" parent="CounterClockwiseInputIndicator2/InputID/Controller"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = -3.0
+offset_right = 22.0
+offset_bottom = 29.0
+theme_override_colors/font_color = Color(0.843137, 0.843137, 0.843137, 1)
+theme_override_font_sizes/font_size = 32
+text = "1"
+horizontal_alignment = 1
+
+[node name="ControllerInputs" type="TextureRect" parent="CounterClockwiseInputIndicator2/InputID/Controller"]
+layout_mode = 0
+offset_left = 50.0
+offset_right = 100.0
+offset_bottom = 50.0
+texture = ExtResource("5_jvxxm")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Keyboard" type="Control" parent="CounterClockwiseInputIndicator2/InputID"]
+visible = false
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 50.0
+
+[node name="UpKey" type="TextureRect" parent="CounterClockwiseInputIndicator2/InputID/Keyboard"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = -5.0
+offset_right = 70.0
+offset_bottom = 35.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="RightKey" type="TextureRect" parent="CounterClockwiseInputIndicator2/InputID/Keyboard"]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 26.0
+offset_right = 102.0
+offset_bottom = 66.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="DownKey" type="TextureRect" parent="CounterClockwiseInputIndicator2/InputID/Keyboard"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 26.0
+offset_right = 70.0
+offset_bottom = 66.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="LeftKey" type="TextureRect" parent="CounterClockwiseInputIndicator2/InputID/Keyboard"]
+layout_mode = 0
+offset_left = -2.0
+offset_top = 26.0
+offset_right = 38.0
+offset_bottom = 66.0
+texture = ExtResource("6_ewtxx")
+expand_mode = 1
+stretch_mode = 4

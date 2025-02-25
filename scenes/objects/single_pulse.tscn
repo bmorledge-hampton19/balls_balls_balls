@@ -13,4 +13,5 @@ shader_parameter/speed = 1.0
 material = SubResource("ShaderMaterial_p75l4")
 offset_right = 100.0
 offset_bottom = 100.0
+mouse_filter = 2
 script = ExtResource("2_q6pg1")

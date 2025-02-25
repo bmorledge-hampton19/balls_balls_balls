@@ -17,6 +17,7 @@ var icon: PlayerManager.PlayerIcon
 var texture: Texture2D:
 	get: return PlayerManager.getPlayerIconTexture(icon)
 
+var paddle: Paddle
 var goals: int
 @warning_ignore("unused_signal")
 signal onGoal(goals: int)

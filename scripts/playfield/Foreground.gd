@@ -43,6 +43,7 @@ func _ready():
 
 	leftDividerSpeed = dividerBaseSpeed
 	rightDividerSpeed = dividerBaseSpeed
+	grid.material.set_shader_parameter("visibilityCutoff", 1)
 
 func _process(delta):
 	var theBallFactor = theBall.radius/54
@@ -68,7 +69,9 @@ func _process(delta):
 		if finalTwoFadeTimeElapsed >= finalTwoFadeDuration:
 			finalTwoFadeTimeElapsed = finalTwoFadeDuration
 			finalTwoFadingIn = false
-		var fadeRatio = finalTwoFadeTimeElapsed/finalTwoFadeDuration
+		var fadeRatio: float
+		if finalTwoFadeDuration == 0: fadeRatio = 1
+		else: fadeRatio = finalTwoFadeTimeElapsed/finalTwoFadeDuration
 		finalTwoControl.modulate.a = fadeRatio
 
 	if leftDividerDecelerating:

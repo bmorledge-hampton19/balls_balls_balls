@@ -66,6 +66,8 @@ var transitioningToWinners
 func _ready():
 
 	ResourceLoader.load_threaded_request("res://scenes/WinnerScreen.tscn")
+	ResourceLoader.load_threaded_request("res://scenes/Playfield.tscn")
+	ResourceLoader.load_threaded_request("res://scenes/MainMenu.tscn")
 
 	ScreenShaker.setCamera(camera)
 
@@ -119,25 +121,25 @@ func _ready():
 			verticesControl.add_child(vertices[-1])
 			vertices[-1].initVertex(angle, polygon.macroRadius, boundaries)
 
-		var newTeam: Team = teamPrefab.instantiate()
-		teams[vertices[-1]] = newTeam
-		teamsControl.add_child(newTeam)
-		newTeam.initTeam(
+		var leftTeam: Team = teamPrefab.instantiate()
+		teams[vertices[-1]] = leftTeam
+		teamsControl.add_child(leftTeam)
+		leftTeam.initTeam(
 			polygon, vertices[-1], vertices[0],
 			PlayerManager.activePlayersByTeamColor[activeTeamColors[0]], activeTeamColors[0]
 		)
-		leftScoreboard.addLivesCounter(activeTeamColors[0], newTeam)
+		leftScoreboard.addLivesCounter(activeTeamColors[0], leftTeam)
 		for player in PlayerManager.activePlayersByTeamColor[activeTeamColors[0]]:
 				rightScoreboard.addGoalsCounter(player)
 
-		newTeam = teamPrefab.instantiate()
-		teams[vertices[1]] = newTeam
-		teamsControl.add_child(newTeam)
-		newTeam.initTeam(
+		var rightTeam = teamPrefab.instantiate()
+		teams[vertices[1]] = rightTeam
+		teamsControl.add_child(rightTeam)
+		rightTeam.initTeam(
 			polygon, vertices[1], vertices[2],
 			PlayerManager.activePlayersByTeamColor[activeTeamColors[1]], activeTeamColors[1]
 		)
-		leftScoreboard.addLivesCounter(activeTeamColors[1], newTeam)
+		leftScoreboard.addLivesCounter(activeTeamColors[1], rightTeam)
 		for player in PlayerManager.activePlayersByTeamColor[activeTeamColors[1]]:
 				rightScoreboard.addGoalsCounter(player)
 
@@ -151,8 +153,9 @@ func _ready():
 		wallsControl.add_child(newWall)
 		newWall.initWall(vertices[2], vertices[3])
 
-		ballManager.burstSpawns = true
-	
+		ballManager.prepForFinale(standardTransitionDuration*0.25)
+		prepForFinale(leftTeam, rightTeam, true)
+
 	for vertex in vertices:
 		bumpers[vertex] = bumperPrefab.instantiate()
 		bumpersControl.add_child(bumpers[vertex])
@@ -219,8 +222,9 @@ func reduceBoard(eliminatedTeam: Team):
 		if teams.values()[0] == eliminatedTeam: winningTeam = teams.values()[1]
 		else: winningTeam = teams.values()[0]
 		PlayerManager.winningTeamColor = winningTeam.color
-		get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/WinnerScreen.tscn"))
+		# get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/WinnerScreen.tscn"))
 		teams.clear()
+		beginTransitionToWinnerScreen()
 		return
 
 	var newVertexArray: Array[Vertex] = []
@@ -253,8 +257,8 @@ func reduceBoard(eliminatedTeam: Team):
 			leftScoreboard.fadeOutLivesCounter(team)
 		else:
 			team.changePolygon(polygon, standardTransitionDuration)
-			team.addLives(1)
-			leftScoreboard.livesCounters[team].showBonusCounter(1)
+			team.addLives(Settings.getSettingValue(Settings.Setting.LIVES_ON_ELIM))
+			leftScoreboard.livesCounters[team].showBonusCounter(Settings.getSettingValue(Settings.Setting.LIVES_ON_ELIM))
 
 	if polygon.sides > 2:
 
@@ -380,8 +384,11 @@ func reduceBoard(eliminatedTeam: Team):
 		while vertex.reducingChild != null:
 			pathReducingVertex(vertex.reducingChild)
 			vertex = vertex.reducingChild
+	
 	for player in PlayerManager.activePlayersByTeamColor[eliminatedTeam.color]:
-		ballManager.queuePlayerControlledBall(player)
+		player.paddle = null
+		if Settings.getSettingValue(Settings.Setting.PLAYER_CONTROLLED_BALLS):
+			ballManager.queuePlayerControlledBall(player)
 	eliminatedTeam.queue_free()
 
 
@@ -515,6 +522,11 @@ func getAllVertices() -> Array[Vertex]:
 
 func _process(delta):
 
+	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
+		var pauseMenu := PauseManager.pause()
+		pauseMenu.initOptions(["Resume", "Restart", "Return to Main Menu"],
+							  [PauseManager.unpause, restart, returnToMainMenu])
+		add_child(pauseMenu)
 	
 	timeUntilRadiusIncrease -= delta
 	if timeUntilRadiusIncrease <= 0:
@@ -590,8 +602,10 @@ func prepForFinale(leftTeam: Team, rightTeam: Team, instant: bool = false):
 	playfieldBackground.rightLives.livesLabel.text = str(rightTeam.livesRemaining)
 	rightTeam.onLivesChanged.connect(func(lives): playfieldBackground.rightLives.updateText(lives))
 	rightTeam.onLivesChanged.connect(func(_lives): playfieldBackground.modulateDividerSpeed(false, 2))
-	
-	if instant: playfieldBackground.finalTwoControl.modulate.a = 1
+
+	if instant: playfieldBackground.fadeInFinalTwoGraphics(
+		leftTeam, rightTeam, 0, 0
+	)
 	else: playfieldBackground.fadeInFinalTwoGraphics(
 		leftTeam, rightTeam, standardTransitionDuration*0.25, standardTransitionDuration
 	)
@@ -602,4 +616,34 @@ func prepForFinale(leftTeam: Team, rightTeam: Team, instant: bool = false):
 
 func beginTransitionToWinnerScreen():
 	ballManager.explodeAllBalls()
+	ballManager.off = true
 	ScreenShaker.addShake(40, -1)
+	var transitionTime: float = 5
+	theBall.reparent(self)
+	theBall.forceSizeChange(1000, transitionTime, PlayerManager.winningTeamColor)
+	get_tree().create_timer(transitionTime, false).timeout.connect(transitionToWinnerScreen)
+
+func transitionToWinnerScreen():
+
+	var winnerPlayfield: WinnerScreen = winnerPlayfieldPrefab.instantiate()
+	get_parent().add_child(winnerPlayfield)
+	winnerPlayfield.camera = camera
+	winnerPlayfield.background = ballManager.background
+	winnerPlayfield.preparePlayfield()
+
+	var transitionTime: float = 5
+	winnerPlayfield.theBall.radius = 1000
+	winnerPlayfield.theBall.forceSizeChange(54, transitionTime, PlayerManager.winningTeamColor)
+	get_tree().create_timer(transitionTime, false).timeout.connect(winnerPlayfield.reparentTheBall)
+	ScreenShaker.clearShakes()
+	ScreenShaker.addShake(40, transitionTime)
+
+	queue_free()
+
+func restart():
+	PauseManager.unpause()
+	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Playfield.tscn"))
+
+func returnToMainMenu():
+	PauseManager.unpause()
+	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/MainMenu.tscn"))

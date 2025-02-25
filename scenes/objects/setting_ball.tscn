@@ -1,0 +1,84 @@
+[gd_scene load_steps=6 format=3 uid="uid://dkdx6pcb7uch7"]
+
+[ext_resource type="Script" path="res://scripts/playfield/SettingBall.gd" id="1_ika81"]
+[ext_resource type="Shader" path="res://shaders/PulsingCircleMask.gdshader" id="2_okjxh"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ivbdl"]
+resource_local_to_scene = true
+radius = 4.9
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2rn00"]
+resource_local_to_scene = true
+radius = 5.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_t74uo"]
+shader = ExtResource("2_okjxh")
+shader_parameter/circle_size = 0.4
+shader_parameter/pulseStart = 0.325
+shader_parameter/pulseMin = 0.35
+shader_parameter/pulseMax = 0.4
+
+[node name="SettingBall" type="Area2D" node_paths=PackedStringArray("settingNameLabel", "currentValue", "collisionShape2D", "shapeCaster", "teamColor", "ballSprite")]
+collision_mask = 0
+script = ExtResource("1_ika81")
+settingNameLabel = NodePath("SettingName")
+currentValue = NodePath("CurrentValue")
+collisionShape2D = NodePath("CollisionShape2D")
+shapeCaster = NodePath("ShapeCast2D")
+teamColor = NodePath("TeamColor")
+ballSprite = NodePath("BallSprite")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ivbdl")
+
+[node name="ShapeCast2D" type="ShapeCast2D" parent="."]
+enabled = false
+shape = SubResource("CircleShape2D_2rn00")
+target_position = Vector2(0, 5)
+collision_mask = 30
+collide_with_areas = true
+collide_with_bodies = false
+
+[node name="TeamColor" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_t74uo")
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 7.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BallSprite" type="TextureRect" parent="."]
+offset_left = -5.0
+offset_top = -5.0
+offset_right = 5.0
+offset_bottom = 5.0
+pivot_offset = Vector2(5, 5)
+expand_mode = 2
+
+[node name="SettingName" type="Label" parent="."]
+offset_left = -128.0
+offset_top = -96.0
+offset_right = 128.0
+offset_bottom = -64.0
+theme_override_font_sizes/font_size = 28
+text = "Ball Speed"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CurrentValue" type="Label" parent="."]
+offset_left = -46.0
+offset_top = -32.0
+offset_right = 46.0
+offset_bottom = 32.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "Balls Balls Balls"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

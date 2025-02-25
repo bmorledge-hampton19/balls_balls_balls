@@ -1,17 +1,34 @@
-[gd_scene load_steps=3 format=3 uid="uid://cidtpgewej2ee"]
+[gd_scene load_steps=5 format=3 uid="uid://cidtpgewej2ee"]
 
 [ext_resource type="Script" path="res://scripts/playfield/GoalsCounter.gd" id="1_1lmde"]
 [ext_resource type="Texture2D" uid="uid://b2y4r4ft4560u" path="res://images/player_icons/360_A.png" id="1_o41pv"]
+[ext_resource type="Shader" path="res://shaders/CircleMask.gdshader" id="2_mjd88"]
 
-[node name="GoalsCounter" type="Control" node_paths=PackedStringArray("textureRect", "label")]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_c4bwa"]
+shader = ExtResource("2_mjd88")
+shader_parameter/circle_size = 0.5
+shader_parameter/size_ratio = 1.0
+shader_parameter/location_x = 0.5
+shader_parameter/location_y = 0.5
+shader_parameter/invert_mask = false
+
+[node name="GoalsCounter" type="Control" node_paths=PackedStringArray("colorRect", "textureRect", "label")]
 custom_minimum_size = Vector2(0, 25)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 210.0
 offset_bottom = 30.0
 script = ExtResource("1_1lmde")
+colorRect = NodePath("ColorRect")
 textureRect = NodePath("TextureRect")
 label = NodePath("Label")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_c4bwa")
+layout_mode = 0
+offset_left = 65.0
+offset_right = 90.0
+offset_bottom = 25.0
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 0

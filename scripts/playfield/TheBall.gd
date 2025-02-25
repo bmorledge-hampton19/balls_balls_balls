@@ -37,9 +37,13 @@ var brightnessDelta: float
 var oldRadius: float
 var radiusDelta: float
 
+var oldColor: Color
+var newColor: Color
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	oldBrightness = material.get_shader_parameter("brightness")
+	oldColor = color
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -57,8 +61,8 @@ func _process(delta):
 		transitionFraction = transitionTimeElapsed/transitionDuration
 
 		radius = oldRadius + radiusDelta*transitionFraction
-		print("New radius: " + str(radius))
 		brightness = oldBrightness + brightnessDelta*transitionFraction
+		color = oldColor.lerp(newColor, transitionFraction)
 
 func initiateGrowth(pulses: int = 3, radiusIncreasePerPulse: float = 6, brightnessIncreasePerPulse: float = 0):
 	pulsesRemaining += pulses
@@ -88,9 +92,12 @@ func assimilatePulse():
 	brightnessDelta = brightnessIncreasesPerPulse[0]
 	brightnessIncreasesPerPulse.remove_at(0)
 
+	oldColor = color
+	newColor = color
+
 	ScreenShaker.addShake()
 
-func forceSizeChange(newRadius: float, p_transitionDuration: float):
+func forceSizeChange(newRadius: float, p_transitionDuration: float, p_newColor: Color = Color.WHITE):
 	
 	for inwardPulse in inwardPulsesControl.get_children():
 		inwardPulse.queue_free()
@@ -99,6 +106,7 @@ func forceSizeChange(newRadius: float, p_transitionDuration: float):
 	
 		transitioning = false
 		radius = newRadius
+		color = p_newColor
 
 	else:
 
@@ -108,3 +116,6 @@ func forceSizeChange(newRadius: float, p_transitionDuration: float):
 
 		oldRadius = radius
 		radiusDelta = newRadius-oldRadius
+		
+		oldColor = color
+		newColor = p_newColor

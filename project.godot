@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="Balls Balls Balls"
+run/main_scene="res://scenes/MainMenu.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -21,6 +22,10 @@ InputSets="*res://scripts/global/InputSets.gd"
 PlayerManager="*res://scripts/global/PlayerManager.gd"
 MultiplayerInput="*res://addons/multiplayer_input/multiplayer_input.gd"
 ScreenShaker="*res://scenes/global/screen_shaker.tscn"
+AudioManager="*res://scripts/global/AudioManager.gd"
+Settings="*res://scripts/misc/Settings.gd"
+PauseManager="*res://scripts/global/PauseManager.gd"
+PowerupManager="*res://scripts/global/PowerupManager.gd"
 
 [debug]
 

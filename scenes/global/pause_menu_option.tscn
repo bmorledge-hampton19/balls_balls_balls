@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3 uid="uid://vby6fptxmn8g"]
+
+[ext_resource type="Shader" path="res://shaders/PulsingCircleMask.gdshader" id="1_4f4ht"]
+[ext_resource type="Script" path="res://scripts/global/PauseMenuOption.gd" id="1_17p1a"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ud1kp"]
+shader = ExtResource("1_4f4ht")
+shader_parameter/circle_size = 0.4
+shader_parameter/pulseStart = 0.3
+shader_parameter/pulseMin = 0.4
+shader_parameter/pulseMax = 0.5
+
+[node name="Option" type="HBoxContainer" node_paths=PackedStringArray("label", "leftBall", "rightBall")]
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+script = ExtResource("1_17p1a")
+label = NodePath("Label")
+leftBall = NodePath("LeftBallControl/LeftBall")
+rightBall = NodePath("RightBallControl/RightBall")
+
+[node name="LeftBallControl" type="Control" parent="."]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LeftBall" type="ColorRect" parent="LeftBallControl"]
+material = SubResource("ShaderMaterial_ud1kp")
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+offset_top = 6.0
+offset_right = 20.0
+offset_bottom = 26.0
+size_flags_vertical = 4
+mouse_filter = 2
+color = Color(0.745098, 0.745098, 0.745098, 1)
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Balls Balls Balls"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightBallControl" type="Control" parent="."]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RightBall" type="ColorRect" parent="RightBallControl"]
+material = SubResource("ShaderMaterial_ud1kp")
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+offset_top = 6.0
+offset_right = 20.0
+offset_bottom = 26.0
+size_flags_vertical = 4
+mouse_filter = 2
+color = Color(0.745098, 0.745098, 0.745098, 1)

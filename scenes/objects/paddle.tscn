@@ -1,9 +1,22 @@
-[gd_scene load_steps=8 format=3 uid="uid://dn5fpyl6dbako"]
+[gd_scene load_steps=16 format=3 uid="uid://dn5fpyl6dbako"]
 
 [ext_resource type="Script" path="res://scripts/playfield/Paddle.gd" id="1_mq44b"]
 [ext_resource type="Shader" path="res://shaders/paddle.gdshader" id="2_uywgm"]
 [ext_resource type="Texture2D" uid="uid://b2y4r4ft4560u" path="res://images/player_icons/360_A.png" id="3_3tkri"]
 [ext_resource type="Shader" path="res://shaders/ChargingPaddle.gdshader" id="3_fb0p4"]
+[ext_resource type="Texture2D" uid="uid://bxnlnonyb146e" path="res://images/duplicator_symbol.png" id="4_bklop"]
+[ext_resource type="Shader" path="res://shaders/StickyShader.gdshader" id="5_oro2f"]
+[ext_resource type="Texture2D" uid="uid://cqun7nqgrtxk0" path="res://shaders/sticky_shader_noise.tres" id="6_6rijp"]
+[ext_resource type="Shader" path="res://shaders/RepeatingPulses.gdshader" id="7_8x4fm"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_6osw4"]
+frequency = 1.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cqrxy"]
+shader = ExtResource("7_8x4fm")
+shader_parameter/speed = 0.5
+shader_parameter/pulseFrequency = 6.0
+shader_parameter/pulseCoverage = 0.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bjqx8"]
 resource_local_to_scene = true
@@ -21,22 +34,51 @@ shader_parameter/reverse = 1.0
 shader_parameter/spiralContrast = 0.6
 shader_parameter/innerSpiralProgress = 0.5
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s2oy5"]
+resource_local_to_scene = true
+shader = ExtResource("5_oro2f")
+shader_parameter/flipped = 0.0
+shader_parameter/width = 370.0
+shader_parameter/noiseOffset = Vector2(0.8, 1.4)
+shader_parameter/noise = ExtResource("6_6rijp")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_isd8h"]
+resource_local_to_scene = true
+shader = ExtResource("5_oro2f")
+shader_parameter/flipped = 1.0
+shader_parameter/width = 100.0
+shader_parameter/noiseOffset = Vector2(0, 0)
+shader_parameter/noise = ExtResource("6_6rijp")
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s4ui3"]
 resource_local_to_scene = true
 size = Vector2(100, 10)
 
-[node name="Paddle" type="Node2D" node_paths=PackedStringArray("pivot", "collider", "color", "texture", "chargingNode")]
+[node name="Paddle" type="Node2D" node_paths=PackedStringArray("pivot", "collider", "color", "ballDuplicatorSprite", "topStickyShader", "bottomStickyShader", "ballBoosterShader", "texture", "chargingNode")]
 script = ExtResource("1_mq44b")
 pivot = NodePath("Pivot")
 collider = NodePath("Pivot/Collider")
 color = NodePath("Pivot/Color")
-texture = NodePath("Pivot/Color/TextureRect")
+ballDuplicatorSprite = NodePath("Pivot/Color/BallDuplicatorSprite")
+topStickyShader = NodePath("Pivot/Color/TopStickyShader")
+bottomStickyShader = NodePath("Pivot/Color/BottomStickyShader")
+ballBoosterShader = NodePath("Pivot/BallBoosterShader")
+texture = NodePath("Pivot/Color/PlayerIcon")
 chargingNode = NodePath("Pivot/Color/ChargingUp")
+noise = SubResource("FastNoiseLite_6osw4")
 
 [node name="Pivot" type="Area2D" parent="."]
 position = Vector2(50, 5)
 collision_layer = 2
 collision_mask = 0
+
+[node name="BallBoosterShader" type="ColorRect" parent="Pivot"]
+self_modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_cqrxy")
+offset_left = -70.0
+offset_top = -25.0
+offset_right = 70.0
+offset_bottom = 25.0
 
 [node name="Color" type="ColorRect" parent="Pivot"]
 material = SubResource("ShaderMaterial_bjqx8")
@@ -46,7 +88,7 @@ offset_right = 50.0
 offset_bottom = 5.0
 
 [node name="ChargingUp" type="ColorRect" parent="Pivot/Color"]
-visible = false
+self_modulate = Color(1, 1, 1, 0)
 material = SubResource("ShaderMaterial_ry18j")
 layout_mode = 1
 anchors_preset = 8
@@ -61,7 +103,37 @@ offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TextureRect" type="TextureRect" parent="Pivot/Color"]
+[node name="BallDuplicatorSprite" type="Sprite2D" parent="Pivot/Color"]
+self_modulate = Color(1, 1, 1, 0)
+texture_repeat = 2
+position = Vector2(50, 5)
+texture = ExtResource("4_bklop")
+region_enabled = true
+region_rect = Rect2(0, 0, 100, 10)
+
+[node name="TopStickyShader" type="ColorRect" parent="Pivot/Color"]
+self_modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_s2oy5")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BottomStickyShader" type="ColorRect" parent="Pivot/Color"]
+self_modulate = Color(1, 1, 1, 0)
+material = SubResource("ShaderMaterial_isd8h")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 5.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerIcon" type="TextureRect" parent="Pivot/Color"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5

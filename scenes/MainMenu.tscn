@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://c24d33ihtpoy1"]
+[gd_scene load_steps=46 format=3 uid="uid://c24d33ihtpoy1"]
 
 [ext_resource type="Script" path="res://scripts/main_menu/TitleText.gd" id="1_migqa"]
 [ext_resource type="Script" path="res://scripts/main_menu/MainMenu.gd" id="1_w6426"]
@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://crc10cctsupco" path="res://scenes/objects/ball.tscn" id="3_37xhp"]
 [ext_resource type="PackedScene" uid="uid://brbfliohi7w1j" path="res://scenes/objects/trail.tscn" id="4_ug8hl"]
 [ext_resource type="PackedScene" uid="uid://cks5u0fxfp4ym" path="res://scenes/objects/playerSelector.tscn" id="4_x1jtl"]
-[ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="7_2oqtu"]
 [ext_resource type="PackedScene" uid="uid://bngtx6rr0whah" path="res://scenes/objects/bumper.tscn" id="7_4j35b"]
 [ext_resource type="Script" path="res://scripts/global/Background.gd" id="7_bi61m"]
 [ext_resource type="Shader" path="res://shaders/TrailCG.gdshader" id="7_gygmx"]
@@ -17,15 +16,77 @@
 [ext_resource type="Texture2D" uid="uid://b5bh4n2hlrd6o" path="res://images/controller_prompts/Enter_Alt_Key_Dark.png" id="9_pnuq0"]
 [ext_resource type="Shader" path="res://shaders/RadialRainbow.gdshader" id="10_j8gro"]
 [ext_resource type="Texture2D" uid="uid://chxlsftx1v4as" path="res://images/player_icons/circle.png" id="11_q641m"]
+[ext_resource type="Shader" path="res://shaders/borders/TopPulsingBorder.gdshader" id="18_e8vbe"]
+[ext_resource type="Shader" path="res://shaders/borders/RightPulsingBorder.gdshader" id="19_1e4kj"]
+[ext_resource type="Shader" path="res://shaders/borders/LeftPulsingBorder.gdshader" id="20_ar1cg"]
+[ext_resource type="Shader" path="res://shaders/borders/BottomPulsingBorder.gdshader" id="21_odqd5"]
+[ext_resource type="Texture2D" uid="uid://lcio5st45dif" path="res://images/controller_prompts/Steam_Back.png" id="23_rmr5k"]
+[ext_resource type="Shader" path="res://shaders/PulsingCircleMask.gdshader" id="24_ecu5h"]
+[ext_resource type="Texture2D" uid="uid://deuctllkfwwyq" path="res://images/controller_prompts/Esc_Key_Dark.png" id="24_wuoke"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_24j7c"]
 shader = ExtResource("7_gygmx")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_uklag"]
+shader = ExtResource("24_ecu5h")
+shader_parameter/circle_size = 0.4
+shader_parameter/pulseStart = 0.4
+shader_parameter/pulseMin = 0.45
+shader_parameter/pulseMax = 0.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1eim3"]
 shader = ExtResource("10_j8gro")
 shader_parameter/speed = 1.0
 
-[node name="MainMenu" type="Control" node_paths=PackedStringArray("theBallZone", "trailsCanvasGroup", "playerSelectorGrid", "playButton")]
+[sub_resource type="CircleShape2D" id="CircleShape2D_hvygh"]
+radius = 60.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pjpp4"]
+shader = ExtResource("18_e8vbe")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jicex"]
+shader = ExtResource("19_1e4kj")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_q43fu"]
+shader = ExtResource("20_ar1cg")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gri0o"]
+shader = ExtResource("21_odqd5")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5aqt6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mm0lm"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p8gu6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i8rbt"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xpesb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3oruq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kak8f"]
+bg_color = Color(0, 0, 0, 0.25098)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iacxq"]
+bg_color = Color(0, 0, 0, 0.501961)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gorfo"]
+bg_color = Color(0, 0, 0, 0.501961)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3i65v"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_i2pst"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ua7h3"]
+bg_color = Color(0, 0, 0, 0.25098)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_daptk"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xames"]
+bg_color = Color(0, 0, 0, 0.501961)
+
+[node name="MainMenu" type="Control" node_paths=PackedStringArray("mainViewport", "theBallZone", "trailsCanvasGroup", "playerSelectorGrid", "playButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,6 +94,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_w6426")
+mainViewport = NodePath("MainViewport")
 theBallZone = NodePath("MainViewport/TheBallZone")
 trailsCanvasGroup = NodePath("MainViewport/Trails")
 wallPrefab = ExtResource("2_2g2sq")
@@ -182,10 +244,10 @@ columns = 8
 [node name="PlayButton" type="Control" parent="MainViewport" node_paths=PackedStringArray("coolRainbowProgressCircle", "backgroundBall", "playText", "addTeamsLabel", "buttonPrompts")]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 430.0
-offset_top = 445.0
-offset_right = 530.0
-offset_bottom = 545.0
+offset_left = 410.0
+offset_top = 400.0
+offset_right = 550.0
+offset_bottom = 540.0
 script = ExtResource("7_is6uv")
 coolRainbowProgressCircle = NodePath("CoolRainbowProgressCircle")
 backgroundBall = NodePath("Ball")
@@ -194,26 +256,27 @@ addTeamsLabel = NodePath("AddTeamsLabel")
 buttonPrompts = NodePath("ButtonPrompts")
 
 [node name="Bumper" parent="MainViewport/PlayButton" instance=ExtResource("7_4j35b")]
-offset_left = 50.0
-offset_top = 50.0
-offset_right = 50.0
-offset_bottom = 50.0
-radius = 36.0
+offset_left = 70.0
+offset_top = 70.0
+offset_right = 70.0
+offset_bottom = 70.0
+radius = 60.0
 
 [node name="Ball" type="ColorRect" parent="MainViewport/PlayButton"]
-material = ExtResource("7_2oqtu")
+material = SubResource("ShaderMaterial_uklag")
 layout_mode = 0
-offset_right = 100.0
-offset_bottom = 100.0
+offset_right = 140.0
+offset_bottom = 140.0
 
 [node name="PlayLabel" type="Label" parent="MainViewport/PlayButton"]
 layout_mode = 0
-offset_top = 20.0
-offset_right = 100.0
-offset_bottom = 52.0
+offset_left = 20.0
+offset_top = 30.0
+offset_right = 120.0
+offset_bottom = 65.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 36
 text = "PLAY"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -221,13 +284,13 @@ vertical_alignment = 1
 [node name="AddTeamsLabel" type="Label" parent="MainViewport/PlayButton"]
 visible = false
 layout_mode = 0
-offset_left = 18.0
-offset_top = 48.0
-offset_right = 82.0
-offset_bottom = 83.0
+offset_left = 15.0
+offset_top = 56.0
+offset_right = 125.0
+offset_bottom = 116.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_constants/line_spacing = 0
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 28
 text = "add more
 teams"
 horizontal_alignment = 1
@@ -235,38 +298,38 @@ vertical_alignment = 1
 
 [node name="ButtonPrompts" type="Control" parent="MainViewport/PlayButton"]
 anchors_preset = 0
-offset_left = 18.0
-offset_top = 48.0
-offset_right = 82.0
-offset_bottom = 80.0
+offset_left = 20.0
+offset_top = 66.0
+offset_right = 120.0
+offset_bottom = 106.0
 
 [node name="StartButton" type="TextureRect" parent="MainViewport/PlayButton/ButtonPrompts"]
 layout_mode = 0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 28.0
-offset_bottom = 28.0
+offset_left = 5.0
+offset_top = 2.0
+offset_right = 41.0
+offset_bottom = 38.0
 texture = ExtResource("8_d78bl")
 expand_mode = 1
 stretch_mode = 4
 
 [node name="Slash" type="Label" parent="MainViewport/PlayButton/ButtonPrompts"]
 layout_mode = 0
-offset_left = 16.0
-offset_right = 48.0
-offset_bottom = 32.0
+offset_left = 34.0
+offset_right = 66.0
+offset_bottom = 39.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 40
 text = "/"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="EnterKey" type="TextureRect" parent="MainViewport/PlayButton/ButtonPrompts"]
 layout_mode = 0
-offset_left = 36.0
-offset_top = 4.0
-offset_right = 60.0
-offset_bottom = 28.0
+offset_left = 59.0
+offset_top = 2.0
+offset_right = 95.0
+offset_bottom = 38.0
 texture = ExtResource("9_pnuq0")
 expand_mode = 1
 stretch_mode = 4
@@ -278,24 +341,289 @@ offset_left = 10.0
 offset_top = 10.0
 offset_right = 210.0
 offset_bottom = 210.0
-scale = Vector2(0.4, 0.4)
+scale = Vector2(0.6, 0.6)
 step = 0.0
 fill_mode = 4
 texture_progress = ExtResource("11_q641m")
 
+[node name="Clickable" type="Area2D" parent="MainViewport/PlayButton"]
+visible = false
+position = Vector2(70, 70)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MainViewport/PlayButton/Clickable"]
+shape = SubResource("CircleShape2D_hvygh")
+
 [node name="SettingsButton" type="Control" parent="MainViewport"]
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 470.0
-offset_right = 220.0
-offset_bottom = 520.0
+offset_left = 30.0
+offset_top = 460.0
+offset_right = 280.0
+offset_bottom = 510.0
 
-[node name="ExitButton" type="Control" parent="MainViewport"]
+[node name="TopWall" parent="MainViewport/SettingsButton" instance=ExtResource("2_2g2sq")]
+offset_right = 250.0
+staticWall = true
+sideLength = 250.0
+
+[node name="RightWall" parent="MainViewport/SettingsButton" instance=ExtResource("2_2g2sq")]
+offset_left = 250.0
+offset_right = 300.0
+rotation = 1.5708
+staticWall = true
+sideLength = 50.0
+
+[node name="BottomWall" parent="MainViewport/SettingsButton" instance=ExtResource("2_2g2sq")]
+offset_left = 250.0
+offset_top = 50.0
+offset_right = 500.0
+offset_bottom = 50.0
+rotation = 3.14159
+staticWall = true
+sideLength = 250.0
+
+[node name="LeftWall" parent="MainViewport/SettingsButton" instance=ExtResource("2_2g2sq")]
+offset_top = 50.0
+offset_right = 50.0
+offset_bottom = 50.0
+rotation = 4.71239
+staticWall = true
+sideLength = 50.0
+
+[node name="TopBorder" type="ColorRect" parent="MainViewport/SettingsButton"]
+material = SubResource("ShaderMaterial_pjpp4")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.037
+offset_bottom = 18.15
+grow_horizontal = 2
+
+[node name="RightBorder" type="ColorRect" parent="MainViewport/SettingsButton"]
+material = SubResource("ShaderMaterial_jicex")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.905
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.75
+grow_horizontal = 2
+
+[node name="LeftBorder" type="ColorRect" parent="MainViewport/SettingsButton"]
+material = SubResource("ShaderMaterial_q43fu")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.095
+anchor_bottom = 1.0
+offset_right = -3.75
+grow_horizontal = 2
+
+[node name="BottomBorder" type="ColorRect" parent="MainViewport/SettingsButton"]
+material = SubResource("ShaderMaterial_gri0o")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.963
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -18.15
+grow_horizontal = 2
+
+[node name="Button" type="Button" parent="MainViewport/SettingsButton"]
+layout_mode = 0
+offset_right = 250.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 40
+theme_override_styles/focus = SubResource("StyleBoxEmpty_5aqt6")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_mm0lm")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_p8gu6")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_i8rbt")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_xpesb")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_3oruq")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kak8f")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxFlat_iacxq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_gorfo")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxEmpty_3i65v")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_i2pst")
+text = "  Settings"
+alignment = 0
+
+[node name="ButtonPrompts" type="Control" parent="MainViewport/SettingsButton"]
+layout_mode = 3
 anchors_preset = 0
-offset_left = 740.0
-offset_top = 470.0
-offset_right = 940.0
-offset_bottom = 520.0
+offset_left = 140.0
+offset_top = 11.0
+offset_right = 140.0
+offset_bottom = 11.0
+mouse_filter = 2
+
+[node name="BackButton" type="TextureRect" parent="MainViewport/SettingsButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = -4.0
+offset_right = 52.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("23_rmr5k")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Slash" type="Label" parent="MainViewport/SettingsButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 43.0
+offset_top = -1.0
+offset_right = 75.0
+offset_bottom = 31.0
+theme_override_font_sizes/font_size = 32
+text = "/"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EscKey" type="TextureRect" parent="MainViewport/SettingsButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 65.0
+offset_top = -4.0
+offset_right = 101.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("24_wuoke")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="CreditsButton" type="Control" parent="MainViewport"]
+anchors_preset = 0
+offset_left = 680.0
+offset_top = 460.0
+offset_right = 930.0
+offset_bottom = 510.0
+
+[node name="TopWall" parent="MainViewport/CreditsButton" instance=ExtResource("2_2g2sq")]
+offset_right = 250.0
+staticWall = true
+sideLength = 250.0
+
+[node name="RightWall" parent="MainViewport/CreditsButton" instance=ExtResource("2_2g2sq")]
+offset_left = 250.0
+offset_right = 300.0
+rotation = 1.5708
+staticWall = true
+sideLength = 50.0
+
+[node name="BottomWall" parent="MainViewport/CreditsButton" instance=ExtResource("2_2g2sq")]
+offset_left = 250.0
+offset_top = 50.0
+offset_right = 500.0
+offset_bottom = 50.0
+rotation = 3.14159
+staticWall = true
+sideLength = 250.0
+
+[node name="LeftWall" parent="MainViewport/CreditsButton" instance=ExtResource("2_2g2sq")]
+offset_top = 50.0
+offset_right = 50.0
+offset_bottom = 50.0
+rotation = 4.71239
+staticWall = true
+sideLength = 50.0
+
+[node name="TopBorder" type="ColorRect" parent="MainViewport/CreditsButton"]
+material = SubResource("ShaderMaterial_pjpp4")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.037
+offset_bottom = 18.15
+grow_horizontal = 2
+
+[node name="RightBorder" type="ColorRect" parent="MainViewport/CreditsButton"]
+material = SubResource("ShaderMaterial_jicex")
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.905
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.75
+grow_horizontal = 2
+
+[node name="LeftBorder" type="ColorRect" parent="MainViewport/CreditsButton"]
+material = SubResource("ShaderMaterial_q43fu")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.095
+anchor_bottom = 1.0
+offset_right = -3.75
+grow_horizontal = 2
+
+[node name="BottomBorder" type="ColorRect" parent="MainViewport/CreditsButton"]
+material = SubResource("ShaderMaterial_gri0o")
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.963
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -18.15
+grow_horizontal = 2
+
+[node name="Button" type="Button" parent="MainViewport/CreditsButton"]
+layout_mode = 0
+offset_right = 250.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 40
+theme_override_styles/focus = SubResource("StyleBoxEmpty_5aqt6")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_mm0lm")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_p8gu6")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_i8rbt")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_xpesb")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_3oruq")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ua7h3")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_daptk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xames")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxEmpty_3i65v")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_i2pst")
+text = "  Credits"
+alignment = 0
+
+[node name="ButtonPrompts" type="Control" parent="MainViewport/CreditsButton"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 140.0
+offset_top = 11.0
+offset_right = 140.0
+offset_bottom = 11.0
+mouse_filter = 2
+
+[node name="BackButton" type="TextureRect" parent="MainViewport/CreditsButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = -4.0
+offset_right = 52.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("23_rmr5k")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Slash" type="Label" parent="MainViewport/CreditsButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 43.0
+offset_top = -1.0
+offset_right = 75.0
+offset_bottom = 31.0
+theme_override_font_sizes/font_size = 32
+text = "/"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EscKey" type="TextureRect" parent="MainViewport/CreditsButton/ButtonPrompts"]
+layout_mode = 0
+offset_left = 65.0
+offset_top = -4.0
+offset_right = 101.0
+offset_bottom = 32.0
+mouse_filter = 2
+texture = ExtResource("24_wuoke")
+expand_mode = 1
+stretch_mode = 4
 
 [connection signal="timeout" from="Background/SpawnBackgroundBall" to="Background" method="addBackgroundBall"]
 [connection signal="timeout" from="Background/ChangeFlow" to="Background" method="initiateFlowChange"]
+[connection signal="pressed" from="MainViewport/SettingsButton/Button" to="." method="transitionToSettings"]
+[connection signal="pressed" from="MainViewport/CreditsButton/Button" to="." method="transitionToCredits"]

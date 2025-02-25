@@ -29,6 +29,6 @@ void fragment() {
 	visibility *= 3.0;
 
 	//COLOR.a = fract(atan(centerPos.x, centerPos.y)*(5.0+distanceFromCenter));
-	COLOR.a = innerSpiral*visibility*(1.0-smoothstep(0.3,0.5,distanceFromCenter));
+	COLOR.a *= innerSpiral*visibility*(1.0-smoothstep(0.3,0.5,distanceFromCenter));
 
 }

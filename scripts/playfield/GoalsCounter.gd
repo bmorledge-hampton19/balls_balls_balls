@@ -1,6 +1,7 @@
 class_name GoalsCounter
 extends Control
 
+@export var colorRect: ColorRect
 @export var textureRect: TextureRect
 @export var label: Label
 
@@ -11,8 +12,9 @@ func _ready():
 func setTexture(texture: Texture):
 	textureRect.texture = texture
 
-func setTeamColor(p_color: Color):
-	label.add_theme_color_override("font_color", p_color)
+func setTeamColor(color: Color):
+	colorRect.color = color
+	label.add_theme_color_override("font_color", color)
 
 func updateText(newText):
 	label.text = str(newText)

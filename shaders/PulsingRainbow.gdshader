@@ -17,5 +17,3 @@ void fragment() {
 							 value, distanceFromCenter+0.1+extraSaturation));
 	COLOR.a = 1.0 - step(0.5, distanceFromCenter);
 }
-
-

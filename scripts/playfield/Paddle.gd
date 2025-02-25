@@ -4,8 +4,15 @@ extends Node2D
 @export var pivot: Area2D
 @export var collider: CollisionShape2D
 @export var color: ColorRect
+@export var ballDuplicatorSprite: Sprite2D
+@export var topStickyShader: ColorRect
+@export var bottomStickyShader: ColorRect
+@export var ballBoosterShader: ColorRect
 @export var texture: TextureRect
 @export var chargingNode: ColorRect
+
+@export var noise: FastNoiseLite
+var noisePos: float
 
 var team: Team
 var player: Player
@@ -28,6 +35,8 @@ const TEAM_SIZE_WIDTH_MULTIPLIERS := {
 	8 : 0.4
 }
 
+var powerupWidthMultiplier: float = 1.0
+
 var _width: float
 var width: float:
 	get: return _width
@@ -36,10 +45,11 @@ var baseHeight := 10
 var height: float:
 	get: return baseHeight
 
-var baseSpeed := 150.0
+var baseSpeed := 200.0
 var polygonSpeedMultiplier: float
 var oldPolygonSpeedMultiplier: float
 var polygonSpeedMultiplierDelta: float
+var powerupSpeedMultiplier: float = 1.0
 var _speed: float
 var speed: float:
 	get: return _speed
@@ -87,9 +97,22 @@ var alphaChangeTimeElapsed: float
 var originalAlpha: float
 var alphaDelta: float
 
-func _ready():
-	pass
+var powerupDurations: Dictionary = {
+	PowerupManager.Type.SPIN_CYCLE : 0, PowerupManager.Type.DUPLICATOR : 0, PowerupManager.Type.STICKY : 0,
+	PowerupManager.Type.BALL_BOOSTER : 0, PowerupManager.Type.WIDE_PADDLE : 0, PowerupManager.Type.FAST_PADDLE : 0,
+}
 
+var frameBeginPos: Vector2
+var stuckBalls: Array[Ball]
+var ballBoost: float:
+	get:
+		if powerupDurations[PowerupManager.Type.BALL_BOOSTER]: return 1.5
+		else: return 1.0
+var colorPosOffset := Vector2.ZERO
+
+func _ready():
+	topStickyShader.material.set_shader_parameter("noiseOffset", Vector2(randf(),randf()))
+	bottomStickyShader.material.set_shader_parameter("noiseOffset", Vector2(randf(),randf()))
 
 func initPaddle(
 	p_verticalFraction: float, polygon: PolygonGuide.Polygon, p_team: Team, p_player: Player,
@@ -106,15 +129,22 @@ func initPaddle(
 	polygonSpeedMultiplier = polygon.paddleSpeedMultiplier
 	teamSizeWidthMultiplier = TEAM_SIZE_WIDTH_MULTIPLIERS[len(team.players)]
 	updateWidthAndHeight()
-	_speed = baseSpeed * polygonSpeedMultiplier
+	_speed = baseSpeed * polygonSpeedMultiplier * Settings.getSettingValue(Settings.Setting.PADDLE_SPEED)
 	print("Init paddle at " + str(position))
 	position.x = leftBoundary + ((rightBoundary-width)-leftBoundary)*xPosFraction
 
 	player.inputSet.onCompletedCircle.connect(initiateCharge)
 	updateDirectionKeys()
 
+	player.paddle = self
 	color.color = team.color
 	chargingNode.color = team.color
+	ballDuplicatorSprite.modulate = team.color
+	topStickyShader.color = team.color
+	bottomStickyShader.color = team.color
+	ballBoosterShader.color = team.color
+	noisePos += randf_range(0,10)
+
 	if player.icon == PlayerManager.PlayerIcon.CIRCLE:
 		texture.hide()
 	else:
@@ -172,17 +202,83 @@ func processTransitions(delta):
 
 		polygonWidthMultiplier = oldPolygonWidthMultiplier + polygonWidthMultiplierDelta*transitionFraction
 		polygonSpeedMultiplier = oldPolygonSpeedMultiplier + polygonSpeedMultiplierDelta*transitionFraction
-
-	updateWidthAndHeight()
 	
 
+func processPowerups(delta):
+	for powerup in powerupDurations:
+		if powerupDurations[powerup] > 0:
+			powerupDurations[powerup] -= delta
+			if powerupDurations[powerup] < 0: powerupDurations[powerup] = 0
+	
+	if powerupDurations[PowerupManager.Type.WIDE_PADDLE]:
+		powerupWidthMultiplier = lerp(powerupWidthMultiplier, 2.0, delta)
+	else:
+		powerupWidthMultiplier = lerp(powerupWidthMultiplier, 1.0, delta/4)
+	
+	if powerupDurations[PowerupManager.Type.FAST_PADDLE]:
+		powerupSpeedMultiplier = lerp(powerupSpeedMultiplier, 3.0, delta)
+	else:
+		powerupSpeedMultiplier = lerp(powerupSpeedMultiplier, 1.0, delta/4)
+	
+	if not powerupDurations[PowerupManager.Type.STICKY]:
+		unstickBalls()
+
+
+	if powerupSpeedMultiplier > 0:
+		noisePos += delta*5.0
+		colorPosOffset = Vector2(
+			noise.get_noise_2d(0, noisePos)*(powerupSpeedMultiplier-1.0)*2,
+			noise.get_noise_2d(100, noisePos)*(powerupSpeedMultiplier-1.0)*2
+		)
+	else:
+		colorPosOffset = Vector2.ZERO
+	
+	if powerupDurations[PowerupManager.Type.DUPLICATOR] > 2:
+		ballDuplicatorSprite.self_modulate.a = lerp(ballDuplicatorSprite.self_modulate.a, 1.0, delta*2)
+	else:
+		ballDuplicatorSprite.self_modulate.a = lerp(ballDuplicatorSprite.self_modulate.a, 0.0, delta)
+	ballDuplicatorSprite.region_rect.position.x += delta*10
+
+	if powerupDurations[PowerupManager.Type.SPIN_CYCLE] > 2 and not chargingSpin and not spinning:
+		chargingNode.self_modulate.a = lerp(chargingNode.self_modulate.a, 1.0, delta*2)
+	elif not chargingSpin and not spinning:
+		chargingNode.self_modulate.a = lerp(chargingNode.self_modulate.a, 0.0, delta)
+
+	if powerupDurations[PowerupManager.Type.STICKY] > 2:
+		topStickyShader.self_modulate.a = lerp(topStickyShader.self_modulate.a, 0.75, delta*2)
+		bottomStickyShader.self_modulate.a = lerp(bottomStickyShader.self_modulate.a, 0.75, delta*2)
+	else:
+		topStickyShader.self_modulate.a = lerp(topStickyShader.self_modulate.a, 0.0, delta)
+		bottomStickyShader.self_modulate.a = lerp(bottomStickyShader.self_modulate.a, 0.0, delta)
+
+	if powerupDurations[PowerupManager.Type.BALL_BOOSTER] > 2:
+		ballBoosterShader.self_modulate.a = lerp(ballBoosterShader.self_modulate.a, 1.0, delta*2)
+	else:
+		ballBoosterShader.self_modulate.a = lerp(ballBoosterShader.self_modulate.a, 0.0, delta)
+
+
 func updateWidthAndHeight():
-	_width = baseWidth * teamSizeWidthMultiplier * polygonWidthMultiplier * verticalFraction**2
+	_width = (
+		baseWidth * teamSizeWidthMultiplier *
+		polygonWidthMultiplier * verticalFraction**2 *
+		Settings.getSettingValue(Settings.Setting.PADDLE_SIZE) *
+		powerupWidthMultiplier
+	)
+	if _width < 20: _width = 20
 	pivot.position.x = width/2
 	collider.shape.size.x = width
 	color.size.x = width
-	color.position.x = -width/2
+	color.position = Vector2(-width/2,-5) + colorPosOffset
 	color.material.set_shader_parameter("width", width)
+
+	ballDuplicatorSprite.position.x = width/2
+	ballDuplicatorSprite.region_rect.size.x = width
+
+	topStickyShader.material.set_shader_parameter("width", width)
+	bottomStickyShader.material.set_shader_parameter("width", width)
+
+	ballBoosterShader.position.x = -width/2 - 20
+	ballBoosterShader.size.x = width + 40
 
 	position.y = -team.height*(1-verticalFraction)-height
 	
@@ -194,8 +290,17 @@ func forceUpdateWidth(newWidth: float):
 	pivot.position.x = width/2
 	collider.shape.size.x = width
 	color.size.x = width
-	color.position.x = -width/2
+	color.position = Vector2(-width/2,-5) + colorPosOffset
 	color.material.set_shader_parameter("width", width)
+
+	ballDuplicatorSprite.position.x = width/2
+	ballDuplicatorSprite.region_rect.size.x = width
+
+	topStickyShader.material.set_shader_parameter("width", width)
+	bottomStickyShader.material.set_shader_parameter("width", width)
+
+	ballBoosterShader.position.x = -width/2 - 20
+	ballBoosterShader.size.x = width + 40
 
 
 func checkForValidPos() -> bool:
@@ -252,7 +357,11 @@ func processInput(delta: float):
 
 	moving = false
 	if movable:
-		_speed = baseSpeed*polygonSpeedMultiplier
+		_speed = (
+			baseSpeed * polygonSpeedMultiplier *
+			Settings.getSettingValue(Settings.Setting.PADDLE_SPEED) *
+			powerupSpeedMultiplier
+		)
 		if player.isInputPressed(leftKey) or player.isInputPressed(leftKeyAlt):
 			remainingDistance -= speed*delta
 			direction = LEFT
@@ -266,7 +375,7 @@ func processInput(delta: float):
 	if chargingSpin:
 		chargeTimeElasped += delta
 		if chargeTimeElasped > chargeDuration:
-			chargingNode.hide()
+			chargingNode.self_modulate.a = 0
 			initiateSpin(chargingClockwise)
 			chargingSpin = false
 		else:
@@ -277,7 +386,10 @@ func processInput(delta: float):
 		if spinTimeRemaining <= 0:
 			spinTimeRemaining = 0
 			spinning = false
-			changeTextureAlpha(0, 2)
+			if powerupDurations[PowerupManager.Type.SPIN_CYCLE]:
+				pivot.rotation = initialRotation + rotationDelta
+				initiateSpin(clockwiseSpin)
+			else: changeTextureAlpha(0, 2)
 		var spinFraction: float = (spinDuration-spinTimeRemaining)/spinDuration
 		pivot.rotation = initialRotation + rotationDelta*spinFraction
 	
@@ -291,14 +403,14 @@ func processInput(delta: float):
 
 
 func initiateCharge(_inputSet, clockwise: bool):
-	if chargingSpin or spinning: return
+	if chargingSpin or spinning or PauseManager.paused: return
 
 	chargingSpin = true
 	chargeDuration = 0.5
 	chargeTimeElasped = 0
 	chargingClockwise = clockwise
 
-	chargingNode.show()
+	chargingNode.self_modulate.a = 1
 	chargingNode.material.set_shader_parameter("innerSpiralProgress", 0.0)
 	chargingNode.material.set_shader_parameter("spiralRotationSpeed", 0.5)
 	if chargingClockwise: chargingNode.material.set_shader_parameter("reverse", 1.0)
@@ -306,15 +418,19 @@ func initiateCharge(_inputSet, clockwise: bool):
 
 	changeTextureAlpha(1, chargeDuration)
 
+	unstickBalls()
+
 
 func initiateSpin(clockwise: bool):
 	spinning = true
 	spinDuration = width/150.0
+	if powerupDurations[PowerupManager.Type.SPIN_CYCLE]: spinDuration /= 2.0
 	spinTimeRemaining = spinDuration
 	clockwiseSpin = clockwise
 	initialRotation = pivot.rotation
 	if clockwise: rotationDelta = PI
 	else: rotationDelta = -PI
+	unstickBalls()
 
 
 func changeTextureAlpha(targetAlpha: float, p_alphaChangeDuration: float):
@@ -396,3 +512,13 @@ func connectPaddles(leftPaddles: Array[Paddle], rightPaddles: Array[Paddle]):
 	for rightPaddle in rightPaddles:
 		rightPaddle.remainingDistance = newRemainingDistance
 		rightPaddle.connectedPaddles += leftPaddles
+
+
+func processStuckBalls():
+	for ball in stuckBalls:
+		ball.reorientBallToStuckPaddle()
+
+func unstickBalls():
+	for ball in stuckBalls:
+		ball.unstick()
+	stuckBalls.clear()

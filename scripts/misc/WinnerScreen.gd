@@ -1,7 +1,9 @@
+class_name WinnerScreen
 extends Node
 @export var camera: Camera2D
 
 @export var background: Background
+@export var foreground: Foreground
 
 @export var theBall: TheBall
 
@@ -15,32 +17,13 @@ extends Node
 @export var restartPromptText: Label
 @export var restartPrormptSlash: Label
 
-func createBall(position := Vector2(480,270), direction := Vector2(0,1),
-				speed: float = 100, additiveAcceleration: float = 0,
-				behavior := Ball.Behavior.CONSTANT_LINEAR, behaviorIntensity = Ball.SMOOTH,
-				color := Color.WHITE):
-
-	var newBall: Ball = ballPrefab.instantiate()
-	var newTrail: Trail = trailPrefab.instantiate()
-	newBall.trail = newTrail
-	ballsControl.add_child(newBall)
-	trailsCG.add_child(newTrail)
-
-	newBall.position = position
-	newBall.baseSpeedDirection = direction
-	newBall.baseSpeed = speed
-	newBall.additiveAcceleration = additiveAcceleration
-	newBall.behavior = behavior
-	newBall.behaviorIntensity = behaviorIntensity
-	newBall.updateColor(color)
-	newBall.onBallHitWall.connect(background.spawnBallArc)
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
-
-	print(Time.get_ticks_msec())
-
+	if camera != null and background != null: preparePlayfield()
 	ResourceLoader.load_threaded_request("res://scenes/MainMenu.tscn")
+	
+
+func preparePlayfield():
 	ScreenShaker.setCamera(camera)
 
 	for teamColor in PlayerManager.activePlayersByTeamColor:
@@ -74,7 +57,10 @@ func _ready():
 	restartPromptText.add_theme_color_override("font_color", PlayerManager.winningTeamColor)
 	restartPrormptSlash.add_theme_color_override("font_color", PlayerManager.winningTeamColor)
 
-
 func _process(_delta):
-	if Input.is_action_just_pressed("PRIMARY_MENU_BUTTON"):
+	if Input.is_action_just_pressed("PRIMARY_MENU_BUTTON") or Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
 		get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/MainMenu.tscn"))
+
+func reparentTheBall():
+	theBall.reparent(foreground)
+	theBall.radius = theBall.radius

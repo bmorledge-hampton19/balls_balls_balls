@@ -29,7 +29,7 @@ var angle: float:
 		return angle_difference(0, leftVertexAngle + vertexAngleDifference/2)
 
 
-var livesRemaining: int = 1
+var livesRemaining: int
 var ballsInGoal: Dictionary
 
 var color: Color
@@ -65,14 +65,15 @@ func changePolygon(polygon: PolygonGuide.Polygon, transitionDuration: float):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	livesRemaining = Settings.getSettingValue(Settings.Setting.STARTING_LIVES)
 
 func _physics_process(_delta):
 
 	updateGoalCollider()
 
-	for ball in ballsInGoal:
-		checkBall(ball)
+	for ball in ballsInGoal.keys():
+		if not is_instance_valid(ball): ballsInGoal.erase(ball)
+		else: checkBall(ball)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -159,6 +160,16 @@ func checkBall(ball: Ball):
 			else: ball.lastPlayer.goals += 1
 			ball.lastPlayer.onGoal.emit(ball.lastPlayer.goals)
 
+			if (
+				ball.powerupType != PowerupManager.Type.NONE and
+				is_instance_valid(ball.lastPlayer.paddle) and
+				ball.lastPlayer.paddle.color.color != self.color
+			):
+				PowerupManager.initPowerupAnimation(
+					ball.powerupType, ball.lastPlayer.paddle,
+					ball.global_position - ball.radius*Vector2.from_angle(rotation+PI/2)
+				)
+
 		print("GOOOOOOOOOOOOAL!!!")
 		ballsInGoal.erase(ball)
 		ball.onBallInGoal.emit(ball, self)
@@ -168,7 +179,7 @@ func checkBall(ball: Ball):
 			for otherBall in ballsInGoal:
 				(otherBall as Ball).goalsEncompassing.erase(goal)
 				print("Encompassement: " + str(goal.to_local(otherBall.global_position).y))
-				if goal.to_local(otherBall.global_position).y >= otherBall.radius/2: otherBall.onBallInGoal.emit(otherBall)
+				if goal.to_local(otherBall.global_position).y >= otherBall.radius/2: otherBall.onBallInGoal.emit(otherBall,self)
 			eliminateTeam.emit(self)
 
 func addLives(livesToAdd: int):
