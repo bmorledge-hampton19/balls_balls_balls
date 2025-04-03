@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://bs24t7qhmm0um"]
+[gd_scene load_steps=42 format=3 uid="uid://bs24t7qhmm0um"]
 
 [ext_resource type="Script" path="res://scripts/global/Background.gd" id="1_4nob6"]
 [ext_resource type="Script" path="res://scripts/playfield/GameManager.gd" id="1_upxls"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scripts/playfield/TheBall.gd" id="8_nbse7"]
 [ext_resource type="PackedScene" uid="uid://dqcbmnw2epd0h" path="res://scenes/objects/winner_playfield.tscn" id="9_12p7l"]
 [ext_resource type="PackedScene" uid="uid://ciaregb1hgvj7" path="res://scenes/objects/livesCounter.tscn" id="9_685es"]
+[ext_resource type="PackedScene" uid="uid://bjvx5qdqhbusc" path="res://scenes/objects/backboard.tscn" id="9_apv1f"]
 [ext_resource type="PackedScene" uid="uid://dtoyv1n8ll5pk" path="res://scenes/objects/inward_pulse.tscn" id="9_isxvy"]
 [ext_resource type="Shader" path="res://shaders/PlayfieldGrid.gdshader" id="10_608cd"]
 [ext_resource type="Shader" path="res://shaders/borders/TopPulsingBorder.gdshader" id="11_qcy7n"]
@@ -126,7 +127,7 @@ script = ExtResource("3_ob1jp")
 baseTime = 15.0
 timeDeviation = 5.0
 
-[node name="Game" type="Control" parent="." node_paths=PackedStringArray("camera", "leftScoreboard", "rightScoreboard", "playField", "verticesControl", "playfieldBackground", "theBall", "wallsControl", "teamsControl", "bumpersControl", "ballManager", "titleText")]
+[node name="Game" type="Control" parent="." node_paths=PackedStringArray("camera", "leftScoreboard", "rightScoreboard", "playField", "verticesControl", "playfieldBackground", "theBall", "wallsControl", "teamsControl", "bumpersControl", "ballManager", "titleText", "backboardControl")]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -157,6 +158,8 @@ bumperPrefab = ExtResource("5_m3awi")
 bumpersControl = NodePath("PlayField/Bumpers")
 ballManager = NodePath("PlayField/BallManager")
 titleText = NodePath("TitleText")
+backboardControl = NodePath("PlayField/Backboards")
+backboardPrefab = ExtResource("9_apv1f")
 winnerPlayfieldPrefab = ExtResource("9_12p7l")
 
 [node name="PlayField" type="Control" parent="Game"]
@@ -213,15 +216,10 @@ grow_vertical = 2
 
 [node name="TheBall" type="ColorRect" parent="Game/PlayField/PlayFieldBackground" node_paths=PackedStringArray("inwardPulsesControl")]
 material = SubResource("ShaderMaterial_h7n8l")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 426.0
+offset_left = 424.0
 offset_top = 216.0
-offset_right = 534.0
+offset_right = 532.0
 offset_bottom = 324.0
-grow_horizontal = 2
-grow_vertical = 2
 script = ExtResource("8_nbse7")
 inwardPulsesControl = NodePath("../InwardPulses")
 inwardPulsePrefab = ExtResource("9_isxvy")
@@ -366,21 +364,31 @@ offset_top = -0.0320053
 grow_horizontal = 2
 
 [node name="Walls" type="Control" parent="Game/PlayField"]
+layout_mode = 3
 anchors_preset = 0
 offset_right = 960.0
 offset_bottom = 540.0
 
 [node name="ParticleEmitters" type="Control" parent="Game/PlayField"]
+layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
+[node name="Backboards" type="Control" parent="Game/PlayField"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 960.0
+offset_bottom = 540.0
+
 [node name="Teams" type="Control" parent="Game/PlayField"]
+layout_mode = 3
 anchors_preset = 0
 offset_right = 960.0
 offset_bottom = 540.0
 
 [node name="Bumpers" type="Control" parent="Game/PlayField"]
+layout_mode = 3
 anchors_preset = 0
 offset_right = 960.0
 offset_bottom = 540.0

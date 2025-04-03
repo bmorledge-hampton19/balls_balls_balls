@@ -138,10 +138,10 @@ color = Color(0, 0, 0, 1)
 
 [node name="BackButton" type="Control" parent="MainViewport"]
 anchors_preset = 0
-offset_left = 370.0
-offset_top = 480.0
-offset_right = 590.0
-offset_bottom = 530.0
+offset_left = 611.0
+offset_top = 465.0
+offset_right = 831.0
+offset_bottom = 515.0
 
 [node name="TopWall" parent="MainViewport/BackButton" instance=ExtResource("8_5yhuw")]
 offset_right = 220.0

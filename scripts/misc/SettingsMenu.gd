@@ -33,13 +33,13 @@ func _ready():
 			Settings.Setting.BALL_SPEED, Settings.Setting.SPAWN_RATE,
 			Settings.Setting.PADDLE_SPEED, Settings.Setting.PADDLE_SIZE,
 			Settings.Setting.STARTING_LIVES, Settings.Setting.LIVES_ON_ELIM,
-			Settings.Setting.PLAYER_CONTROLLED_BALLS,
+			Settings.Setting.PLAYER_CONTROLLED_BALLS, Settings.Setting.FULLSCREEN,
 		]:
 			settingSelectorColumn = settingSelectorLeftColumn
 		else:
 			settingSelectorColumn = settingSelectorRightColumn
 		
-		var newSettingSelector = settingSelectorPrefab.instantiate()
+		var newSettingSelector: SettingSelector = settingSelectorPrefab.instantiate()
 		newSettingSelector.init(setting)
 		if setting in [
 			Settings.Setting.LINEAR_ACCEL_SPAWN_RATE, Settings.Setting.SPIRALING_SPAWN_RATE,
@@ -49,8 +49,9 @@ func _ready():
 			newSettingSelector.indent()
 		settingSelectorColumn.add_child(newSettingSelector)
 		settingSelectors.append(newSettingSelector)
+		if setting == Settings.Setting.FULLSCREEN: Settings.onToggleFullscreen.connect(newSettingSelector.update)
 		
-		var newSettingBall = settingBallPrefab.instantiate()
+		var newSettingBall: SettingBall = settingBallPrefab.instantiate()
 		var newTrail: Trail = trailPrefab.instantiate()
 		newSettingBall.trail = newTrail
 		settingBallsControl.add_child(newSettingBall)
@@ -58,6 +59,7 @@ func _ready():
 		trailsCanvasGroup.add_child(newTrail)
 		newSettingBall.onBallHitWall.connect(background.spawnBallArc)
 		newSettingBall.init(setting)
+		if setting == Settings.Setting.FULLSCREEN: Settings.onToggleFullscreen.connect(newSettingBall.update)
 
 	for settingSelector in settingSelectors:
 		settingSelector.lowlight()

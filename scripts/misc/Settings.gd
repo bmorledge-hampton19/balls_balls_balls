@@ -2,6 +2,7 @@ extends Node
 
 enum Setting {
     SETTINGS_FORMAT, BALL_SPEED, SPAWN_RATE, PADDLE_SPEED, PADDLE_SIZE, STARTING_LIVES, LIVES_ON_ELIM, PLAYER_CONTROLLED_BALLS,
+    FULLSCREEN,
     LINEAR_ACCEL_SPAWN_RATE, SPIRALING_SPAWN_RATE, STOP_AND_START_SPAWN_RATE, DRIFTER_SPAWN_RATE, BEHAVIOR_INTENSITY,
     POWERUP_FREQUENCY, POWERUP_DURATION,
 }
@@ -18,6 +19,7 @@ var _settingIndices: Dictionary = {
     Setting.STARTING_LIVES : 4,
     Setting.LIVES_ON_ELIM : 1,
     Setting.PLAYER_CONTROLLED_BALLS : 1,
+    Setting.FULLSCREEN : 1,
 
     Setting.LINEAR_ACCEL_SPAWN_RATE : 1,
     Setting.SPIRALING_SPAWN_RATE : 1,
@@ -37,6 +39,7 @@ const SETTING_TITLES: Dictionary = {
     Setting.STARTING_LIVES : "Starting Lives",
     Setting.LIVES_ON_ELIM : "Lives on Elim",
     Setting.PLAYER_CONTROLLED_BALLS : "Zombie Balls",
+    Setting.FULLSCREEN : "Fullscreen (F11)",
 
     Setting.LINEAR_ACCEL_SPAWN_RATE : "Accelerators",
     Setting.SPIRALING_SPAWN_RATE : "Spinners",
@@ -56,6 +59,7 @@ const SETTING_VALUES: Dictionary = {
     Setting.STARTING_LIVES : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 100],
     Setting.LIVES_ON_ELIM : [0, 1, 2, 3, 4, 5],
     Setting.PLAYER_CONTROLLED_BALLS : [false, true],
+    Setting.FULLSCREEN : [false, true],
 
     Setting.LINEAR_ACCEL_SPAWN_RATE : [0, 10, 20, 50, 100],
     Setting.SPIRALING_SPAWN_RATE : [0, 10, 20, 50, 100],
@@ -75,6 +79,7 @@ const SETTING_VALUE_NAMES: Dictionary = {
     Setting.STARTING_LIVES : ["Sudden Death", "2", "3", "4", "5", "6", "7", "8", "9", "10", "20", "30", "40", "50", "Marathon"],
     Setting.LIVES_ON_ELIM : ["0", "1", "2", "3", "4", "5"],
     Setting.PLAYER_CONTROLLED_BALLS : ["Nope", "Yup"],
+    Setting.FULLSCREEN : ["Nah", "Extra THICC"],
 
     Setting.LINEAR_ACCEL_SPAWN_RATE : ["None", "Rare", "Uncommon", "Common", "Frequent"],
     Setting.SPIRALING_SPAWN_RATE : ["None", "Rare", "Uncommon", "Common", "Frequent"],
@@ -85,8 +90,23 @@ const SETTING_VALUE_NAMES: Dictionary = {
     Setting.POWERUP_DURATION : ["Fleeting", "Brief", "Lengthy", "Enduring"],
 }
 
+signal onToggleFullscreen()
+
 func setSetting(setting: Setting, index: int):
-    _settingIndices[setting] = index
+    if setting == Setting.FULLSCREEN and index != _settingIndices[Setting.FULLSCREEN]: _toggleFullscreen()
+    else: _settingIndices[setting] = index
 
 func getSettingValue(setting: Setting):
     return SETTING_VALUES[setting][_settingIndices[setting]]
+
+func _toggleFullscreen():
+    if _settingIndices[Setting.FULLSCREEN] == 0:
+        _settingIndices[Setting.FULLSCREEN] = 1
+        DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+    else:
+        _settingIndices[Setting.FULLSCREEN] = 0
+        DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+    onToggleFullscreen.emit()
+
+func _process(_delta):
+    if Input.is_action_just_pressed("FULLSCREEN"): _toggleFullscreen()

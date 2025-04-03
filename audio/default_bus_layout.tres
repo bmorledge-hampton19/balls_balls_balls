@@ -1,0 +1,122 @@
+[gd_resource type="AudioBusLayout" load_steps=11 format=3 uid="uid://0ch1y31glm34"]
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_kfayk"]
+resource_name = "PitchShift"
+pitch_scale = 0.71
+
+[sub_resource type="AudioEffectAmplify" id="AudioEffectAmplify_1whav"]
+resource_name = "Amplify"
+volume_db = 10.0
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_tfkdn"]
+resource_name = "PitchShift"
+pitch_scale = 0.79
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_gx1nq"]
+resource_name = "PitchShift"
+pitch_scale = 0.89
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_syqrw"]
+resource_name = "PitchShift"
+pitch_scale = 0.94
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_bwbgo"]
+resource_name = "PitchShift"
+pitch_scale = 1.06
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_jtbj0"]
+resource_name = "PitchShift"
+pitch_scale = 1.19
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_4n84w"]
+resource_name = "PitchShift"
+pitch_scale = 1.33
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_pk06m"]
+resource_name = "PitchShift"
+pitch_scale = 1.41
+
+[sub_resource type="AudioEffectPitchShift" id="AudioEffectPitchShift_2njaw"]
+resource_name = "PitchShift"
+
+[resource]
+bus/1/name = &"Step1"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/1/effect/0/effect = SubResource("AudioEffectPitchShift_kfayk")
+bus/1/effect/0/enabled = true
+bus/2/name = &"Step2"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = 0.0
+bus/2/send = &"Master"
+bus/2/effect/0/effect = SubResource("AudioEffectPitchShift_tfkdn")
+bus/2/effect/0/enabled = true
+bus/3/name = &"Step3"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = 0.0
+bus/3/send = &"Master"
+bus/3/effect/0/effect = SubResource("AudioEffectPitchShift_gx1nq")
+bus/3/effect/0/enabled = true
+bus/4/name = &"Step4"
+bus/4/solo = false
+bus/4/mute = false
+bus/4/bypass_fx = false
+bus/4/volume_db = 0.0
+bus/4/send = &"Master"
+bus/4/effect/0/effect = SubResource("AudioEffectPitchShift_syqrw")
+bus/4/effect/0/enabled = true
+bus/5/name = &"Step5"
+bus/5/solo = false
+bus/5/mute = false
+bus/5/bypass_fx = false
+bus/5/volume_db = 0.0
+bus/5/send = &"Master"
+bus/5/effect/0/effect = SubResource("AudioEffectPitchShift_bwbgo")
+bus/5/effect/0/enabled = true
+bus/6/name = &"Step6"
+bus/6/solo = false
+bus/6/mute = false
+bus/6/bypass_fx = false
+bus/6/volume_db = 0.0
+bus/6/send = &"Master"
+bus/6/effect/0/effect = SubResource("AudioEffectPitchShift_jtbj0")
+bus/6/effect/0/enabled = true
+bus/7/name = &"Step7"
+bus/7/solo = false
+bus/7/mute = false
+bus/7/bypass_fx = false
+bus/7/volume_db = 0.0
+bus/7/send = &"Master"
+bus/7/effect/0/effect = SubResource("AudioEffectPitchShift_4n84w")
+bus/7/effect/0/enabled = true
+bus/8/name = &"Step8"
+bus/8/solo = false
+bus/8/mute = false
+bus/8/bypass_fx = false
+bus/8/volume_db = 0.0
+bus/8/send = &"Master"
+bus/8/effect/0/effect = SubResource("AudioEffectPitchShift_pk06m")
+bus/8/effect/0/enabled = true
+bus/9/name = &"PlayButton"
+bus/9/solo = false
+bus/9/mute = false
+bus/9/bypass_fx = false
+bus/9/volume_db = 0.0
+bus/9/send = &"Master"
+bus/9/effect/0/effect = SubResource("AudioEffectPitchShift_2njaw")
+bus/9/effect/0/enabled = true
+bus/10/name = &"Music"
+bus/10/solo = false
+bus/10/mute = false
+bus/10/bypass_fx = false
+bus/10/volume_db = 0.0
+bus/10/send = &"Master"
+bus/10/effect/0/effect = SubResource("AudioEffectAmplify_1whav")
+bus/10/effect/0/enabled = true

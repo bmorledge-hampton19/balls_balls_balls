@@ -8,7 +8,7 @@ void fragment() {
 	float circleValue = (1.0-(distanceFromCenter-sin(TIME)*0.05)*2.0)*brightness;
 	float boundary = 0.4 + sin(TIME)*0.05;
 	COLOR.rgb *= circleValue*(1.0-step(boundary,distanceFromCenter));
-	COLOR.a = 1.0-step(boundary, distanceFromCenter);
+	COLOR.a *= 1.0-step(boundary, distanceFromCenter);
 
 	//float curveFunc = (pos.y+0.02)-pow(pos.x,2);
 	//float curveFunc = pos.x + pos.y;

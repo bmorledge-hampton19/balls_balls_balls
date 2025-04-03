@@ -14,9 +14,13 @@ var _leftVertexTracker: VertexTracker
 var _rightVertexTracker: VertexTracker
 
 var leftVertex: Vertex:
-	get: return _leftVertexTracker.vertex
+	get:
+		if staticWall: return null
+		else: return _leftVertexTracker.vertex
 var rightVertex: Vertex:
-	get: return _rightVertexTracker.vertex
+	get:
+		if staticWall: return null
+		else: return _rightVertexTracker.vertex
 
 var leftInnerAngle: float
 var rightInnerAngle: float

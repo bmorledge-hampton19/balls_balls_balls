@@ -15,12 +15,19 @@ extends Node
 
 @export var winningTeamText: Label
 @export var restartPromptText: Label
+@export var restartButtonPromptsControl: Control
 @export var restartPrormptSlash: Label
+
+var stillTransitioning := true
+var restartTextAlpha := 0.0
+var restartTextDelay := 5.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	if camera != null and background != null: preparePlayfield()
 	ResourceLoader.load_threaded_request("res://scenes/MainMenu.tscn")
+	restartPromptText.modulate.a = 0
+	restartButtonPromptsControl.modulate.a = 0
 	
 
 func preparePlayfield():
@@ -57,10 +64,21 @@ func preparePlayfield():
 	restartPromptText.add_theme_color_override("font_color", PlayerManager.winningTeamColor)
 	restartPrormptSlash.add_theme_color_override("font_color", PlayerManager.winningTeamColor)
 
-func _process(_delta):
+func _process(delta):
+	if stillTransitioning or not AudioManager.musicPlayer.playing: return
 	if Input.is_action_just_pressed("PRIMARY_MENU_BUTTON") or Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
 		get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/MainMenu.tscn"))
+	
+	if restartTextAlpha < 1 and restartTextDelay == 0:
+		restartTextAlpha += 0.25*delta
+		if restartTextAlpha > 1: restartTextAlpha = 1
+		restartPromptText.modulate.a = restartTextAlpha
+		restartButtonPromptsControl.modulate.a = restartTextAlpha
+	elif restartTextDelay > 0:
+		restartTextDelay -= delta
+		if restartTextDelay < 0: restartTextDelay = 0
 
 func reparentTheBall():
 	theBall.reparent(foreground)
 	theBall.radius = theBall.radius
+	stillTransitioning = false

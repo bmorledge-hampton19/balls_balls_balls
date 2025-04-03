@@ -16,6 +16,8 @@ extends Node
 var playerSelectors: Array[PlayerSelector]
 var ballsByPlayer: Dictionary
 
+var firstFrame := true
+
 func attemptAddPlayer(inputSet: InputSets.InputSet, _direction: bool, activePlayer: Player = null):
 	if PauseManager.paused: return
 	if activePlayer == null and inputSet.assignedPlayer != null and inputSet.assignedPlayer.active: return
@@ -58,7 +60,7 @@ func removePlayerSelector(playerSelector: PlayerSelector):
 	if playerSelectors[-1].player != null: addPlayerSelector()
 
 func startGame():
-	print(Time.get_ticks_msec())
+	PauseManager.unpause()
 	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Playfield.tscn"))
 	
 
@@ -73,13 +75,18 @@ func _ready():
 
 	PauseManager.pausable = true
 
+	AudioManager.playMenuMusic()
+
 	for teamColor in PlayerManager.activePlayersByTeamColor:
 		for player in PlayerManager.activePlayersByTeamColor[teamColor]:
 			attemptAddPlayer(player.inputSet, true, player)
 
 func _process(_delta):
+	if firstFrame:
+		firstFrame = false
+		return
 	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
-		var pauseMenu := PauseManager.pause()
+		var pauseMenu := PauseManager.pause(false)
 		pauseMenu.initOptions(["Settings", "Credits", "Resume", "Quit Game"],
 							  [transitionToSettings, transitionToCredits, PauseManager.unpause, get_tree().quit])
 		mainViewport.add_child(pauseMenu)

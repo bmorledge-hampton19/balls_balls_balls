@@ -12,7 +12,7 @@ var radius: float = 54:
 	set(value):
 		radius = value
 		size = Vector2(radius*2, radius*2)
-		position = Vector2((960-radius*2)/2, center-radius)
+		position = Vector2(480-radius, center-radius)
 var radiusScale: float:
 	get: return radius/54
 var brightness: float = 0.5:
@@ -78,6 +78,7 @@ func initiatePulse():
 	newPulse.onPulseFinish.connect(assimilatePulse)
 	newPulse.lifespan = 3
 	inwardPulsesControl.add_child(newPulse)
+	AudioManager.playInwardPulse()
 
 func assimilatePulse():
 	transitioning = true
@@ -96,6 +97,8 @@ func assimilatePulse():
 	newColor = color
 
 	ScreenShaker.addShake()
+
+	AudioManager.playTheBallExpansion()
 
 func forceSizeChange(newRadius: float, p_transitionDuration: float, p_newColor: Color = Color.WHITE):
 	

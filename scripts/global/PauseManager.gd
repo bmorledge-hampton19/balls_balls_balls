@@ -8,7 +8,7 @@ var transferableController: InputSets.InputSet
 var pausable: bool = true
 
 
-func pause() -> PauseMenu:
+func pause(pauseMusic := true) -> PauseMenu:
 
     if not pausable: return
 
@@ -18,6 +18,7 @@ func pause() -> PauseMenu:
 
     paused = true
     get_tree().paused = true
+    if pauseMusic: AudioManager.pauseMusic()
 
     pauseMenu = PAUSE_MENU_PREFAB.instantiate()
     print(pauseMenu)
@@ -28,6 +29,7 @@ func unpause(transferControl := false):
 
     paused = false
     get_tree().paused = false
+    AudioManager.resumeMusic()
     transferableController = null
 
     if not is_instance_valid(pauseMenu):

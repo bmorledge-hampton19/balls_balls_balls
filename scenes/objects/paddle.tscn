@@ -54,7 +54,7 @@ shader_parameter/noise = ExtResource("6_6rijp")
 resource_local_to_scene = true
 size = Vector2(100, 10)
 
-[node name="Paddle" type="Node2D" node_paths=PackedStringArray("pivot", "collider", "color", "ballDuplicatorSprite", "topStickyShader", "bottomStickyShader", "ballBoosterShader", "texture", "chargingNode")]
+[node name="Paddle" type="Node2D" node_paths=PackedStringArray("pivot", "collider", "color", "ballDuplicatorSprite", "topStickyShader", "bottomStickyShader", "ballBoosterShader", "texture", "chargingNode", "textControl")]
 script = ExtResource("1_mq44b")
 pivot = NodePath("Pivot")
 collider = NodePath("Pivot/Collider")
@@ -65,6 +65,7 @@ bottomStickyShader = NodePath("Pivot/Color/BottomStickyShader")
 ballBoosterShader = NodePath("Pivot/BallBoosterShader")
 texture = NodePath("Pivot/Color/PlayerIcon")
 chargingNode = NodePath("Pivot/Color/ChargingUp")
+textControl = NodePath("TextControl")
 noise = SubResource("FastNoiseLite_6osw4")
 
 [node name="Pivot" type="Area2D" parent="."]
@@ -153,3 +154,11 @@ expand_mode = 1
 visible = false
 shape = SubResource("RectangleShape2D_s4ui3")
 one_way_collision_margin = 0.0
+
+[node name="TextControl" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 50.0
+offset_top = 5.0
+offset_right = 50.0
+offset_bottom = 5.0

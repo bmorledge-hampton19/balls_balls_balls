@@ -22,6 +22,7 @@ var gridVisibilityDelta: float
 var finalTwoFadingIn: bool
 var finalTwoFadeDuration: float
 var finalTwoFadeTimeElapsed: float
+signal afterfinalTwoFadeIn()
 
 var leftDividerOffset: float = 0
 var rightDividerOffset: float = 0
@@ -69,6 +70,7 @@ func _process(delta):
 		if finalTwoFadeTimeElapsed >= finalTwoFadeDuration:
 			finalTwoFadeTimeElapsed = finalTwoFadeDuration
 			finalTwoFadingIn = false
+			afterfinalTwoFadeIn.emit()
 		var fadeRatio: float
 		if finalTwoFadeDuration == 0: fadeRatio = 1
 		else: fadeRatio = finalTwoFadeTimeElapsed/finalTwoFadeDuration
@@ -114,6 +116,8 @@ func suckGrid(duration: float):
 	oldGridVisibility = 0.75
 	grid.material.set_shader_parameter("visibilityCutoff", oldGridVisibility)
 	gridVisibilityDelta = 0 - oldGridVisibility
+
+	AudioManager.playTheBallSucking()
 
 func bringTheBallToFront():
 	move_child(theBall, -1)

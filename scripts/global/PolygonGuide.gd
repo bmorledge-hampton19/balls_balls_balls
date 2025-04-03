@@ -14,7 +14,7 @@ class Polygon:
 		if sides > 2:
 			internalAngle = 2*PI/sides
 		else:
-			internalAngle = atan(480.0/270.0)*2
+			internalAngle = atan(470.0/270.0)*2
 		sideLength = sideLengths[sides]
 		microRadius = microRadii[sides]
 		macroRadius = macroRadii[sides]
@@ -33,7 +33,7 @@ const sideLengths := {
 }
 
 const microRadii := {
-	2 : 480,
+	2 : 470, # 480 for full viewport rect
 	3 : 180,
 	4 : 270,
 	5 : 241.50,
@@ -43,7 +43,7 @@ const microRadii := {
 }
 
 const macroRadii := {
-	2 : 550.73,
+	2 : 542.03, # 550.73 for full viewport rect
 	3 : 360,
 	4 : 381.84,
 	5 : 298.50,
@@ -73,7 +73,7 @@ const paddleSpeedMultipliers := {
 }
 
 const maxWidths := {
-	2 : 960,
+	2 : 960, # 960 for full viewport rect
 	3 : 623.54,
 	4 : 540,
 	5 : 567.78,

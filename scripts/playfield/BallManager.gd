@@ -161,8 +161,10 @@ func spawnBall(playerController: Player = null):
 	if playerController == null and randf() < Settings.getSettingValue(Settings.Setting.POWERUP_FREQUENCY):
 		newBall.powerupParticleEmitter = powerupParticleEmitterPrefab.instantiate()
 
+	AudioManager.playSpawnBall()
 
-func activateBall(ball: Ball):
+
+func activateBall(ball: Ball, volumeMod := 1.0):
 	ball.modulate.a = 1
 	ball.trail.show()
 	ball.resetDecayingSpeed(ball.baseSpeed*0.4, 1)
@@ -182,9 +184,11 @@ func activateBall(ball: Ball):
 
 	spawningBalls.erase(ball)
 
+	AudioManager.playActivateBall(ball.behavior, volumeMod)
+
 func activateAllBalls():
 	for ball in spawningBalls.keys():
-		activateBall(ball)
+		activateBall(ball, 0.25)
 
 
 func cloneBall(parent: Ball):
@@ -252,17 +256,19 @@ func onBallInGoal(ball: Ball, team: Team):
 	deleteBall(ball)
 
 
-func explodeBall(ball: Ball):
+func explodeBall(ball: Ball, playAudio: bool = true):
 	var particleEmitter: OneShotParticleEmitter = explosionParticleEmitter.instantiate()
 	particleEmittersControl.add_child(particleEmitter)
 	particleEmitter.color = ball.teamColor.color
 	particleEmitter.global_position = ball.global_position
 	ScreenShaker.addShake(20)
 	deleteBall(ball)
+	if playAudio: AudioManager.playBallExplosion()
 
 func explodeAllBalls():
 	for ball in balls.keys():
-		explodeBall(ball)
+		explodeBall(ball, false)
+	AudioManager.playBallExplosion()
 
 
 func prepForFinale(spawnDelay: float):

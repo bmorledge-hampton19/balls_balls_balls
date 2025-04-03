@@ -10,7 +10,7 @@ enum Type {NONE, SPIN_CYCLE, DUPLICATOR, STICKY, BALL_BOOSTER, WIDE_PADDLE, FAST
 
 var durationMult := {
     Type.NONE : 0,
-    Type.SPIN_CYCLE : 0.8,
+    Type.SPIN_CYCLE : 1.0,
     Type.DUPLICATOR : 1.25,
     Type.STICKY : 1.5,
     Type.BALL_BOOSTER : 1.25,
@@ -38,16 +38,23 @@ func initPowerupAnimation(powerupType: Type, paddle: Paddle, globalGoalPos: Vect
         particleControl.add_child(powerupParticle)
         powerupParticle.global_position = globalGoalPos
         powerupParticle.init(paddle)
-        if i == 0: powerupParticle.onAbsorption.connect(func(): conferPowerup(powerupType, paddle))
+        powerupParticle.onAbsorption.connect(func(): conferPowerupParticle(powerupType, paddle))
 
 
-func conferPowerup(powerupType: Type, paddle: Paddle):
+func conferPowerupParticle(powerupType: Type, paddle: Paddle):
     if not is_instance_valid(paddle): return
+
+    paddle.absorbedPowerupParticles += 1
+    AudioManager.playAbsorbPowerupParticle(paddle.team.color)
+    if paddle.absorbedPowerupParticles % 10: return
+
     paddle.powerupDurations[powerupType] += (
         Settings.getSettingValue(Settings.Setting.POWERUP_DURATION) *
         PowerupManager.durationMult[powerupType]
     )
+
     var powerupText: PaddlePowerupText = powerupTextPrefab.instantiate()
     powerupText.text = powerupName[powerupType]
     powerupText.self_modulate = paddle.color.color
-    paddle.pivot.add_child(powerupText)
+    paddle.textControl.add_child(powerupText)
+    AudioManager.playConferPowerup(paddle.team.color)

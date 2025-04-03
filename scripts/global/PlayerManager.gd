@@ -3,23 +3,23 @@ extends Node
 const teamColors: Array[Color] = [
 	Color.RED,
 	Color.ORANGE,
+	Color.SADDLE_BROWN,
 	Color.YELLOW,
 	Color.FOREST_GREEN,
 	Color.CYAN,
 	Color.PURPLE,
 	Color.HOT_PINK,
-	Color.SADDLE_BROWN,
 ]
 
 const teamColorNames: Dictionary = {
 	Color.RED : "RED",
 	Color.ORANGE : "ORANGE",
+	Color.SADDLE_BROWN : "BROWN",
 	Color.YELLOW : "YELLOW",
 	Color.FOREST_GREEN : "GREEN",
 	Color.CYAN : "BLUE",
 	Color.PURPLE : "PURPLE",
 	Color.HOT_PINK : "PINK",
-	Color.SADDLE_BROWN : "BROWN",
 }
 
 enum PlayerIcon {
@@ -132,7 +132,7 @@ func getPlayerIconTexture(playerIcon: PlayerIcon) -> Texture2D:
 			return preload(playerIconDir + "radioactive.png")
 
 		_:
-			return preload("res://icon.svg")
+			return preload("res://images/ball.png")
 
 var isIconActive: Dictionary
 
@@ -152,7 +152,7 @@ func _ready():
 		isIconActive[playerIcon] = false
 	for teamColor in teamColors:
 		activePlayersByTeamColor[teamColor] = [] as Array[Player]
-	initBalancedTestPlayers()
+	# initDuel()
 
 func _process(_delta):
 	pass

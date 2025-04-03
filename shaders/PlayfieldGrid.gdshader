@@ -43,6 +43,6 @@ void fragment() {
 	);
 
 	COLOR.rgb = vec3(max(xColor,yColor)*gridSaturation);
-	COLOR.a = smoothstep(0.0,0.2, COLOR.r);
+	COLOR.a *= smoothstep(0.0,0.2, COLOR.r);
 	COLOR.a *= 1.0-smoothstep(visibilityCutoff-0.05, visibilityCutoff+0.05, distanceFromCenter);
 }

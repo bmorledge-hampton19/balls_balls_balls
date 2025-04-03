@@ -25,6 +25,7 @@ func _process(delta):
 		coolRainbowProgressCircle.value -= emptyRate*delta
 		if active:
 			deactivateButton()
+		AudioManager.stopPlayButton()
 
 	else:
 		if not active:
@@ -41,6 +42,9 @@ func _process(delta):
 		else:
 			coolRainbowProgressCircle.value -= emptyRate*delta
 
+		if coolRainbowProgressCircle.value > 0.1 and coolRainbowProgressCircle.value < 99.9:
+			AudioManager.playPlayButton(coolRainbowProgressCircle.value/100.0)
+		else: AudioManager.stopPlayButton()
 
 func deactivateButton():
 	addTeamsLabel.show()

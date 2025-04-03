@@ -48,6 +48,16 @@ var bumpers: Dictionary
 
 @export var ballManager: BallManager
 
+var scalingInPlayfield: bool
+var spinningInPlayField: bool
+var spinningAndScalingRatio: float
+var targetSpinRotation := PI*4
+
+var fadingInPlayfieldBackground: bool
+
+var fadingInScoreboards: bool
+var scoreboardFadeRatio: float
+
 @export var titleText: TitleText
 var titleTextBalls := 3
 var reduceTitleTextBallsTimer := Timer.new()
@@ -60,8 +70,11 @@ var radiusIncreaseFromTimeSoFar: float
 var timeBetweenRadiusIncreases: float = 30
 var timeUntilRadiusIncrease: float = 30
 
+@export var backboardControl: Control
+@export var backboardPrefab: PackedScene
+
 @export var winnerPlayfieldPrefab: PackedScene
-var transitioningToWinners
+var transitioningToWinnerScreen
 
 func _ready():
 
@@ -70,8 +83,10 @@ func _ready():
 	ResourceLoader.load_threaded_request("res://scenes/MainMenu.tscn")
 
 	ScreenShaker.setCamera(camera)
+	AudioManager.stopMusic()
 
 	var activeTeamColors := PlayerManager.getActiveTeamColors()
+	activeTeamColors.shuffle()
 	polygon = PolygonGuide.polygons[len(activeTeamColors)]
 	radiusIncreasePerLostTeam = 54.0/(len(activeTeamColors)-2)
 	var teamNum := 0
@@ -105,6 +120,11 @@ func _ready():
 				rightScoreboard.addGoalsCounter(player)
 			
 			teamNum += 1
+
+		leftScoreboard.modulate.a = 0
+		rightScoreboard.modulate.a = 0
+		spinningInPlayField = true
+		ballManager.explodeAllBalls()
 
 	else:
 
@@ -156,6 +176,7 @@ func _ready():
 		ballManager.prepForFinale(standardTransitionDuration*0.25)
 		prepForFinale(leftTeam, rightTeam, true)
 
+
 	for vertex in vertices:
 		bumpers[vertex] = bumperPrefab.instantiate()
 		bumpersControl.add_child(bumpers[vertex])
@@ -171,11 +192,10 @@ func _ready():
 	updatePlayfieldWidth(polygon.maxWidth)
 
 	ballManager.off = true
-	reduceTitleTextBallsTimer.timeout.connect(reduceTitleTextBalls)
-	reduceTitleTextBallsTimer.wait_time = 1
-	reduceTitleTextBallsTimer.one_shot = true
-	add_child(reduceTitleTextBallsTimer)
-	reduceTitleTextBallsTimer.start()
+	scalingInPlayfield = true
+	playField.scale = Vector2.ZERO
+	playfieldBackground.modulate.a = 0
+	titleText.hide()
 
 
 func removeVertex(vertex: Vertex):
@@ -474,38 +494,6 @@ func pathReducingVertex(reducingVertex: Vertex):
 	reducingVertex.changePolygon(polygon, targetAngle, reducingVertex.reducingTimeRemaining, direction, targetMacroRadius)
 
 
-func reduceTitleTextBalls():
-
-	if titleTextBalls > 0: reduceTitleTextBallsTimer.start()
-	
-	titleTextBalls -= 1
-
-	if titleTextBalls == -1:
-		for team in teams.values():
-			team.paddleManager.fadePaddleTextures()
-	elif titleTextBalls == 0:
-		titleText.characters = [
-			'G','o','!'
-		]
-		ballManager.off = false
-		titleText.updateText()
-	elif titleTextBalls == 1:
-		titleText.characters = [
-			'B', 'a', 'l', 'l', 's',
-		]
-		titleText.size.y = 117
-		titleText.position.y = 211
-		titleText.updateText()
-	elif titleTextBalls == 2:
-		titleText.characters = [
-			'B', 'a', 'l', 'l', 's', ' ',
-			'B', 'a', 'l', 'l', 's',
-		]
-		titleText.size.y = 234
-		titleText.position.y = 153
-		titleText.updateText()
-
-
 func getAllVertices() -> Array[Vertex]:
 	var allVertices: Array[Vertex]
 	for vertex in vertices:
@@ -519,16 +507,64 @@ func getAllVertices() -> Array[Vertex]:
 	)
 	return allVertices
 
+func startCountdown():
+	print("Starting countdown")
+	titleText.show()
+	reduceTitleTextBallsTimer.timeout.connect(reduceTitleTextBalls)
+	reduceTitleTextBallsTimer.wait_time = 1.5
+	reduceTitleTextBallsTimer.one_shot = true
+	add_child(reduceTitleTextBallsTimer)
+	reduceTitleTextBallsTimer.start()
+	AudioManager.playBallsVoice()
+
+func reduceTitleTextBalls():
+
+	if titleTextBalls > 0: reduceTitleTextBallsTimer.start()
+	
+	titleTextBalls -= 1
+
+	if titleTextBalls == -1:
+		for team in teams.values():
+			team.paddleManager.fadePaddleTextures()
+		if polygon.sides > 2 or Settings.getSettingValue(Settings.Setting.STARTING_LIVES) > 1: AudioManager.playPlayfieldMusic()
+		else: AudioManager.playFinalShowdownMusic()
+	elif titleTextBalls == 0:
+		titleText.characters = [
+			'G','o','!'
+		]
+		ballManager.off = false
+		titleText.updateText()
+		AudioManager.playGoVoice()
+	elif titleTextBalls == 1:
+		titleText.characters = [
+			'B', 'a', 'l', 'l', 's',
+		]
+		titleText.size.y = 117
+		titleText.position.y = 211
+		titleText.updateText()
+		AudioManager.playBallsVoice()
+	elif titleTextBalls == 2:
+		titleText.characters = [
+			'B', 'a', 'l', 'l', 's', ' ',
+			'B', 'a', 'l', 'l', 's',
+		]
+		titleText.size.y = 234
+		titleText.position.y = 153
+		titleText.updateText()
+		AudioManager.playBallsVoice()
+
 
 func _process(delta):
 
-	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
+	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON") and not transitioningToWinnerScreen:
 		var pauseMenu := PauseManager.pause()
 		pauseMenu.initOptions(["Resume", "Restart", "Return to Main Menu"],
 							  [PauseManager.unpause, restart, returnToMainMenu])
 		add_child(pauseMenu)
-	
-	timeUntilRadiusIncrease -= delta
+
+	processStartingEffects(delta)
+
+	if not ballManager.off: timeUntilRadiusIncrease -= delta
 	if timeUntilRadiusIncrease <= 0:
 		var radiusIncrease = (maxRadiusIncreaseFromTime - radiusIncreaseFromTimeSoFar) * 0.25
 		theBall.initiateGrowth(1, radiusIncrease)
@@ -549,19 +585,56 @@ func _process(delta):
 		updatePlayfieldCenter(playfieldCenter)
 		var playfieldWidth = oldPlayfieldWidth + playfieldWidthDelta*transitionFraction
 		updatePlayfieldWidth(playfieldWidth)
-	
-	if titleTextBalls == -1:
-		var newAlpha = titleText.self_modulate.a - 0.5*delta
-		if newAlpha < 0:
-			newAlpha = 0
-			titleTextBalls = -1
-		titleText.self_modulate = Color(titleText.self_modulate, newAlpha)
 
 	var vertexPositions: Array[Vector2]
 	for vertex in getAllVertices():
 		vertexPositions.append(playfieldBackground.to_local(vertex.global_position))
 	playfieldBackground.polygon = PackedVector2Array(vertexPositions)
 
+
+func processStartingEffects(delta: float):
+
+	if spinningInPlayField or scalingInPlayfield:
+		spinningAndScalingRatio = lerp(spinningAndScalingRatio, 1.075, delta/2)
+		if spinningAndScalingRatio >= 1.0:
+			spinningAndScalingRatio = 1.0
+		if scalingInPlayfield: playField.scale = Vector2.ONE*spinningAndScalingRatio
+		if spinningInPlayField: verticesControl.rotation = targetSpinRotation * spinningAndScalingRatio
+		if spinningAndScalingRatio == 1.0:
+			spinningInPlayField = false
+			scalingInPlayfield = false
+			fadingInPlayfieldBackground = true
+			AudioManager.playSpawnBall()
+	
+	if fadingInPlayfieldBackground:
+		playfieldBackground.modulate.a = lerp(playfieldBackground.modulate.a, 1.1, delta)
+		if playfieldBackground.modulate.a >= 0.5 and scoreboardFadeRatio == 0 and not playfieldBackground.finalTwoFadingIn:
+			if polygon.sides > 2: fadingInScoreboards = true
+			else:
+				playfieldBackground.fadeInFinalTwoGraphics(teams[vertices[-1]], teams[vertices[1]], 4)
+				addBackboards(teams[vertices[-1]], teams[vertices[1]])
+				playfieldBackground.afterfinalTwoFadeIn.connect(
+					func(): get_tree().create_timer(2.0, false).timeout.connect(startCountdown)
+				)
+		if playfieldBackground.modulate.a >= 1:
+			playfieldBackground.modulate.a = 1
+			fadingInPlayfieldBackground = false
+	
+	if fadingInScoreboards:
+		scoreboardFadeRatio = lerp(scoreboardFadeRatio, 1.1, delta)
+		if scoreboardFadeRatio >= 1.0:
+			scoreboardFadeRatio = 1.0
+			fadingInScoreboards = false
+			get_tree().create_timer(2.0, false).timeout.connect(startCountdown)
+		leftScoreboard.modulate.a = scoreboardFadeRatio
+		rightScoreboard.modulate.a = scoreboardFadeRatio
+
+	if titleTextBalls == -1:
+		var newAlpha = titleText.self_modulate.a - 0.5*delta
+		if newAlpha < 0:
+			newAlpha = 0
+			titleTextBalls = -1
+		titleText.self_modulate = Color(titleText.self_modulate, newAlpha)
 
 func updatePlayfieldCenter(playfieldCenter: float):
 
@@ -585,10 +658,10 @@ func updatePlayfieldWidth(playfieldWidth: float):
 	boundaries.maxXOffset = 480 - scoreBoardWidth + 0.1
 
 
-func prepForFinale(leftTeam: Team, rightTeam: Team, instant: bool = false):
+func prepForFinale(leftTeam: Team, rightTeam: Team, atBeginning: bool = false):
 	timeUntilRadiusIncrease = 99999
 
-	if instant: playfieldBackground.grid.hide()
+	if atBeginning: playfieldBackground.grid.hide()
 	else: playfieldBackground.suckGrid(standardTransitionDuration)
 	playfieldBackground.bringTheBallToFront()
 
@@ -603,18 +676,42 @@ func prepForFinale(leftTeam: Team, rightTeam: Team, instant: bool = false):
 	rightTeam.onLivesChanged.connect(func(lives): playfieldBackground.rightLives.updateText(lives))
 	rightTeam.onLivesChanged.connect(func(_lives): playfieldBackground.modulateDividerSpeed(false, 2))
 
-	if instant: playfieldBackground.fadeInFinalTwoGraphics(
-		leftTeam, rightTeam, 0, 0
-	)
-	else: playfieldBackground.fadeInFinalTwoGraphics(
-		leftTeam, rightTeam, standardTransitionDuration*0.25, standardTransitionDuration
-	)
+	if not atBeginning:
+		playfieldBackground.fadeInFinalTwoGraphics(
+			leftTeam, rightTeam, standardTransitionDuration*0.25, standardTransitionDuration
+		)
+		get_tree().create_timer(standardTransitionDuration, false).timeout.connect(func(): addBackboards(leftTeam, rightTeam))
 
-	if instant: theBall.forceSizeChange(200, 0)
-	else: theBall.forceSizeChange(200, 10)
+	if atBeginning: theBall.forceSizeChange(200, 0)
+	else: theBall.forceSizeChange(200, standardTransitionDuration)
+
+	if not atBeginning:
+		AudioManager.fadeOutMusic()
+		get_tree().create_timer(standardTransitionDuration, false).timeout.connect(AudioManager.playFinalShowdownMusic)
+	elif Settings.getSettingValue(Settings.Setting.STARTING_LIVES) > 1:
+		leftTeam.onLivesChanged.connect(func(_none): transitionToFinalShowdownMusic())
+		rightTeam.onLivesChanged.connect(func(_none): transitionToFinalShowdownMusic())
+
+
+func addBackboards(leftTeam: Team, rightTeam: Team):
+	var leftBackboard: Backboard = backboardPrefab.instantiate()
+	backboardControl.add_child(leftBackboard)
+	leftBackboard.color = leftTeam.color*0.75
+
+	var rightBackboard: Backboard = backboardPrefab.instantiate()
+	backboardControl.add_child(rightBackboard)
+	rightBackboard.color = rightTeam.color*0.75
+	rightBackboard.rotation = PI
+	rightBackboard.position = Vector2(960,540)
+
+
+func transitionToFinalShowdownMusic():
+	if AudioManager.musicPlayer.stream == AudioManager.PLAYFIELD_MUSIC and not AudioManager.fadingOutMusic:
+		AudioManager.transitionToFinalShowdownMusic()
 
 
 func beginTransitionToWinnerScreen():
+	transitioningToWinnerScreen = true
 	ballManager.explodeAllBalls()
 	ballManager.off = true
 	ScreenShaker.addShake(40, -1)
@@ -622,6 +719,8 @@ func beginTransitionToWinnerScreen():
 	theBall.reparent(self)
 	theBall.forceSizeChange(1000, transitionTime, PlayerManager.winningTeamColor)
 	get_tree().create_timer(transitionTime, false).timeout.connect(transitionToWinnerScreen)
+	AudioManager.playTheBallRumbling()
+	AudioManager.fadeOutMusic()
 
 func transitionToWinnerScreen():
 
@@ -637,6 +736,7 @@ func transitionToWinnerScreen():
 	get_tree().create_timer(transitionTime, false).timeout.connect(winnerPlayfield.reparentTheBall)
 	ScreenShaker.clearShakes()
 	ScreenShaker.addShake(40, transitionTime)
+	get_tree().create_timer(transitionTime, false).timeout.connect(func(): AudioManager.playWinnerAudio(PlayerManager.winningTeamColor))
 
 	queue_free()
 

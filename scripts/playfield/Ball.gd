@@ -157,6 +157,8 @@ var stuckToTopOrBottom: int
 var isClone: bool
 var timeUntilClone: float
 
+var recentCollisions: Dictionary
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -172,6 +174,8 @@ func _process(delta: float):
 	currentTime += delta
 	timeUntilClone -= delta
 
+	processRecentCollisions(delta)
+
 	processBaseAcceleration(delta)
 
 	processBehavior(delta)
@@ -181,6 +185,15 @@ func _process(delta: float):
 	checkForGoals()
 
 	if trail != null: processTrails(delta)
+
+
+func processRecentCollisions(delta):
+	var collisionsToRemove: Array
+	for collision in recentCollisions:
+		recentCollisions[collision] -= delta
+		if recentCollisions[collision] <= 0: collisionsToRemove.append(collision)
+	for collision in collisionsToRemove:
+		recentCollisions.erase(collision)
 
 
 func processBaseAcceleration(delta):
@@ -462,6 +475,8 @@ func processMovement(delta: float):
 		var priorityCollisionDistance := remainingDistance + radius
 		var collisionIsBumper := false
 		var collisionIsPaddle := false
+		var collisionIsWall := false
+		var collisionIsBreakableBlock := false
 
 		shapeCaster.target_position = shapeCaster.position + remainingDistance*direction
 		shapeCaster.force_shapecast_update()
@@ -477,17 +492,30 @@ func processMovement(delta: float):
 					if not collisionIsBumper or competingDistance <= priorityCollisionDistance:
 						collisionIsBumper = true
 						collisionIsPaddle = false
+						collisionIsWall = false
+						collisionIsBreakableBlock = false
 						priorityCollisionDistance = competingDistance
 						priorityCollisionIndex = i
 
 				elif collider.get_collision_layer_value(2) and not collisionIsBumper:
 					if not collisionIsPaddle or competingDistance <= priorityCollisionDistance:
 						collisionIsPaddle = true
+						collisionIsWall = false
+						collisionIsBreakableBlock = false
 						priorityCollisionDistance = competingDistance
 						priorityCollisionIndex = i
 				
 				elif collider.get_collision_layer_value(5) and not collisionIsBumper and not collisionIsPaddle:
 					if competingDistance <= priorityCollisionDistance and isValidWallCollision(i):
+						collisionIsWall = true
+						collisionIsBreakableBlock = false
+						priorityCollisionDistance = competingDistance
+						priorityCollisionIndex = i
+				
+				elif collider.get_collision_layer_value(6) and not collisionIsBumper and not collisionIsPaddle:
+					if competingDistance <= priorityCollisionDistance:
+						collisionIsBreakableBlock = true
+						collisionIsWall = false
 						priorityCollisionDistance = competingDistance
 						priorityCollisionIndex = i
 
@@ -499,8 +527,11 @@ func processMovement(delta: float):
 				handlePaddleCollision(priorityCollisionIndex)
 				if stuckToWhichPaddle != null:
 					return
-			else:
+			elif collisionIsWall:
 				handleWallCollision(priorityCollisionIndex)
+			elif collisionIsBreakableBlock:
+				handleBreakableBlockCollision(priorityCollisionIndex)
+				return
 
 			# NOTE: This is helpful if an object has clipped inside a ball but is not guaranteed to avoid future collisions.
 			# 		For most use-cases, it's fine, but the innaccuracy is worth noting. (Really, my collision system
@@ -529,8 +560,7 @@ func processMovement(delta: float):
 			collisionsThisFrame += 1
 			if collisionsThisFrame >= 2: print(str(collisionsThisFrame) + " collisions!")
 			if collisionsThisFrame > 10 and collisionsThisFrame/delta > 100:
-				for goal in goalsEncompassing: goal.area_exited.emit(self)
-				onBallExplosion.emit(self)
+				explode()
 				return
 			
 			if collisionIsPaddle: 
@@ -558,6 +588,10 @@ func handleBumperCollision(i: int):
 		var lingeringBehaviorSpeed = behaviorSpeed * 0.5
 		resetDecayingSpeed(fullVelocity.length())
 		behaviorSpeed = lingeringBehaviorSpeed
+	if bumper not in recentCollisions:
+		recentCollisions[bumper] = 0.1
+		AudioManager.playBumperBounce()
+	else: print("Capping audio!")
 
 
 func handlePaddleCollision(i: int):
@@ -592,6 +626,12 @@ func handleStaticPaddleCollision(collisionPoint: Vector2, paddle: Paddle):
 		distanceFromBottomLeftCorner, distanceFromBottomRightCorner
 	)
 
+	var validAudio: bool
+	if paddle not in recentCollisions:
+		validAudio = true
+		recentCollisions[paddle] = 0.1
+	else: print("Capping audio!")
+
 	if abs(angle_difference(normalAngle,paddleAngle-PI/2)) < 0.1:
 		print("Hit top of paddle!")
 		var centerRatio := (distanceFromTopLeftCorner - paddleWidth/2)/(paddleWidth/2)
@@ -600,9 +640,13 @@ func handleStaticPaddleCollision(collisionPoint: Vector2, paddle: Paddle):
 			stuckCenterRatio = centerRatio
 			stuckToTopOrBottom = TOP
 			resetDecayingSpeed(0)
+			if validAudio: AudioManager.playPaddleStick(paddle.team.color)
 		else:
 			if paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
 				resetDecayingSpeed(baseSpeed*2, 5.0)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+			else:
+				if validAudio: AudioManager.playPaddleBounce(paddle.team.color)
 			newDirection = Vector2.from_angle(normalAngle + PI * 3/8 * centerRatio)
 	elif abs(angle_difference(normalAngle,paddleAngle+PI/2)) < 0.1:
 		print("Hit bottom of paddle!")
@@ -612,47 +656,84 @@ func handleStaticPaddleCollision(collisionPoint: Vector2, paddle: Paddle):
 			stuckCenterRatio = centerRatio
 			stuckToTopOrBottom = BOTTOM
 			resetDecayingSpeed(0)
+			if validAudio: AudioManager.playPaddleStick(paddle.team.color)
 		else:
 			if paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
 				resetDecayingSpeed(baseSpeed*2, 5.0)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+			else:
+				if validAudio: AudioManager.playPaddleBounce(paddle.team.color)
 			newDirection = Vector2.from_angle(normalAngle - PI * 3/8 * centerRatio)
 	elif minDistance == distanceFromTopLeftCorner:
 		print("Hit left-top side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle - PI * 7/8)
 		if paddle.direction == paddle.LEFT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
-			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+			if baseSpeed < paddle.speed:
+				resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+			else:
+				resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
 			resetDecayingSpeed(baseSpeed, 5.0)
+			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+		else:
+			if validAudio: AudioManager.playPaddleBounce(paddle.team.color)
 	elif minDistance == distanceFromBottomLeftCorner:
 		print("Hit left-bottom side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle + PI * 7/8)
 		if paddle.direction == paddle.LEFT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
-			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+			if baseSpeed < paddle.speed:
+				resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+			else:
+				resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
 			resetDecayingSpeed(baseSpeed, 5.0)
+			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+		else:
+			if validAudio: AudioManager.playPaddleBounce(paddle.team.color)
 	elif minDistance == distanceFromTopRightCorner:
 		print("Hit right-top side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle - PI * 1/8)
 		if paddle.direction == paddle.RIGHT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
-			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+			if baseSpeed < paddle.speed:
+				resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+			else:
+				resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
 			resetDecayingSpeed(baseSpeed, 5.0)
+			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+		else:
+			if validAudio: AudioManager.playPaddleBounce(paddle.team.color)
 	elif minDistance == distanceFromBottomRightCorner:
 		print("Hit right-bottom side of paddle")
 		newDirection = Vector2.from_angle(paddleAngle + PI * 1/8)
 		if paddle.direction == paddle.RIGHT:
-			if baseSpeed < paddle.speed: resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
-			else: resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+			if baseSpeed < paddle.speed:
+				resetDecayingSpeed((paddle.speed*1.1-baseSpeed)*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+			else:
+				resetDecayingSpeed(paddle.speed*.1*paddle.ballBoost)
+				if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 		elif paddle.powerupDurations[PowerupManager.Type.BALL_BOOSTER] and decayingSpeed < baseSpeed:
 			resetDecayingSpeed(baseSpeed, 5.0)
+			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
+		else:
+			if validAudio: AudioManager.playPaddleBounce(paddle.team.color)
 	else:
 		print("Wat")
 
 
 func handleSpinningPaddleCollision(collisionPoint: Vector2, paddle: Paddle, paddleArea: Area2D):
+
+	var validAudio: bool
+	if paddle not in recentCollisions:
+		validAudio = true
+		recentCollisions[paddle] = 0.1
 
 	var localCollisionPoint = paddleArea.to_local(collisionPoint)
 	var paddlePointVelocity := Vector2.ZERO
@@ -676,7 +757,6 @@ func handleSpinningPaddleCollision(collisionPoint: Vector2, paddle: Paddle, padd
 			paddlePointVelocity += paddle.speed*Vector2.from_angle(paddle.global_rotation)
 		elif paddle.direction == paddle.LEFT:
 			paddlePointVelocity += paddle.speed*Vector2.from_angle(paddle.global_rotation)*-1
-		newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
 
 	if (
 		paddlePointVelocity != Vector2.ZERO and
@@ -685,10 +765,13 @@ func handleSpinningPaddleCollision(collisionPoint: Vector2, paddle: Paddle, padd
 		newDirection = ((paddlePointVelocity + fullVelocity.length()*collisionNormal)/2).normalized()
 		if baseSpeed < paddlePointVelocity.length():
 			resetDecayingSpeed((paddlePointVelocity.length()*1.1-baseSpeed)*paddle.ballBoost, 8)
+			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 		else:
 			resetDecayingSpeed(paddlePointVelocity.length()*.1*paddle.ballBoost, 8)
+			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 	else:
 		newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
+		if validAudio: AudioManager.playPaddleBounce(paddle.team.color)
 
 
 func unstick():
@@ -709,6 +792,8 @@ func unstick():
 
 	if stuckToWhichPaddle.powerupDurations[PowerupManager.Type.DUPLICATOR]:
 		PowerupManager.cloneBall(self)
+
+	AudioManager.playPaddleUnstick(stuckToWhichPaddle.team.color)
 
 	stuckToWhichPaddle = null
 
@@ -748,8 +833,21 @@ func handleWallCollision(i):
 		collisionNormal = shapeCaster.get_collision_normal(i)
 		# print("FUNKY wall collision! (Probably a corner)")
 	newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
+	AudioManager.playWallBounce()
 
-	
+
+func handleBreakableBlockCollision(i):
+	var breakableBlock := shapeCaster.get_collider(i) as BreakableBlock
+	breakableBlock.explode()
+	ScreenShaker.addShake(30, 2)
+	explode()
+
+
+func explode():
+	for goal in goalsEncompassing: goal.area_exited.emit(self)
+	onBallExplosion.emit(self)
+
+
 func checkForGoals():
 
 	shapeCaster.target_position = shapeCaster.position

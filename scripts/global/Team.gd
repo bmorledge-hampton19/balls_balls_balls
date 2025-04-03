@@ -156,9 +156,13 @@ func checkBall(ball: Ball):
 	if localBallPos.y > ball.radius:
 
 		if ball.lastPlayer != null:
-			if ball.lastPlayer.teamColor == color: ball.lastPlayer.goals -= 1
-			else: ball.lastPlayer.goals += 1
-			ball.lastPlayer.onGoal.emit(ball.lastPlayer.goals)
+			if ball.ballController == null:
+				if ball.lastPlayer.teamColor == color: ball.lastPlayer.goals -= 1
+				else: ball.lastPlayer.goals += 1
+				ball.lastPlayer.onGoal.emit(ball.lastPlayer.goals)
+			else:
+				ball.ballController.player.goals += 1
+				ball.ballController.player.onGoal.emit(ball.ballController.player.goals)
 
 			if (
 				ball.powerupType != PowerupManager.Type.NONE and
@@ -170,7 +174,6 @@ func checkBall(ball: Ball):
 					ball.global_position - ball.radius*Vector2.from_angle(rotation+PI/2)
 				)
 
-		print("GOOOOOOOOOOOOAL!!!")
 		ballsInGoal.erase(ball)
 		ball.onBallInGoal.emit(ball, self)
 		livesRemaining -= 1
@@ -178,9 +181,11 @@ func checkBall(ball: Ball):
 		if livesRemaining == 0:
 			for otherBall in ballsInGoal:
 				(otherBall as Ball).goalsEncompassing.erase(goal)
-				print("Encompassement: " + str(goal.to_local(otherBall.global_position).y))
+				# print("Encompassement: " + str(goal.to_local(otherBall.global_position).y))
 				if goal.to_local(otherBall.global_position).y >= otherBall.radius/2: otherBall.onBallInGoal.emit(otherBall,self)
 			eliminateTeam.emit(self)
+		
+		AudioManager.playGoal(color)
 
 func addLives(livesToAdd: int):
 	livesRemaining += livesToAdd

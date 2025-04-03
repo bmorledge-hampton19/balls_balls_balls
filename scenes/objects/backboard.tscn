@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3 uid="uid://bjvx5qdqhbusc"]
+
+[ext_resource type="Script" path="res://scripts/playfield/Backboard.gd" id="1_myfok"]
+[ext_resource type="PackedScene" uid="uid://c1rddv1k7ru1p" path="res://scenes/objects/breakable_block.tscn" id="1_pko2p"]
+
+[node name="Backboard" type="Control" node_paths=PackedStringArray("breakableBlocks")]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_myfok")
+breakableBlocks = [NodePath("BreakableBlock"), NodePath("BreakableBlock2"), NodePath("BreakableBlock3"), NodePath("BreakableBlock4"), NodePath("BreakableBlock5"), NodePath("BreakableBlock6"), NodePath("BreakableBlock7"), NodePath("BreakableBlock8"), NodePath("BreakableBlock9"), NodePath("BreakableBlock10")]
+
+[node name="BreakableBlock" parent="." instance=ExtResource("1_pko2p")]
+
+[node name="BreakableBlock2" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 54)
+
+[node name="BreakableBlock3" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 108)
+
+[node name="BreakableBlock4" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 162)
+
+[node name="BreakableBlock5" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 216)
+
+[node name="BreakableBlock6" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 270)
+
+[node name="BreakableBlock7" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 324)
+
+[node name="BreakableBlock8" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 378)
+
+[node name="BreakableBlock9" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 432)
+
+[node name="BreakableBlock10" parent="." instance=ExtResource("1_pko2p")]
+position = Vector2(0, 486)

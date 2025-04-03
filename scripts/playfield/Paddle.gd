@@ -10,6 +10,7 @@ extends Node2D
 @export var ballBoosterShader: ColorRect
 @export var texture: TextureRect
 @export var chargingNode: ColorRect
+@export var textControl: Control
 
 @export var noise: FastNoiseLite
 var noisePos: float
@@ -101,6 +102,7 @@ var powerupDurations: Dictionary = {
 	PowerupManager.Type.SPIN_CYCLE : 0, PowerupManager.Type.DUPLICATOR : 0, PowerupManager.Type.STICKY : 0,
 	PowerupManager.Type.BALL_BOOSTER : 0, PowerupManager.Type.WIDE_PADDLE : 0, PowerupManager.Type.FAST_PADDLE : 0,
 }
+var absorbedPowerupParticles: int
 
 var frameBeginPos: Vector2
 var stuckBalls: Array[Ball]
@@ -266,6 +268,7 @@ func updateWidthAndHeight():
 	)
 	if _width < 20: _width = 20
 	pivot.position.x = width/2
+	textControl.position.x = width/2
 	collider.shape.size.x = width
 	color.size.x = width
 	color.position = Vector2(-width/2,-5) + colorPosOffset
@@ -288,6 +291,7 @@ func updateWidthAndHeight():
 func forceUpdateWidth(newWidth: float):
 	_width = newWidth
 	pivot.position.x = width/2
+	textControl.position.x = width/2
 	collider.shape.size.x = width
 	color.size.x = width
 	color.position = Vector2(-width/2,-5) + colorPosOffset
@@ -376,7 +380,10 @@ func processInput(delta: float):
 		chargeTimeElasped += delta
 		if chargeTimeElasped > chargeDuration:
 			chargingNode.self_modulate.a = 0
+			chargingNode.material.set_shader_parameter("innerSpiralProgress", 0.5)
 			initiateSpin(chargingClockwise)
+			AudioManager.playInitiateSpin(team.color)
+			# AudioManager.playSustainedSpin(self)
 			chargingSpin = false
 		else:
 			chargingNode.material.set_shader_parameter("innerSpiralProgress", chargeTimeElasped/chargeDuration)
@@ -389,7 +396,9 @@ func processInput(delta: float):
 			if powerupDurations[PowerupManager.Type.SPIN_CYCLE]:
 				pivot.rotation = initialRotation + rotationDelta
 				initiateSpin(clockwiseSpin)
-			else: changeTextureAlpha(0, 2)
+			else:
+				changeTextureAlpha(0, 2)
+				# AudioManager.stopSustainedSpin(self)
 		var spinFraction: float = (spinDuration-spinTimeRemaining)/spinDuration
 		pivot.rotation = initialRotation + rotationDelta*spinFraction
 	
@@ -419,6 +428,8 @@ func initiateCharge(_inputSet, clockwise: bool):
 	changeTextureAlpha(1, chargeDuration)
 
 	unstickBalls()
+
+	AudioManager.playPaddleCharge(team.color)
 
 
 func initiateSpin(clockwise: bool):

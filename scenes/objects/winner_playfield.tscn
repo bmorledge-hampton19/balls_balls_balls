@@ -35,7 +35,7 @@ resource_local_to_scene = true
 shader = ExtResource("6_vopv4")
 shader_parameter/brightness = 0.5
 
-[node name="WinnerPlayfield" type="Control" node_paths=PackedStringArray("foreground", "theBall", "ballsControl", "trailsCG", "winningTeamText", "restartPromptText", "restartPrormptSlash")]
+[node name="WinnerPlayfield" type="Control" node_paths=PackedStringArray("foreground", "theBall", "ballsControl", "trailsCG", "winningTeamText", "restartPromptText", "restartButtonPromptsControl", "restartPrormptSlash")]
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -59,6 +59,7 @@ trailsCG = NodePath("Trails")
 ballGoalsTextPrefab = ExtResource("4_n8n66")
 winningTeamText = NodePath("Foreground/WinnerText/WinningTeam")
 restartPromptText = NodePath("Foreground/WinnerText/RestartPrompt")
+restartButtonPromptsControl = NodePath("Foreground/WinnerText/ButtonPrompts")
 restartPrormptSlash = NodePath("Foreground/WinnerText/ButtonPrompts/Slash")
 
 [node name="Foreground" type="Polygon2D" parent="." node_paths=PackedStringArray("grid", "theBall")]
@@ -314,15 +315,10 @@ radius = 20.0
 [node name="TheBall" type="ColorRect" parent="." node_paths=PackedStringArray("inwardPulsesControl")]
 material = SubResource("ShaderMaterial_f02ab")
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
 offset_left = 426.0
 offset_top = 216.0
-offset_right = -426.0
-offset_bottom = -216.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 534.0
+offset_bottom = 324.0
 script = ExtResource("7_wh173")
 inwardPulsesControl = NodePath("../Foreground/InwardPulses")
 inwardPulsePrefab = ExtResource("8_phwbm")
