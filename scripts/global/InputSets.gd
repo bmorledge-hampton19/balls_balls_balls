@@ -33,6 +33,7 @@ class InputSet:
 	var timeSinceLastCounterclockwiseInput: float
 	var nextCounterclockwiseInput: String
 	var consecutiveCounterclockwiseInputs: int = 0
+	var inputsRequiredForCircle: int = 4
 	signal onCompletedCircle(inputSet: InputSet, clockwise: bool)
 
 	var device: int
@@ -42,6 +43,7 @@ class InputSet:
 	func _init(p_name, p_device):
 
 		name = p_name
+		if "JOYSTICK" in name: inputsRequiredForCircle = 5
 
 		upInput = name + "_UP"
 		rightInput = name + "_RIGHT"
@@ -94,7 +96,7 @@ class InputSet:
 				justPressedInputs.erase(nextClockwiseInput)
 				consecutiveClockwiseInputs += 1
 
-				if consecutiveClockwiseInputs == 5:
+				if consecutiveClockwiseInputs == inputsRequiredForCircle:
 					onCompletedCircle.emit(self, true)
 					consecutiveClockwiseInputs = 0
 				else:
@@ -115,7 +117,7 @@ class InputSet:
 				justPressedInputs.erase(nextCounterclockwiseInput)
 				consecutiveCounterclockwiseInputs += 1
 
-				if consecutiveCounterclockwiseInputs == 5:
+				if consecutiveCounterclockwiseInputs == inputsRequiredForCircle:
 					onCompletedCircle.emit(self, false)
 					consecutiveCounterclockwiseInputs = 0
 				else:
