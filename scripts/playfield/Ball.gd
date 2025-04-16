@@ -839,7 +839,7 @@ func handleWallCollision(i):
 func handleBreakableBlockCollision(i):
 	var breakableBlock := shapeCaster.get_collider(i) as BreakableBlock
 	breakableBlock.explode()
-	ScreenShaker.addShake(30, 2)
+	ScreenShaker.addShake(20, 1.5)
 	explode()
 
 
