@@ -556,7 +556,10 @@ func reduceTitleTextBalls():
 
 func _process(delta):
 
-	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON") and not transitioningToWinnerScreen:
+	if (
+		(Input.is_action_just_pressed("SECONDARY_MENU_BUTTON") or Input.is_action_just_pressed("PRIMARY_MENU_BUTTON")) and
+		not transitioningToWinnerScreen
+	):
 		var pauseMenu := PauseManager.pause()
 		pauseMenu.initOptions(["Resume", "Restart", "Return to Main Menu"],
 							  [PauseManager.unpause, restart, returnToMainMenu])

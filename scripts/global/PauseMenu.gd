@@ -31,7 +31,8 @@ func initOptions(names: Array[String], functions: Array[Callable]):
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 
-	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"): PauseManager.unpause()
+	if Input.is_action_just_pressed("PRIMARY_MENU_BUTTON") or Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
+		PauseManager.unpause()
 
 	var masterInputSet := masterInputSelector.masterInputSet
 	if masterInputSet == null:
