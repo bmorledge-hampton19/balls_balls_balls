@@ -16,7 +16,7 @@ var topTexts: Array[String] = [
 ]
 var bottomTexts: Array[String] = [
 	"jfxr.frozenfractal.com", "beepbox.co", "thoseawesomeguys.com/prompts", "cleanpng.com",
-	"The M-H Gang", "The Boys", "The WSU SMB Fam",
+	"The M-H Gang", "The Boys", "The WSU Community",
 	"github.com/matjlars", "godotengine.org/license", "Iceland",
 ]
 var colors: Array[Color] = [
