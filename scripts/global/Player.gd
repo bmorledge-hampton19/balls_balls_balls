@@ -12,6 +12,8 @@ var upInput: String:
 	get: return inputSet.upInput
 var downInput: String:
 	get: return inputSet.downInput
+var specialInput: String:
+	get: return inputSet.specialInput
 var sdInput: int
 var icon: PlayerManager.PlayerIcon
 var texture: Texture2D:
@@ -19,6 +21,14 @@ var texture: Texture2D:
 
 var paddle: Paddle
 var goals: int
+var goalsAtLastPowerup: int
+var readyForPowerup: bool:
+	get:
+		if goals >= goalsAtLastPowerup + Settings.getSettingValue(Settings.Setting.POWERUP_FREQUENCY):
+			goalsAtLastPowerup += Settings.getSettingValue(Settings.Setting.POWERUP_FREQUENCY)
+			return true
+		else:
+			return false
 @warning_ignore("unused_signal")
 signal onGoal(goals: int)
 

@@ -27,13 +27,14 @@ func _ready():
 	ResourceLoader.load_threaded_request("res://scenes/MainMenu.tscn")
 
 	for setting: Settings.Setting in Settings.Setting.values():
+		if setting in [Settings.Setting.BEHAVIOR_INTENSITY, Settings.Setting.SPIN_TYPE]: continue
 		var settingSelectorColumn: VBoxContainer
 		if setting in [
 			Settings.Setting.SETTINGS_FORMAT,
-			Settings.Setting.BALL_SPEED, Settings.Setting.SPAWN_RATE,
+			Settings.Setting.BALL_SIZE, Settings.Setting.BALL_SPEED, Settings.Setting.SPAWN_RATE,
 			Settings.Setting.PADDLE_SPEED, Settings.Setting.PADDLE_SIZE,
 			Settings.Setting.STARTING_LIVES, Settings.Setting.LIVES_ON_ELIM,
-			Settings.Setting.PLAYER_CONTROLLED_BALLS, Settings.Setting.FULLSCREEN,
+			Settings.Setting.FULLSCREEN,
 		]:
 			settingSelectorColumn = settingSelectorLeftColumn
 		else:
@@ -42,14 +43,15 @@ func _ready():
 		var newSettingSelector: SettingSelector = settingSelectorPrefab.instantiate()
 		newSettingSelector.init(setting)
 		if setting in [
-			Settings.Setting.LINEAR_ACCEL_SPAWN_RATE, Settings.Setting.SPIRALING_SPAWN_RATE,
+			Settings.Setting.ANGLER_SPAWN_RATE, Settings.Setting.SPIRALING_SPAWN_RATE,
 			Settings.Setting.STOP_AND_START_SPAWN_RATE, Settings.Setting.DRIFTER_SPAWN_RATE,
-			Settings.Setting.BEHAVIOR_INTENSITY
+			Settings.Setting.PLAYER_CONTROLLED_BALLS,
 		]:
 			newSettingSelector.indent()
 		settingSelectorColumn.add_child(newSettingSelector)
 		settingSelectors.append(newSettingSelector)
 		if setting == Settings.Setting.FULLSCREEN: Settings.onToggleFullscreen.connect(newSettingSelector.update)
+		if setting == Settings.Setting.PRESET: Settings.onCheckPresets.connect(newSettingSelector.update)
 		
 		var newSettingBall: SettingBall = settingBallPrefab.instantiate()
 		var newTrail: Trail = trailPrefab.instantiate()
@@ -60,6 +62,8 @@ func _ready():
 		newSettingBall.onBallHitWall.connect(background.spawnBallArc)
 		newSettingBall.init(setting)
 		if setting == Settings.Setting.FULLSCREEN: Settings.onToggleFullscreen.connect(newSettingBall.update)
+		if setting == Settings.Setting.PRESET: Settings.onCheckPresets.connect(newSettingBall.update)
+	Settings.onSetPreset.connect(updateSettingSelectors)
 
 	for settingSelector in settingSelectors:
 		settingSelector.lowlight()
@@ -103,12 +107,14 @@ func _process(_delta):
 			settingSelectors[highlightedSettingSelectorIndex].increment()
 		elif settingsFormat == Settings.BALLS:
 			settingBalls[highlightedSettingSelectorIndex].increment()
+		Settings.checkPresets()
 	
 	if masterInputSet.inputJustPressed[masterInputSet.leftInput]:
 		if settingsFormat == Settings.BORING:
 			settingSelectors[highlightedSettingSelectorIndex].decrement()
 		elif settingsFormat == Settings.BALLS:
 			settingBalls[highlightedSettingSelectorIndex].decrement()
+		Settings.checkPresets()
 
 	if masterInputSet.inputJustPressed[masterInputSet.downInput]:
 		settingSelectors[highlightedSettingSelectorIndex].lowlight()
@@ -146,6 +152,13 @@ func updateSettingsFormat():
 		for ball in settingBalls:
 			ball.baseSpeed = ballSpeed
 			ball.update()
+
+func updateSettingSelectors():
+	for settingSelector in settingSelectors:
+		settingSelector.update()
+	if settingsFormat == Settings.BALLS: updateBallSpeed()
+	for ball in settingBalls:
+		ball.update()
 
 func updateBallSpeed():
 	ballSpeed = Settings.getSettingValue(Settings.Setting.BALL_SPEED)

@@ -35,12 +35,14 @@ func _process(delta):
 
 func increment():
 	currentValueIndex = wrapi(currentValueIndex+1, 0, len(possibleValues))
+	if setting == Settings.Setting.PRESET and currentValueIndex == 0: currentValueIndex = 1
 	currentValue.text = possibleValues[currentValueIndex]
 	Settings.setSetting(setting, currentValueIndex)
 
 
 func decrement():
 	currentValueIndex = wrapi(currentValueIndex-1, 0, len(possibleValues))
+	if setting == Settings.Setting.PRESET and currentValueIndex == 0: currentValueIndex = len(possibleValues)-1
 	currentValue.text = possibleValues[currentValueIndex]
 	Settings.setSetting(setting, currentValueIndex)
 

@@ -4,19 +4,20 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ppy4b"]
 shader = ExtResource("1_ygnpf")
-shader_parameter/fadeStart = 0.35
-shader_parameter/fadeEnd = 0.5
+shader_parameter/fadeStartRadius = 0.35
+shader_parameter/fadeEndRadius = 0.5
+shader_parameter/lifetimeFadeStart = 0.3
+shader_parameter/lifetimeFadeEnd = 1.0
 
-[node name="CPUParticles2D" type="CPUParticles2D"]
+[node name="ChargedParticleEmitter" type="CPUParticles2D"]
 material = SubResource("ShaderMaterial_ppy4b")
 amount = 10
-lifetime = 0.5
 direction = Vector2(0, -1)
 spread = 180.0
 gravity = Vector2(0, 0)
 initial_velocity_min = 50.0
 initial_velocity_max = 75.0
-damping_min = 100.0
-damping_max = 100.0
+damping_min = 75.0
+damping_max = 75.0
 scale_amount_min = 3.0
 scale_amount_max = 3.0

@@ -20,7 +20,11 @@ class InputSet:
 	var rightInput: String
 	var downInput: String
 	var leftInput: String
-	var inputArray: Array[String]
+	var specialInput: String
+	var altSpecialInput: String
+	var useAltSpecial: bool
+	var directionalInputs: Array[String]
+	var specialInputs: Array[String]
 
 	var inputPressed: Dictionary
 	var totalTimePressed: Dictionary
@@ -49,20 +53,25 @@ class InputSet:
 		rightInput = name + "_RIGHT"
 		downInput = name + "_DOWN"
 		leftInput = name + "_LEFT"
+		specialInput = name + "_SPECIAL"
+		altSpecialInput = name + "_ALT_SPECIAL"
 
-		inputArray = [upInput, rightInput, downInput, leftInput]
+		directionalInputs = [upInput, rightInput, downInput, leftInput]
+		specialInputs = [specialInput, altSpecialInput]
 
-		for input in inputArray:
+		for input in directionalInputs:
 			inputPressed[input] = false
 			inputJustPressed[input] = false
-
-
+		inputPressed[specialInput] = false
+		inputJustPressed[specialInput] = false
+		inputPressed[altSpecialInput] = false
+		inputJustPressed[altSpecialInput] = false
 
 		device = p_device
 
 	func processInput(delta: float):
 
-		for input in inputArray:
+		for input in directionalInputs + specialInputs:
 			inputPressed[input] = MultiplayerInput.is_action_pressed(device, input)
 
 			if inputPressed[input]:
@@ -79,13 +88,17 @@ class InputSet:
 				totalTimePressed[input] = 0
 				inputJustPressed[input] = false
 
+		if useAltSpecial:
+			if inputPressed[altSpecialInput]: inputPressed[specialInput] = true
+			if inputJustPressed[altSpecialInput]: inputJustPressed[specialInput] = true
+
 		timeSinceLastClockwiseInput += delta
 		timeSinceLastCounterclockwiseInput += delta
 		if timeSinceLastClockwiseInput > 0.75: consecutiveClockwiseInputs = 0
 		if timeSinceLastCounterclockwiseInput > 0.75: consecutiveCounterclockwiseInputs = 0
 
 		var justPressedInputs: Array[String] = []
-		for input in inputArray:
+		for input in directionalInputs + specialInputs:
 			if MultiplayerInput.is_action_just_pressed(device, input): justPressedInputs.append(input)
 
 		while consecutiveClockwiseInputs > 0 and justPressedInputs.size() > 0:
@@ -133,16 +146,16 @@ class InputSet:
 		if consecutiveClockwiseInputs == 0 and justPressedInputs.size() > 0:
 			timeSinceLastClockwiseInput = 0
 			for inputIndex in range(3,-1,-1):
-				if inputArray[inputIndex] in justPressedInputs:
-					if consecutiveClockwiseInputs == 0: nextClockwiseInput = inputArray[inputIndex - 3]
+				if directionalInputs[inputIndex] in justPressedInputs:
+					if consecutiveClockwiseInputs == 0: nextClockwiseInput = directionalInputs[inputIndex - 3]
 					consecutiveClockwiseInputs += 1
 				elif consecutiveClockwiseInputs > 0: break
 		
 		if consecutiveCounterclockwiseInputs == 0 and justPressedInputs.size() > 0:
 			timeSinceLastCounterclockwiseInput = 0
 			for inputIndex in range(4):
-				if inputArray[inputIndex] in justPressedInputs:
-					if consecutiveCounterclockwiseInputs == 0: nextCounterclockwiseInput = inputArray[inputIndex - 1]
+				if directionalInputs[inputIndex] in justPressedInputs:
+					if consecutiveCounterclockwiseInputs == 0: nextCounterclockwiseInput = directionalInputs[inputIndex - 1]
 					consecutiveCounterclockwiseInputs += 1
 				elif consecutiveCounterclockwiseInputs > 0: break
 

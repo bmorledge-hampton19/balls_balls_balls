@@ -28,7 +28,7 @@ func init(p_setting: Settings.Setting):
 
 func _process(_delta):
 
-	if highlighted and currentValueIndex > 0:
+	if highlighted and (currentValueIndex > 1 or (currentValueIndex > 0 and setting != Settings.Setting.PRESET)):
 		leftBall.color = Color.WHITE
 		leftBall.position.x = sin(Time.get_ticks_msec()/500.0)*-5 - 5
 	else:
@@ -57,7 +57,7 @@ func increment():
 
 
 func decrement():
-	if currentValueIndex > 0:
+	if currentValueIndex > 1 or (currentValueIndex > 0 and setting != Settings.Setting.PRESET):
 		currentValueIndex -= 1
 		currentValue.text = possibleValues[currentValueIndex]
 		Settings.setSetting(setting, currentValueIndex)

@@ -44,6 +44,7 @@ enum Behavior {
 	CONSTANT_SPIRAL, ACCEL_SPIRAL,
 	START_AND_STOP, START_AND_STOP_AND_CHANGE_DIRECTION,
 	DRIFT,
+	ANGLER,
 	PLAYER_CONTROLLED
 }
 var behavior: Behavior = Behavior.CONSTANT_LINEAR
@@ -81,6 +82,7 @@ func resetBehavior():
 	behaviorRotationalDeviation = 0
 	behaviorRotationalVelocity = 0
 	behaviorRotationalAcceleration = 0
+	if behaviorParticleEmitter: behaviorParticleEmitter.emitting = false
 
 var decayingSpeedBase: float = 0
 var decayingSpeed: float:
@@ -135,15 +137,14 @@ func updateColor(newColor: Color):
 	teamColor.color = newColor
 	if trail != null: trail.updateColor(newColor)
 	if ballController != null: ballController.thrustParticleEmitter.color = newColor
-	if powerupParticleEmitter != null: powerupParticleEmitter.color = newColor
+	if behaviorParticleEmitter != null: behaviorParticleEmitter.color = newColor
 
-var powerupType: PowerupManager.Type
-var powerupParticleEmitter: CPUParticles2D:
+var behaviorParticleEmitter: CPUParticles2D:
 	set(value):
-		powerupParticleEmitter = value
-		while powerupType == PowerupManager.Type.NONE: powerupType = PowerupManager.Type.values().pick_random()
-		add_child(powerupParticleEmitter)
-		move_child(powerupParticleEmitter,0)
+		behaviorParticleEmitter = value
+		behaviorParticleEmitter.emitting = false
+		add_child(behaviorParticleEmitter)
+		move_child(behaviorParticleEmitter,0)
 		updateColor(teamColor.color)
 
 var stuckToWhichPaddle: Paddle:
@@ -158,6 +159,11 @@ var isClone: bool
 var timeUntilClone: float
 
 var recentCollisions: Dictionary
+
+var thisCollisionObject = null
+var lastCollisionObject = null
+var lastCollisionPos: Vector2
+var consecutiveFutileCollisions: int
 
 
 # Called when the node enters the scene tree for the first time.
@@ -178,9 +184,9 @@ func _process(delta: float):
 
 	processBaseAcceleration(delta)
 
-	processBehavior(delta)
+	if stuckToWhichPaddle == null: processBehavior(delta)
 
-	processMovement(delta)
+	if stuckToWhichPaddle == null: processMovement(delta)
 
 	checkForGoals()
 
@@ -273,13 +279,14 @@ func processBehavior(delta):
 					newState = 1
 					if behaviorIntensity == SMOOTH:
 						duration = randf_range(3,5)
-						targetBehaviorSpeed = randf_range(baseSpeed, baseSpeed*2)
-						targetRotationalVelocity = randf_range(PI, 2*PI)
+						targetBehaviorSpeed = randf_range(100, 135)
+						targetRotationalVelocity = randf_range(2*PI, 4*PI)
 					elif behaviorIntensity == ERRATIC:
 						duration = randf_range(1,3)
-						targetBehaviorSpeed = randf_range(baseSpeed*2, baseSpeed*3)
-						targetRotationalVelocity = randf_range(PI, 4*PI)
+						targetBehaviorSpeed = randf_range(135, 175)
+						targetRotationalVelocity = randf_range(3*PI, 5*PI)
 					if randi_range(0,1): targetRotationalVelocity *= -1
+					behaviorParticleEmitter.emitting = true
 				
 				elif behaviorState == 1 or behaviorState == 2:
 					newState = 2
@@ -293,6 +300,20 @@ func processBehavior(delta):
 					behaviorRotationalAcceleration = (targetRotationalVelocity - behaviorRotationalVelocity) / duration
 
 				changeBehaviorState(newState, duration)
+			
+			var durationRatio = 1-behaviorStateTimeRemaining/behaviorStateDuration
+			if behaviorState == 1:
+				behaviorParticleEmitter.initial_velocity_min = 10+40*durationRatio**2
+				behaviorParticleEmitter.initial_velocity_max = 10+40*durationRatio**2
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.1+0.2*durationRatio**2)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 0.3+0.7*durationRatio**2)
+			elif behaviorState == 2:
+				behaviorParticleEmitter.initial_velocity_min = 50
+				behaviorParticleEmitter.initial_velocity_max = 50
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.3)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 1.0)
+			
+			behaviorParticleEmitter.direction = baseSpeedDirection.rotated(behaviorRotationalDeviation)*-1
 
 
 		Behavior.ACCEL_SPIRAL:
@@ -310,13 +331,14 @@ func processBehavior(delta):
 					newState = 1
 					if behaviorIntensity == SMOOTH:
 						duration = randf_range(3,5)
-						targetBehaviorSpeed = randf_range(baseSpeed, baseSpeed*2)
-						targetRotationalVelocity = randf_range(PI, PI*2)
+						targetBehaviorSpeed = randf_range(100, 125)
+						targetRotationalVelocity = randf_range(2*PI, 4*PI)
 					elif behaviorIntensity == ERRATIC:
 						duration = randf_range(1,3)
-						targetBehaviorSpeed = randf_range(baseSpeed*2, baseSpeed*3)
-						targetRotationalVelocity = randf_range(PI, PI*4)
+						targetBehaviorSpeed = randf_range(125, 150)
+						targetRotationalVelocity = randf_range(4*PI, 6*PI)
 					if randi_range(0,1): targetRotationalVelocity *= -1
+					behaviorParticleEmitter.emitting = true
 				
 				elif behaviorState == 1:
 					newState = 2
@@ -336,6 +358,7 @@ func processBehavior(delta):
 					behaviorRotationalVelocity = 0
 					if behaviorIntensity == SMOOTH: duration = randf_range(2,4)
 					elif behaviorIntensity == ERRATIC: duration = randf_range(1,3)
+					behaviorParticleEmitter.emitting = false
 
 				if newState == 2 or newState == 0:
 					behaviorAcceleration = 0
@@ -345,6 +368,24 @@ func processBehavior(delta):
 					behaviorRotationalAcceleration = (targetRotationalVelocity - behaviorRotationalVelocity) / duration
 
 				changeBehaviorState(newState, duration)
+
+			var durationRatio = 1-behaviorStateTimeRemaining/behaviorStateDuration
+			if behaviorState == 1:
+				behaviorParticleEmitter.initial_velocity_min = 10+40*durationRatio**2
+				behaviorParticleEmitter.initial_velocity_max = 10+40*durationRatio**2
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.1+0.2*durationRatio**2)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 0.3+0.7*durationRatio**2)
+			elif behaviorState == 2:
+				behaviorParticleEmitter.initial_velocity_min = 50
+				behaviorParticleEmitter.initial_velocity_max = 50
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.3)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 1.0)
+			elif behaviorState == 3:
+				behaviorParticleEmitter.initial_velocity_min = 50-40*durationRatio**2
+				behaviorParticleEmitter.initial_velocity_max = 50-40*durationRatio**2
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.3-0.2*durationRatio**2)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 1.0-0.7*durationRatio**2)
+			behaviorParticleEmitter.direction = baseSpeedDirection.rotated(behaviorRotationalDeviation)*-1
 
 
 		Behavior.START_AND_STOP, Behavior.START_AND_STOP_AND_CHANGE_DIRECTION:
@@ -368,6 +409,8 @@ func processBehavior(delta):
 						newState = 2
 						if behaviorIntensity == SMOOTH: duration = randf_range(5,7)
 						elif behaviorIntensity == ERRATIC: duration = randf_range(3,7)
+						# behaviorParticleEmitter.direction = (Vector2(480,270)-global_position).normalized()
+						behaviorParticleEmitter.emitting = true
 					else:
 						newState = -1
 						# Decrease behaviorAcceleration to help overtake baseSpeed?
@@ -379,6 +422,7 @@ func processBehavior(delta):
 					elif behaviorIntensity == ERRATIC: duration = randf_range(1,3)
 					if behavior == Behavior.START_AND_STOP_AND_CHANGE_DIRECTION:
 						baseSpeedDirection = baseSpeedDirection.rotated(randf_range(0,2*PI))
+					behaviorParticleEmitter.emitting = false
 				
 				elif behaviorState == 3:
 					newState = 0
@@ -418,6 +462,9 @@ func processBehavior(delta):
 					elif behaviorIntensity == ERRATIC:
 						duration = randf_range(1,2)
 						targetBehaviorSpeed = randf_range(baseSpeed*1.4, baseSpeed*2)
+					
+					behaviorParticleEmitter.direction = baseSpeedDirection.rotated(behaviorRotationalDeviation)*-1
+					behaviorParticleEmitter.emitting = true
 
 				if behaviorState == 1:
 
@@ -438,6 +485,7 @@ func processBehavior(delta):
 					newState = 0
 					if behaviorIntensity == SMOOTH: duration = randf_range(2,3)
 					elif behaviorIntensity == ERRATIC: duration = randf_range(1,2)
+					behaviorParticleEmitter.emitting = false
 
 				if newState == 1 or newState == 3:
 					behaviorAcceleration = (targetBehaviorSpeed - behaviorSpeed) / duration
@@ -446,6 +494,56 @@ func processBehavior(delta):
 
 				changeBehaviorState(newState, duration)
 
+			var durationRatio = 1-behaviorStateTimeRemaining/behaviorStateDuration
+			if behaviorState == 1:
+				behaviorParticleEmitter.initial_velocity_min = 10+40*durationRatio**2
+				behaviorParticleEmitter.initial_velocity_max = 10+40*durationRatio**2
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.1+0.2*durationRatio**2)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 0.3+0.7*durationRatio**2)
+			elif behaviorState == 2:
+				behaviorParticleEmitter.initial_velocity_min = 50
+				behaviorParticleEmitter.initial_velocity_max = 50
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.3)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 1.0)
+			elif behaviorState == 3:
+				behaviorParticleEmitter.initial_velocity_min = 50-40*durationRatio**2
+				behaviorParticleEmitter.initial_velocity_max = 50-40*durationRatio**2
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeStart", 0.3-0.2*durationRatio**2)
+				behaviorParticleEmitter.material.set_shader_parameter("lifetimeFadeEnd", 1.0-0.7*durationRatio**2)
+
+
+		Behavior.ANGLER:
+			# 0: Stable
+			# 1: Stable and waiting
+			# 2: Add Kurt Angle to the mix!
+			if behaviorStateTimeRemaining <= 0:
+				var duration: float
+				var newState: int
+
+				if behaviorState == 0:
+					newState = 1
+					if behaviorIntensity == SMOOTH: duration = randf_range(4,6)
+					elif behaviorIntensity == ERRATIC: duration = randf_range(3,5)
+
+				elif behaviorState == 1:
+					newState = 2
+					duration = 0
+
+					if behaviorIntensity == SMOOTH:
+						baseSpeedDirection = baseSpeedDirection.rotated(randf_range(3*PI/8,PI/2)*([1,-1].pick_random()))
+					elif behaviorIntensity == ERRATIC:
+						baseSpeedDirection = baseSpeedDirection.rotated(randf_range(PI/2,5*PI/8)*([1,-1].pick_random()))
+
+					behaviorParticleEmitter.direction = baseSpeedDirection*-1
+					behaviorParticleEmitter.emitting = true
+
+
+				elif behaviorState == 2:
+					newState = 1
+					if behaviorIntensity == SMOOTH: duration = randf_range(3,5)
+					elif behaviorIntensity == ERRATIC: duration = randf_range(2,4)
+
+				changeBehaviorState(newState, duration)
 
 		Behavior.PLAYER_CONTROLLED:
 			var behaviorVelocity := behaviorSpeed*(baseSpeedDirection.rotated(behaviorRotationalDeviation))
@@ -462,10 +560,6 @@ func processBehavior(delta):
 
 
 func processMovement(delta: float):
-
-	if stuckToWhichPaddle != null: return
-
-	var collisionsThisFrame = 0
 
 	var remainingDistance := fullVelocity.length()*delta
 
@@ -557,11 +651,7 @@ func processMovement(delta: float):
 				else: trail.add_point(position)
 				priorPoints.append(PriorPoint.new(position, currentTime, true, true, direction))
 
-			collisionsThisFrame += 1
-			if collisionsThisFrame >= 2: print(str(collisionsThisFrame) + " collisions!")
-			if collisionsThisFrame > 10 and collisionsThisFrame/delta > 100:
-				explode()
-				return
+			if checkForFutileCollisions(): return
 			
 			if collisionIsPaddle: 
 				var paddle: Paddle = shapeCaster.get_collider(priorityCollisionIndex).get_parent()
@@ -580,9 +670,10 @@ func processMovement(delta: float):
 func handleBumperCollision(i: int):
 	# print("Collided with bumper!")
 	var bumper := shapeCaster.get_collider(i).get_parent() as Bumper
+	thisCollisionObject = bumper
 	bumper.pulse()
 	collisionNormal = shapeCaster.get_collision_normal(i)
-	newDirection = collisionNormal
+	newDirection = collisionNormal.rotated(randf_range(-0.03,0.03))
 	if ballController == null: resetDecayingSpeed(baseSpeed)
 	else:
 		var lingeringBehaviorSpeed = behaviorSpeed * 0.5
@@ -597,6 +688,7 @@ func handleBumperCollision(i: int):
 func handlePaddleCollision(i: int):
 	var paddleArea = shapeCaster.get_collider(i) as Area2D
 	var paddle := paddleArea.get_parent() as Paddle
+	thisCollisionObject = paddle
 	collisionNormal = shapeCaster.get_collision_normal(i)
 	var collisionPoint := shapeCaster.get_collision_point(i)
 
@@ -764,10 +856,10 @@ func handleSpinningPaddleCollision(collisionPoint: Vector2, paddle: Paddle, padd
 	):
 		newDirection = ((paddlePointVelocity + fullVelocity.length()*collisionNormal)/2).normalized()
 		if baseSpeed < paddlePointVelocity.length():
-			resetDecayingSpeed((paddlePointVelocity.length()*1.1-baseSpeed)*paddle.ballBoost, 8)
+			resetDecayingSpeed((paddlePointVelocity.length()*1.2-baseSpeed)*paddle.ballBoost, 8)
 			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 		else:
-			resetDecayingSpeed(paddlePointVelocity.length()*.1*paddle.ballBoost, 8)
+			resetDecayingSpeed(paddlePointVelocity.length()*.2*paddle.ballBoost, 8)
 			if validAudio: AudioManager.playPaddleSmack(paddle.team.color)
 	else:
 		newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
@@ -819,6 +911,7 @@ func isValidWallCollision(i):
 func handleWallCollision(i):
 	# print("Collided with wall")
 	var wall := shapeCaster.get_collider(i).get_parent() as Wall
+	thisCollisionObject = wall
 	var normalAngle := wall.rotation
 	if wall.flipped: normalAngle += PI
 	normalAngle -= PI/2
@@ -832,7 +925,7 @@ func handleWallCollision(i):
 	else:
 		collisionNormal = shapeCaster.get_collision_normal(i)
 		# print("FUNKY wall collision! (Probably a corner)")
-	newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2)
+	newDirection = (-direction).rotated((-direction).angle_to(collisionNormal)*2).rotated(randf_range(-0.03,0.03))
 	AudioManager.playWallBounce()
 
 
@@ -842,6 +935,28 @@ func handleBreakableBlockCollision(i):
 	ScreenShaker.addShake(20, 1.5)
 	explode()
 
+
+func checkForFutileCollisions():
+
+	if lastCollisionObject == null:
+		pass
+	elif lastCollisionObject == thisCollisionObject:
+		# print("Hit the same object: " + str(thisCollisionObject))
+		return
+	lastCollisionObject = thisCollisionObject
+
+	if (position - lastCollisionPos).length() < 1:
+		consecutiveFutileCollisions += 1
+		# print("Futile collisions: " + str(consecutiveFutileCollisions))
+	else: consecutiveFutileCollisions = 0
+
+	if consecutiveFutileCollisions >= 10:
+		explode()
+		print("Futile collisions detected. EXPLODINATING BALL.")
+		return true
+	else:
+		lastCollisionPos = position
+		return false
 
 func explode():
 	for goal in goalsEncompassing: goal.area_exited.emit(self)

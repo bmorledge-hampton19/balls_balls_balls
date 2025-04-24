@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://bs24t7qhmm0um"]
+[gd_scene load_steps=45 format=3 uid="uid://bs24t7qhmm0um"]
 
 [ext_resource type="Script" path="res://scripts/global/Background.gd" id="1_4nob6"]
 [ext_resource type="Script" path="res://scripts/playfield/GameManager.gd" id="1_upxls"]
@@ -31,7 +31,10 @@
 [ext_resource type="PackedScene" uid="uid://cqvkfn7sebgpn" path="res://scenes/objects/ball_controller.tscn" id="22_plt2h"]
 [ext_resource type="PackedScene" uid="uid://cidtpgewej2ee" path="res://scenes/objects/goalsCounter.tscn" id="23_23fkd"]
 [ext_resource type="Script" path="res://scripts/main_menu/TitleText.gd" id="23_nlfim"]
-[ext_resource type="PackedScene" uid="uid://ecjbcl0yrfhy" path="res://scenes/objects/powerup_particle_emitter.tscn" id="25_p7g6f"]
+[ext_resource type="PackedScene" uid="uid://cr2mcphhnoh08" path="res://scenes/objects/angler_particle_emitter.tscn" id="26_kq36i"]
+[ext_resource type="PackedScene" uid="uid://bwf2gtv0x6dsa" path="res://scenes/objects/spinner_particle_emitter.tscn" id="27_7la2h"]
+[ext_resource type="PackedScene" uid="uid://dbd7xx67yp221" path="res://scenes/objects/sleeper_particle_emitter.tscn" id="28_57x0l"]
+[ext_resource type="PackedScene" uid="uid://lepqftpncvl8" path="res://scenes/objects/drifter_particle_emitter.tscn" id="29_dq6yt"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h7n8l"]
 resource_local_to_scene = true
@@ -408,7 +411,10 @@ ballsControl = NodePath("Balls")
 ballControllerPrefab = ExtResource("22_plt2h")
 trailPrefab = ExtResource("8_gkjmk")
 trailsCanvasGroup = NodePath("Trails")
-powerupParticleEmitterPrefab = ExtResource("25_p7g6f")
+anglerParticleEmitterPrefab = ExtResource("26_kq36i")
+spinnerParticleEmitterPrefab = ExtResource("27_7la2h")
+sleeperParticleEmitterPrefab = ExtResource("28_57x0l")
+drifterParticleEmitterPrefab = ExtResource("29_dq6yt")
 background = NodePath("../../../Background")
 goalParticleEmitter = ExtResource("17_5ydfx")
 explosionParticleEmitter = ExtResource("18_v7xg4")

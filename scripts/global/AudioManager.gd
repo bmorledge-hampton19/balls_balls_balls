@@ -20,6 +20,7 @@ const BALL_EXPLOSION: AudioStream = preload("res://audio/ball_explosion.wav")
 const BLOCK_EXPLOSION: AudioStream = preload("res://audio/block_explosion.wav")
 
 const PADDLE_CHARGE: AudioStream = preload("res://audio/paddle_charge.wav")
+const FAILED_CHARGE: AudioStream = preload("res://audio/failed_charge.wav")
 const INITIATE_SPIN: AudioStream = preload("res://audio/initiate_spin.wav")
 const SUSTAINED_SPIN: AudioStream = preload("res://audio/placeholder.wav") # DEPRECATED
 
@@ -147,6 +148,9 @@ func playBlockExplosion():
 func playPaddleCharge(teamColor: Color):
 	_playSound(PADDLE_CHARGE, teamColorToAudioBus[teamColor], linear_to_db(0.6))
 
+func playFailedCharge(teamColor: Color):
+	_playSound(FAILED_CHARGE, teamColorToAudioBus[teamColor], linear_to_db(0.6))
+
 func playInitiateSpin(teamColor: Color):
 	_playSound(INITIATE_SPIN, teamColorToAudioBus[teamColor], linear_to_db(0.6))
 
@@ -176,7 +180,7 @@ func playActivateBall(behavior: Ball.Behavior, volumeMod := 1.0):
 		Ball.Behavior.CONSTANT_LINEAR:
 			audioStream = ACTIVATE_BASIC_BALL
 			linear_volume = 0.5
-		Ball.Behavior.ACCEL_LINEAR:
+		Ball.Behavior.ACCEL_LINEAR, Ball.Behavior.ANGLER:
 			audioStream = ACTIVATE_ACCEL_BALL
 		Ball.Behavior.CONSTANT_SPIRAL, Ball.Behavior.ACCEL_SPIRAL:
 			audioStream = ACTIVATE_SPIRAL_BALL
@@ -302,6 +306,10 @@ func _playWinnerScreenMusic(teamColor: Color):
 func playWinnerAudio(teamColor: Color):
 	_playTeamVoice(teamColor)
 
+
+func clearOneShotAudios():
+	for child in get_children():
+		if child is OneShotAudio: child.queue_free()
 
 func pauseMusic():
 	musicPlayer.stream_paused = true

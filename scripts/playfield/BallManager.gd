@@ -12,7 +12,10 @@ var playerBallRespawnTimers: Dictionary
 @export var trailPrefab: PackedScene
 @export var trailsCanvasGroup: CanvasGroup
 
-@export var powerupParticleEmitterPrefab: PackedScene
+@export var anglerParticleEmitterPrefab: PackedScene
+@export var spinnerParticleEmitterPrefab: PackedScene
+@export var sleeperParticleEmitterPrefab: PackedScene
+@export var drifterParticleEmitterPrefab: PackedScene
 
 var averageSpawnTime: float
 var spawnTimeDeviation: float:
@@ -25,7 +28,7 @@ var timeUntilNextSpawn: float = 0
 var ballBehaviorWeightDict := {
 	Ball.Behavior.IDLE : 0,
 	Ball.Behavior.CONSTANT_LINEAR : 100,
-	Ball.Behavior.ACCEL_LINEAR : 10,
+	Ball.Behavior.ANGLER : 10,
 	Ball.Behavior.CONSTANT_SPIRAL : 5,
 	Ball.Behavior.ACCEL_SPIRAL : 5,
 	Ball.Behavior.START_AND_STOP : 5,
@@ -64,8 +67,8 @@ func _ready():
 
 	averageSpawnTime = 1.0/Settings.getSettingValue(Settings.Setting.SPAWN_RATE)
 
-	ballBehaviorWeightDict[Ball.Behavior.ACCEL_LINEAR] = \
-		Settings.getSettingValue(Settings.Setting.LINEAR_ACCEL_SPAWN_RATE)
+	ballBehaviorWeightDict[Ball.Behavior.ANGLER] = \
+		Settings.getSettingValue(Settings.Setting.ANGLER_SPAWN_RATE)
 	ballBehaviorWeightDict[Ball.Behavior.CONSTANT_SPIRAL] = \
 		Settings.getSettingValue(Settings.Setting.SPIRALING_SPAWN_RATE)/2.0
 	ballBehaviorWeightDict[Ball.Behavior.ACCEL_SPIRAL] = \
@@ -130,6 +133,7 @@ func spawnBall(playerController: Player = null):
 	newBall.onBallHitWall.connect(background.spawnBallArc)
 	newBall.onBallExplosion.connect(explodeBall)
 
+	newBall.radius = Settings.getSettingValue(Settings.Setting.BALL_SIZE)
 	newBall.baseSpeed = averageSpawnSpeed + randf_range(-spawnSpeedDeviation, spawnSpeedDeviation)
 	newBall.baseSpeed *= 1+(theBall.radiusScale-1)*theBallScaleFactor
 	if randi_range(0,1): newBall.baseSpeedDirection = Vector2.from_angle(randf_range(0.1,PI-.1))
@@ -151,15 +155,12 @@ func spawnBall(playerController: Player = null):
 		var ballController: BallController = ballControllerPrefab.instantiate()
 		ballController.player = playerController
 		newBall.ballController = ballController
-		newBall.radius = 10
+		newBall.radius += 5
 	
 	elif burstSpawns:
 		individualBurstSpawnCount += 1
 		if individualBurstSpawnCount >= 8:
 			individualBurstSpawnTimer.stop()
-	
-	if playerController == null and randf() < Settings.getSettingValue(Settings.Setting.POWERUP_FREQUENCY):
-		newBall.powerupParticleEmitter = powerupParticleEmitterPrefab.instantiate()
 
 	AudioManager.playSpawnBall()
 
@@ -176,6 +177,15 @@ func activateBall(ball: Ball, volumeMod := 1.0):
 		ball.multiplicativeAcceleration = 0
 	else:
 		ball.behavior = random.rand_weighted(ballBehaviorWeights) as Ball.Behavior
+		match ball.behavior:
+			Ball.Behavior.ANGLER:
+				ball.behaviorParticleEmitter = anglerParticleEmitterPrefab.instantiate()
+			Ball.Behavior.ACCEL_SPIRAL, Ball.Behavior.CONSTANT_SPIRAL:
+				ball.behaviorParticleEmitter = spinnerParticleEmitterPrefab.instantiate()
+			Ball.Behavior.START_AND_STOP, Ball.Behavior.START_AND_STOP_AND_CHANGE_DIRECTION:
+				ball.behaviorParticleEmitter = sleeperParticleEmitterPrefab.instantiate()
+			Ball.Behavior.DRIFT:
+				ball.behaviorParticleEmitter = drifterParticleEmitterPrefab.instantiate()
 
 		var behaviorIntensity = Settings.getSettingValue(Settings.Setting.BEHAVIOR_INTENSITY)
 		if behaviorIntensity == Settings.ERRATIC: ball.behaviorIntensity = Ball.ERRATIC
@@ -213,8 +223,15 @@ func cloneBall(parent: Ball):
 
 	newBall.behavior = parent.behavior
 	newBall.behaviorIntensity = parent.behaviorIntensity
-
-	newBall.powerupType = parent.powerupType
+	match newBall.behavior:
+		Ball.Behavior.ANGLER:
+			newBall.behaviorParticleEmitter = anglerParticleEmitterPrefab.instantiate()
+		Ball.Behavior.ACCEL_SPIRAL, Ball.Behavior.CONSTANT_SPIRAL:
+			newBall.behaviorParticleEmitter = spinnerParticleEmitterPrefab.instantiate()
+		Ball.Behavior.START_AND_STOP, Ball.Behavior.START_AND_STOP_AND_CHANGE_DIRECTION:
+			newBall.behaviorParticleEmitter = sleeperParticleEmitterPrefab.instantiate()
+		Ball.Behavior.DRIFT:
+			newBall.behaviorParticleEmitter = drifterParticleEmitterPrefab.instantiate()
 
 	newBall.updateColor(parent.teamColor.color)
 	newBall.ballSprite.texture = parent.ballSprite.texture
@@ -226,7 +243,7 @@ func cloneBall(parent: Ball):
 		newBall.ballController = ballController
 
 	newBall.isClone = true
-	parent.timeUntilClone = 0.1
+	parent.timeUntilClone = 0.5
 
 
 func deleteBall(ball: Ball):

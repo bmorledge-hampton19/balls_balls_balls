@@ -87,15 +87,25 @@ func _process(_delta):
 		return
 	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
 		var pauseMenu := PauseManager.pause(false)
-		pauseMenu.initOptions(["Settings", "Credits", "Resume", "Quit Game"],
-							  [transitionToSettings, transitionToCredits, PauseManager.unpause, get_tree().quit])
+		pauseMenu.initOptions(["Settings", "Credits", "Resume", "Clear Players", "Quit Game"],
+							  [transitionToSettings, transitionToCredits, PauseManager.unpause, clearAllPlayers, quit])
 		mainViewport.add_child(pauseMenu)
 
 
 func transitionToSettings():
 	PauseManager.unpause(true)
 	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Settings.tscn"))
+	AudioManager.stopPlayButton()
 
 func transitionToCredits():
 	PauseManager.unpause()
 	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Credits.tscn"))
+	AudioManager.stopPlayButton()
+
+func clearAllPlayers():
+	for i in range(len(playerSelectors)-1,-1,-1):
+		if playerSelectors[i].player != null: removePlayerSelector(playerSelectors[i])
+	PauseManager.unpause()
+
+func quit():
+	get_tree().quit()

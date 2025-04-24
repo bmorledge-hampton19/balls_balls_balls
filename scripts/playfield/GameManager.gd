@@ -93,6 +93,7 @@ func _ready():
 
 	for player in PlayerManager.playersByInputSet.values():
 		player.goals = 0
+		player.goalsAtLastPowerup = 0
 
 	if polygon.sides > 2:
 
@@ -524,8 +525,6 @@ func reduceTitleTextBalls():
 	titleTextBalls -= 1
 
 	if titleTextBalls == -1:
-		for team in teams.values():
-			team.paddleManager.fadePaddleTextures()
 		if polygon.sides > 2 or Settings.getSettingValue(Settings.Setting.STARTING_LIVES) > 1: AudioManager.playPlayfieldMusic()
 		else: AudioManager.playFinalShowdownMusic()
 	elif titleTextBalls == 0:
@@ -552,6 +551,13 @@ func reduceTitleTextBalls():
 		titleText.position.y = 153
 		titleText.updateText()
 		AudioManager.playBallsVoice()
+
+func queueStartingSpins():
+	var initialDelay := 0.0
+	var additiveDelay := 2.0/len(PlayerManager.activePlayers)
+	for team in teams.values():
+		team.paddleManager.chargePaddles(initialDelay, additiveDelay)
+		initialDelay += len(team.players)*additiveDelay
 
 
 func _process(delta):
@@ -617,7 +623,10 @@ func processStartingEffects(delta: float):
 				playfieldBackground.fadeInFinalTwoGraphics(teams[vertices[-1]], teams[vertices[1]], 4)
 				addBackboards(teams[vertices[-1]], teams[vertices[1]])
 				playfieldBackground.afterfinalTwoFadeIn.connect(
-					func(): get_tree().create_timer(2.0, false).timeout.connect(startCountdown)
+					func(): get_tree().create_timer(3.0, false).timeout.connect(startCountdown)
+				)
+				playfieldBackground.afterfinalTwoFadeIn.connect(
+					queueStartingSpins
 				)
 		if playfieldBackground.modulate.a >= 1:
 			playfieldBackground.modulate.a = 1
@@ -628,7 +637,8 @@ func processStartingEffects(delta: float):
 		if scoreboardFadeRatio >= 1.0:
 			scoreboardFadeRatio = 1.0
 			fadingInScoreboards = false
-			get_tree().create_timer(2.0, false).timeout.connect(startCountdown)
+			queueStartingSpins()
+			get_tree().create_timer(3.0, false).timeout.connect(startCountdown)
 		leftScoreboard.modulate.a = scoreboardFadeRatio
 		rightScoreboard.modulate.a = scoreboardFadeRatio
 
@@ -690,10 +700,12 @@ func prepForFinale(leftTeam: Team, rightTeam: Team, atBeginning: bool = false):
 
 	if not atBeginning:
 		AudioManager.fadeOutMusic()
-		get_tree().create_timer(standardTransitionDuration, false).timeout.connect(AudioManager.playFinalShowdownMusic)
+		get_tree().create_timer(standardTransitionDuration, false).timeout.connect(playFinalShowdownMusic)
 	elif Settings.getSettingValue(Settings.Setting.STARTING_LIVES) > 1:
 		leftTeam.onLivesChanged.connect(func(_none): transitionToFinalShowdownMusic())
 		rightTeam.onLivesChanged.connect(func(_none): transitionToFinalShowdownMusic())
+
+func playFinalShowdownMusic(): AudioManager.playFinalShowdownMusic()
 
 
 func addBackboards(leftTeam: Team, rightTeam: Team):
@@ -743,10 +755,13 @@ func transitionToWinnerScreen():
 
 	queue_free()
 
+
 func restart():
 	PauseManager.unpause()
+	AudioManager.clearOneShotAudios()
 	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/Playfield.tscn"))
 
 func returnToMainMenu():
 	PauseManager.unpause()
+	AudioManager.clearOneShotAudios()
 	get_tree().change_scene_to_packed(ResourceLoader.load_threaded_get("res://scenes/MainMenu.tscn"))

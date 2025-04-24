@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://cxiab0g3k5g85"]
+[gd_scene load_steps=16 format=3 uid="uid://cxiab0g3k5g85"]
 
 [ext_resource type="Script" path="res://scripts/main_menu/PlayerDisplay.gd" id="1_qexq1"]
 [ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="2_a0fqo"]
@@ -6,6 +6,7 @@
 [ext_resource type="Shader" path="res://shaders/CircleMask.gdshader" id="3_rqenc"]
 [ext_resource type="Texture2D" uid="uid://hme6gheo7qpq" path="res://images/player_icons/PS3_Triangle.png" id="4_gqwh7"]
 [ext_resource type="Texture2D" uid="uid://6wu1uwdmjdso" path="res://images/controller_prompts/Generic_Controller.png" id="5_p2plo"]
+[ext_resource type="Texture2D" uid="uid://vqla2clo6hcm" path="res://images/controller_prompts/PS4_R2.png" id="6_2wbku"]
 [ext_resource type="Texture2D" uid="uid://b268np1eu0is" path="res://images/controller_prompts/Keyboard_Icon.png" id="6_tfr6w"]
 [ext_resource type="Texture2D" uid="uid://di5l3ds2jasr1" path="res://images/controller_prompts/Positional_Prompts_All_Empty.png" id="7_bde5i"]
 [ext_resource type="Texture2D" uid="uid://bk1efl4l5c3u8" path="res://images/controller_prompts/XboxOne_Dpad.png" id="8_ttiup"]
@@ -22,7 +23,7 @@ shader_parameter/location_x = 0.5
 shader_parameter/location_y = 0.5
 shader_parameter/invert_mask = false
 
-[node name="Player" type="Control" node_paths=PackedStringArray("bumper", "teamColorRect", "teamText", "playerIconTextureRect", "controllerIconTextureRect", "controllerNumLabel", "keyboardIconTextureRect", "faceButtonsTextureRect", "dpadTextureRect", "leftStickTextureRect", "rightStickTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "closeButton")]
+[node name="Player" type="Control" node_paths=PackedStringArray("bumper", "teamColorRect", "teamText", "playerIconTextureRect", "controllerIconTextureRect", "controllerNumLabel", "keyboardIconTextureRect", "faceButtonsTextureRect", "dpadTextureRect", "leftStickTextureRect", "rightStickTextureRect", "keysControl", "upKeyTextureRect", "rightKeyTextureRect", "downKeyTextureRect", "leftKeyTextureRect", "specialInputTexture", "closeButton")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 100.0
@@ -44,6 +45,7 @@ upKeyTextureRect = NodePath("ControlType/Keys/UpKey")
 rightKeyTextureRect = NodePath("ControlType/Keys/RightKey")
 downKeyTextureRect = NodePath("ControlType/Keys/DownKey")
 leftKeyTextureRect = NodePath("ControlType/Keys/LeftKey")
+specialInputTexture = NodePath("SpecialInput")
 closeButton = NodePath("CloseButton")
 
 [node name="Bumper" parent="." instance=ExtResource("2_u13d7")]
@@ -56,10 +58,10 @@ radius = 18.0
 [node name="TeamColor" type="ColorRect" parent="."]
 material = ExtResource("2_a0fqo")
 layout_mode = 0
-offset_left = 25.0
-offset_top = 17.0
-offset_right = 75.0
-offset_bottom = 67.0
+offset_left = 20.0
+offset_top = 12.0
+offset_right = 80.0
+offset_bottom = 72.0
 
 [node name="TeamText" type="Label" parent="."]
 layout_mode = 0
@@ -76,8 +78,21 @@ offset_left = 32.0
 offset_top = 24.0
 offset_right = 68.0
 offset_bottom = 60.0
+pivot_offset = Vector2(18, 18)
 texture = ExtResource("4_gqwh7")
 expand_mode = 1
+
+[node name="SpecialInput" type="TextureRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+offset_left = 68.0
+offset_top = 10.0
+offset_right = 104.0
+offset_bottom = 46.0
+pivot_offset = Vector2(18, 18)
+texture = ExtResource("6_2wbku")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ControllerID" type="Control" parent="."]
 layout_mode = 3

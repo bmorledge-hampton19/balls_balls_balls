@@ -11,5 +11,6 @@ void fragment() {
 	float distanceFromCenter = abs(0.5-UV.x);
 	//COLOR.a = texture(noiseTexture, UV + vec2(0.05,0.05) * TIME).r;
 	float gradualPlateau = (smoothstep(0.3,1.0,UV.y) - smoothstep(0.35,0.55,distanceFromCenter))*0.75;
-	COLOR.a = gradualPlateau * (abs(cos(TIME)) + 0.5);
+	COLOR.a *= gradualPlateau * (abs(cos(TIME)) + 0.5);
+	COLOR.rgb *= 0.75;
 }

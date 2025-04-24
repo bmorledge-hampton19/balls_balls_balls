@@ -102,9 +102,21 @@ func changePolygon(newPolygon: PolygonGuide.Polygon, transitionDuration: float):
 		paddle.changePolygon(newPolygon, transitionDuration)
 
 
-func fadePaddleTextures():
+func fadePaddleTextures(force := false):
 	for paddle in paddles:
+		if not force and (paddle.chargingSpin or paddle.chargedSpin or paddle.spinning): return
 		paddle.changeTextureAlpha(0, 2)
+
+
+func chargePaddles(initialDelay: float, additiveDelay: float):
+	for paddle in paddles:
+		get_tree().create_timer(initialDelay, false).timeout.connect(
+			func():
+				paddle.initiateCharge(null, true)
+				paddle.queuedSpin = true
+		)
+		initialDelay += additiveDelay
+		
 
 
 # Called when the node enters the scene tree for the first time.

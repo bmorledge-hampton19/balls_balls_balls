@@ -165,12 +165,14 @@ func checkBall(ball: Ball):
 				ball.ballController.player.onGoal.emit(ball.ballController.player.goals)
 
 			if (
-				ball.powerupType != PowerupManager.Type.NONE and
 				is_instance_valid(ball.lastPlayer.paddle) and
-				ball.lastPlayer.paddle.color.color != self.color
+				ball.lastPlayer.paddle.color.color != self.color and
+				ball.lastPlayer.readyForPowerup
 			):
+				var powerupType := PowerupManager.Type.NONE
+				while powerupType == PowerupManager.Type.NONE: powerupType = PowerupManager.Type.values().pick_random()
 				PowerupManager.initPowerupAnimation(
-					ball.powerupType, ball.lastPlayer.paddle,
+					powerupType, ball.lastPlayer.paddle,
 					ball.global_position - ball.radius*Vector2.from_angle(rotation+PI/2)
 				)
 

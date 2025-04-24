@@ -31,10 +31,12 @@ func initOptions(names: Array[String], functions: Array[Callable]):
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 
-	if Input.is_action_just_pressed("PRIMARY_MENU_BUTTON") or Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
+	if Input.is_action_just_pressed("SECONDARY_MENU_BUTTON"):
 		PauseManager.unpause()
 
 	var masterInputSet := masterInputSelector.masterInputSet
+	if Input.is_action_just_pressed("PRIMARY_MENU_BUTTON") and masterInputSet == null:
+		PauseManager.unpause()
 	if masterInputSet == null:
 		return
 	elif firstFrame:
@@ -56,3 +58,6 @@ func _process(_delta):
 		options[highlightedOptionIndex].lowlight()
 		highlightedOptionIndex = wrapi(highlightedOptionIndex-1, 0, len(options))
 		options[highlightedOptionIndex].highlight()
+
+	if Input.is_action_just_pressed("PRIMARY_MENU_BUTTON"):
+		options[highlightedOptionIndex].onConfirmOption.emit()

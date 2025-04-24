@@ -10,6 +10,8 @@ extends Node2D
 @export var ballBoosterShader: ColorRect
 @export var texture: TextureRect
 @export var chargingNode: ColorRect
+@export var chargedParticleEmitter: CPUParticles2D
+@export var failedChargeParticleEmitter: CPUParticles2D
 @export var textControl: Control
 
 @export var noise: FastNoiseLite
@@ -18,7 +20,7 @@ var noisePos: float
 var team: Team
 var player: Player
 
-const baseWidth := 100.0
+const baseWidth := 110.0
 
 var polygonWidthMultiplier
 var oldPolygonWidthMultiplier
@@ -81,9 +83,14 @@ var leftBoundary: float
 var rightBoundary: float
 
 var chargingSpin: bool
-var chargeDuration: float
-var chargeTimeElasped: float
+var chargingDuration: float
+var chargingTimeElasped: float
 var chargingClockwise: bool
+var chargedSpin: bool
+var queuedSpin: bool
+var chargedTimeElapsed: float
+var chargedDuration: float
+var losingCharge: bool
 
 var spinning: bool
 var spinDuration: float
@@ -92,11 +99,14 @@ var clockwiseSpin: bool
 var initialRotation: float
 var rotationDelta: float
 
+var failedSpinJitterStrength: float
+
 var alphaChanging: bool
 var alphaChangeDuration: float
 var alphaChangeTimeElapsed: float
 var originalAlpha: float
 var alphaDelta: float
+var onFinishChangingAlpha: Callable
 
 var powerupDurations: Dictionary = {
 	PowerupManager.Type.SPIN_CYCLE : 0, PowerupManager.Type.DUPLICATOR : 0, PowerupManager.Type.STICKY : 0,
@@ -225,15 +235,21 @@ func processPowerups(delta):
 	if not powerupDurations[PowerupManager.Type.STICKY]:
 		unstickBalls()
 
-
-	if powerupSpeedMultiplier > 0:
+	colorPosOffset = Vector2.ZERO
+	if powerupSpeedMultiplier > 1:
 		noisePos += delta*5.0
 		colorPosOffset = Vector2(
 			noise.get_noise_2d(0, noisePos)*(powerupSpeedMultiplier-1.0)*2,
 			noise.get_noise_2d(100, noisePos)*(powerupSpeedMultiplier-1.0)*2
 		)
-	else:
-		colorPosOffset = Vector2.ZERO
+	if failedSpinJitterStrength > 0.01:
+		failedSpinJitterStrength = lerp(failedSpinJitterStrength, 0.0, delta*2)
+		if not powerupDurations[PowerupManager.Type.FAST_PADDLE]:
+			noisePos += delta*10.0
+			colorPosOffset = Vector2(
+				noise.get_noise_2d(0, noisePos)*failedSpinJitterStrength*3,
+				noise.get_noise_2d(100, noisePos)*failedSpinJitterStrength*3
+			)
 	
 	if powerupDurations[PowerupManager.Type.DUPLICATOR] > 2:
 		ballDuplicatorSprite.self_modulate.a = lerp(ballDuplicatorSprite.self_modulate.a, 1.0, delta*2)
@@ -243,7 +259,7 @@ func processPowerups(delta):
 
 	if powerupDurations[PowerupManager.Type.SPIN_CYCLE] > 2 and not chargingSpin and not spinning:
 		chargingNode.self_modulate.a = lerp(chargingNode.self_modulate.a, 1.0, delta*2)
-	elif not chargingSpin and not spinning:
+	elif not chargingSpin:
 		chargingNode.self_modulate.a = lerp(chargingNode.self_modulate.a, 0.0, delta)
 
 	if powerupDurations[PowerupManager.Type.STICKY] > 2:
@@ -261,7 +277,7 @@ func processPowerups(delta):
 
 func updateWidthAndHeight():
 	_width = (
-		baseWidth * teamSizeWidthMultiplier *
+		(baseWidth-2*Settings.getSettingValue(Settings.Setting.BALL_SIZE)) * teamSizeWidthMultiplier *
 		polygonWidthMultiplier * verticalFraction**2 *
 		Settings.getSettingValue(Settings.Setting.PADDLE_SIZE) *
 		powerupWidthMultiplier
@@ -282,6 +298,9 @@ func updateWidthAndHeight():
 
 	ballBoosterShader.position.x = -width/2 - 20
 	ballBoosterShader.size.x = width + 40
+
+	chargedParticleEmitter.position.x = width/2
+	failedChargeParticleEmitter.position.x = width/2
 
 	position.y = -team.height*(1-verticalFraction)-height
 	
@@ -305,6 +324,9 @@ func forceUpdateWidth(newWidth: float):
 
 	ballBoosterShader.position.x = -width/2 - 20
 	ballBoosterShader.size.x = width + 40
+
+	chargedParticleEmitter.position.x = width/2
+	failedChargeParticleEmitter.position.x = width/2
 
 
 func checkForValidPos() -> bool:
@@ -377,16 +399,29 @@ func processInput(delta: float):
 		if Input.is_key_pressed(player.sdInput): team.eliminateTeam.emit(team)
 
 	if chargingSpin:
-		chargeTimeElasped += delta
-		if chargeTimeElasped > chargeDuration:
-			chargingNode.self_modulate.a = 0
-			chargingNode.material.set_shader_parameter("innerSpiralProgress", 0.5)
-			initiateSpin(chargingClockwise)
-			AudioManager.playInitiateSpin(team.color)
-			# AudioManager.playSustainedSpin(self)
-			chargingSpin = false
+		chargingTimeElasped += delta
+		if chargingTimeElasped > chargingDuration:
+			finishChargingSpin()
 		else:
-			chargingNode.material.set_shader_parameter("innerSpiralProgress", chargeTimeElasped/chargeDuration)
+			chargingNode.material.set_shader_parameter("innerSpiralProgress", chargingTimeElasped/chargingDuration)
+
+	if chargedSpin and not losingCharge:
+		chargedTimeElapsed += delta
+		if chargedTimeElapsed >= chargedDuration:
+			chargedParticleEmitter.emitting = false
+			losingCharge = true
+			changeTextureAlpha(0, 1, removeCharge)
+
+	if player.isInputJustPressed(player.specialInput):
+		if chargedSpin:
+			AudioManager.playInitiateSpin(team.color)
+			initiateSpin(chargingClockwise)
+		elif chargingSpin:
+			queuedSpin = true
+		elif failedSpinJitterStrength < 0.1:
+			AudioManager.playFailedCharge(team.color)
+			failedChargeParticleEmitter.emitting = true
+			failedSpinJitterStrength = 1
 
 	if spinning:
 		spinTimeRemaining -= delta
@@ -395,7 +430,7 @@ func processInput(delta: float):
 			spinning = false
 			if powerupDurations[PowerupManager.Type.SPIN_CYCLE]:
 				pivot.rotation = initialRotation + rotationDelta
-				initiateSpin(clockwiseSpin)
+				initiateSpin(chargingClockwise)
 			else:
 				changeTextureAlpha(0, 2)
 				# AudioManager.stopSustainedSpin(self)
@@ -407,6 +442,7 @@ func processInput(delta: float):
 		if alphaChangeTimeElapsed > alphaChangeDuration:
 			alphaChangeTimeElapsed = alphaChangeDuration
 			alphaChanging = false
+			if onFinishChangingAlpha: onFinishChangingAlpha.call()
 		var alphaChangeRatio = alphaChangeTimeElapsed/alphaChangeDuration
 		texture.self_modulate = Color(texture.self_modulate,originalAlpha + alphaDelta*alphaChangeRatio)
 
@@ -415,8 +451,9 @@ func initiateCharge(_inputSet, clockwise: bool):
 	if chargingSpin or spinning or PauseManager.paused: return
 
 	chargingSpin = true
-	chargeDuration = 0.5
-	chargeTimeElasped = 0
+	chargedSpin = false
+	chargingDuration = 0.5
+	chargingTimeElasped = 0
 	chargingClockwise = clockwise
 
 	chargingNode.self_modulate.a = 1
@@ -424,15 +461,39 @@ func initiateCharge(_inputSet, clockwise: bool):
 	chargingNode.material.set_shader_parameter("spiralRotationSpeed", 0.5)
 	if chargingClockwise: chargingNode.material.set_shader_parameter("reverse", 1.0)
 	else: chargingNode.material.set_shader_parameter("reverse", -1.0)
+	chargedParticleEmitter.emitting = false
 
-	changeTextureAlpha(1, chargeDuration)
-
-	unstickBalls()
+	changeTextureAlpha(1, chargingDuration)
 
 	AudioManager.playPaddleCharge(team.color)
 
 
+func removeCharge():
+	chargedSpin = false
+	chargedParticleEmitter.emitting = false
+
+
+func finishChargingSpin():
+	chargingNode.self_modulate.a = 0
+	chargingNode.material.set_shader_parameter("innerSpiralProgress", 0.5)
+	# initiateSpin(chargingClockwise)
+	# AudioManager.playInitiateSpin(team.color)
+	# AudioManager.playSustainedSpin(self)
+	chargingSpin = false
+	if powerupDurations[PowerupManager.Type.SPIN_CYCLE] or queuedSpin:
+		AudioManager.playInitiateSpin(team.color)
+		initiateSpin(chargingClockwise)
+		queuedSpin = false
+	else:
+		chargedSpin = true
+		losingCharge = false
+		chargedDuration = 5
+		chargedTimeElapsed = 0
+		chargedParticleEmitter.emitting = true
+
+
 func initiateSpin(clockwise: bool):
+	removeCharge()
 	spinning = true
 	spinDuration = width/150.0
 	if powerupDurations[PowerupManager.Type.SPIN_CYCLE]: spinDuration /= 2.0
@@ -444,12 +505,13 @@ func initiateSpin(clockwise: bool):
 	unstickBalls()
 
 
-func changeTextureAlpha(targetAlpha: float, p_alphaChangeDuration: float):
+func changeTextureAlpha(targetAlpha: float, p_alphaChangeDuration: float, onFinish: Callable = Callable()):
 	alphaChanging = true
 	alphaChangeDuration = p_alphaChangeDuration
 	alphaChangeTimeElapsed = 0
 	originalAlpha = texture.self_modulate.a
 	alphaDelta = targetAlpha-originalAlpha
+	onFinishChangingAlpha = onFinish
 	
 
 func moveUntilCollision():

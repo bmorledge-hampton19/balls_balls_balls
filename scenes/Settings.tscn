@@ -138,10 +138,10 @@ color = Color(0, 0, 0, 1)
 
 [node name="BackButton" type="Control" parent="MainViewport"]
 anchors_preset = 0
-offset_left = 611.0
-offset_top = 465.0
-offset_right = 831.0
-offset_bottom = 515.0
+offset_left = 370.0
+offset_top = 485.0
+offset_right = 590.0
+offset_bottom = 535.0
 
 [node name="TopWall" parent="MainViewport/BackButton" instance=ExtResource("8_5yhuw")]
 offset_right = 220.0
@@ -256,6 +256,7 @@ stretch_mode = 4
 layout_mode = 0
 offset_right = 220.0
 offset_bottom = 50.0
+focus_mode = 0
 theme_override_font_sizes/font_size = 40
 theme_override_styles/focus = SubResource("StyleBoxEmpty_5aqt6")
 theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_mm0lm")
@@ -348,7 +349,7 @@ theme_override_constants/separation = 0
 [node name="BallBehaviorHeader" type="MarginContainer" parent="MainViewport/SettingSelectors/RightColumn"]
 layout_mode = 2
 theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
+theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 

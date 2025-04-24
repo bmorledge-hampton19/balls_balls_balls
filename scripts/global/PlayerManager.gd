@@ -138,6 +138,14 @@ var isIconActive: Dictionary
 
 var playersByInputSet: Dictionary
 var activePlayersByTeamColor: Dictionary
+var activePlayers: Array[Player]:
+	get:
+		var players: Array[Player]
+		for teamColor in activePlayersByTeamColor:
+			for player in activePlayersByTeamColor[teamColor]:
+				players.append(player)
+		return players
+
 
 var winningTeamColor: Color
 
@@ -191,12 +199,57 @@ func getActiveTeamColors() -> Array[Color]:
 	return activeTeamColors
 
 
+func addActivePlayer(teamColor: Color, player: Player):
+
+	if player.inputSet.name in [InputSets.WASD, InputSets.IJKL, InputSets.ARROW_KEYS, InputSets.NUMPAD]:
+		player.inputSet.useAltSpecial = true
+
+	else:
+		var sameSideControllerInput = {
+			InputSets.LEFT_JOYSTICK : InputSets.DPAD, InputSets.DPAD : InputSets.LEFT_JOYSTICK,
+			InputSets.RIGHT_JOYSTICK : InputSets.FACE_BUTTONS, InputSets.FACE_BUTTONS : InputSets.RIGHT_JOYSTICK
+		}[player.inputSet.name]
+		var partnerIsPresent := false
+
+		for otherTeamColor in activePlayersByTeamColor:
+			for otherPlayer in activePlayersByTeamColor[otherTeamColor]:
+				if (
+					otherPlayer.inputSet.device == player.inputSet.device and
+					otherPlayer.inputSet.name == sameSideControllerInput
+				):
+					partnerIsPresent = true
+					otherPlayer.inputSet.useAltSpecial = false
+		
+		if partnerIsPresent: player.inputSet.useAltSpecial = false
+		else: player.inputSet.useAltSpecial = true
+
+	activePlayersByTeamColor[teamColor].append(player)
+
+func removeActivePlayer(teamColor: Color, player: Player):
+
+	if player.inputSet.name not in [InputSets.WASD, InputSets.IJKL, InputSets.ARROW_KEYS, InputSets.NUMPAD]:
+		var sameSideControllerInput = {
+			InputSets.LEFT_JOYSTICK : InputSets.DPAD, InputSets.DPAD : InputSets.LEFT_JOYSTICK,
+			InputSets.RIGHT_JOYSTICK : InputSets.FACE_BUTTONS, InputSets.FACE_BUTTONS : InputSets.RIGHT_JOYSTICK
+		}[player.inputSet.name]
+
+		for otherTeamColor in activePlayersByTeamColor:
+			for otherPlayer in activePlayersByTeamColor[otherTeamColor]:
+				if (
+					otherPlayer.inputSet.device == player.inputSet.device and
+					otherPlayer.inputSet.name == sameSideControllerInput
+				):
+					otherPlayer.inputSet.useAltSpecial = true
+
+	activePlayersByTeamColor[player.teamColor] as Array[Player].erase(player)
+
+
 # Really just for testing.
 func forceAddPlayer(teamColor: Color, inputSet: InputSets.InputSet, playerIcon: PlayerIcon, sdInput = 0):
 	var newPlayer := Player.new(teamColor, inputSet, playerIcon)
 	newPlayer.addSDInput(sdInput)
 	playersByInputSet[inputSet] = newPlayer
-	activePlayersByTeamColor[teamColor].append(newPlayer)
+	addActivePlayer(teamColor, newPlayer)
 	newPlayer.active = true
 
 func getNewPlayer(inputSet: InputSets.InputSet) -> Player:
@@ -216,13 +269,13 @@ func getPlayerForInputSet(inputSet: InputSets.InputSet) -> Player:
 	else:
 		player = getNewPlayer(inputSet)
 	if player not in activePlayersByTeamColor[player.teamColor]:
-		activePlayersByTeamColor[player.teamColor].append(player)
+		addActivePlayer(player.teamColor, player)
 	player.active = true
 	return player
 
 func deactivatePlayer(player: Player):
 	isIconActive[player.icon] = false
-	activePlayersByTeamColor[player.teamColor] as Array[Player].erase(player)
+	removeActivePlayer(player.teamColor, player)
 	player.active = false
 
 func clearPlayers():
@@ -277,3 +330,8 @@ func initBalancedTestPlayers():
 func initDuel():
 	forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_BACKSPACE)
 	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[1], getInactivePlayerIcon(), KEY_Z)
+
+func init1v1v1():
+	forceAddPlayer(teamColors[0], InputSets.inputSets[0], getInactivePlayerIcon(), KEY_BACKSPACE)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[1], getInactivePlayerIcon(), KEY_Z)
+	forceAddPlayer(getLeastActiveTeamColor(), InputSets.inputSets[2], getInactivePlayerIcon(), KEY_X)

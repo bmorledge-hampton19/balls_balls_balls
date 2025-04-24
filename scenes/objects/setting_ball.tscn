@@ -72,13 +72,13 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CurrentValue" type="Label" parent="."]
-offset_left = -46.0
+offset_left = -40.0
 offset_top = -32.0
-offset_right = 46.0
+offset_right = 40.0
 offset_bottom = 32.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 20
-text = "Balls Balls Balls"
+theme_override_font_sizes/font_size = 16
+text = "Power-palooza"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
