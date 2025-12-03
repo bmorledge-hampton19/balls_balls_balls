@@ -1,12 +1,14 @@
 [gd_scene load_steps=4 format=3 uid="uid://dwd40xlu4511j"]
 
-[ext_resource type="Shader" path="res://shaders/FadingCircleParticle.gdshader" id="1_5k5kv"]
-[ext_resource type="Script" path="res://scripts/global/OneShotParticleEmitter.gd" id="2_3m157"]
+[ext_resource type="Shader" uid="uid://iftoep1j53rx" path="res://shaders/FadingCircleParticle.gdshader" id="1_5k5kv"]
+[ext_resource type="Script" uid="uid://dpukbeb4tooc1" path="res://scripts/global/OneShotParticleEmitter.gd" id="2_3m157"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ppy4b"]
 shader = ExtResource("1_5k5kv")
-shader_parameter/fadeStart = 0.35
-shader_parameter/fadeEnd = 0.5
+shader_parameter/fadeStartRadius = 0.35
+shader_parameter/fadeEndRadius = 0.5
+shader_parameter/lifetimeFadeStart = 0.3
+shader_parameter/lifetimeFadeEnd = 1.0
 
 [node name="CPUParticles2D" type="CPUParticles2D"]
 material = SubResource("ShaderMaterial_ppy4b")

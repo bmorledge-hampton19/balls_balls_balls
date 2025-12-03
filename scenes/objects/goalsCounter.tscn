@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://cidtpgewej2ee"]
 
-[ext_resource type="Script" path="res://scripts/playfield/GoalsCounter.gd" id="1_1lmde"]
+[ext_resource type="Script" uid="uid://65f4o0lutbpi" path="res://scripts/playfield/GoalsCounter.gd" id="1_1lmde"]
 [ext_resource type="Texture2D" uid="uid://b2y4r4ft4560u" path="res://images/player_icons/360_A.png" id="1_o41pv"]
-[ext_resource type="Shader" path="res://shaders/CircleMask.gdshader" id="2_mjd88"]
+[ext_resource type="Shader" uid="uid://dbdj2n4rh8vu1" path="res://shaders/CircleMask.gdshader" id="2_mjd88"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_c4bwa"]
 shader = ExtResource("2_mjd88")

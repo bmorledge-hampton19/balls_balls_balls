@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://crc10cctsupco"]
 
-[ext_resource type="Script" path="res://scripts/playfield/Ball.gd" id="1_t78ab"]
+[ext_resource type="Script" uid="uid://8jt28x0yi27a" path="res://scripts/playfield/Ball.gd" id="1_t78ab"]
 [ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="2_tx8ws"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ivbdl"]

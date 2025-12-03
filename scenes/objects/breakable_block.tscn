@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://c1rddv1k7ru1p"]
 
-[ext_resource type="Script" path="res://scripts/playfield/BreakableBlock.gd" id="1_6s4c6"]
+[ext_resource type="Script" uid="uid://b8yfkqj5xhrl1" path="res://scripts/playfield/BreakableBlock.gd" id="1_6s4c6"]
 [ext_resource type="PackedScene" uid="uid://dwd40xlu4511j" path="res://scenes/objects/breakable_block_particle_emitter.tscn" id="2_6wppt"]
-[ext_resource type="Shader" path="res://shaders/BreakableBlock.gdshader" id="2_qqw2m"]
+[ext_resource type="Shader" uid="uid://ylv26rjdvsb7" path="res://shaders/BreakableBlock.gdshader" id="2_qqw2m"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_73c0r"]
 resource_local_to_scene = true

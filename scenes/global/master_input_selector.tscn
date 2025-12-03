@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://dinwry8qvvplv"]
 
-[ext_resource type="Script" path="res://scripts/global/MasterInputSelector.gd" id="1_mgl38"]
-[ext_resource type="Shader" path="res://shaders/BorderedCircleMask.gdshader" id="2_s7lhc"]
+[ext_resource type="Script" uid="uid://cv6tp0h68fdgr" path="res://scripts/global/MasterInputSelector.gd" id="1_mgl38"]
+[ext_resource type="Shader" uid="uid://dkcauh2qd1dxa" path="res://shaders/BorderedCircleMask.gdshader" id="2_s7lhc"]
 [ext_resource type="Texture2D" uid="uid://hxhy1yn683e" path="res://images/controller_prompts/clockwise_arrow.png" id="3_cpqds"]
 [ext_resource type="Texture2D" uid="uid://6wu1uwdmjdso" path="res://images/controller_prompts/Generic_Controller.png" id="4_c41m2"]
 [ext_resource type="Texture2D" uid="uid://bk1efl4l5c3u8" path="res://images/controller_prompts/XboxOne_Dpad.png" id="5_jvxxm"]

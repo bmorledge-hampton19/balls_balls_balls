@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://bgmh6xdti0fqk"]
 
-[ext_resource type="Shader" path="res://shaders/BorderedCircleMask.gdshader" id="1_nx8qn"]
+[ext_resource type="Shader" uid="uid://dkcauh2qd1dxa" path="res://shaders/BorderedCircleMask.gdshader" id="1_nx8qn"]
 [ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="2_v7vy3"]
 [ext_resource type="Texture2D" uid="uid://cstnwm2meqb70" path="res://images/controller_prompts/Steam_Start.png" id="3_0qogh"]
 [ext_resource type="Texture2D" uid="uid://b5bh4n2hlrd6o" path="res://images/controller_prompts/Enter_Alt_Key_Dark.png" id="4_u1ndr"]

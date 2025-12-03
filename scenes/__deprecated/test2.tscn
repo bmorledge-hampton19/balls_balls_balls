@@ -1,10 +1,10 @@
 [gd_scene load_steps=17 format=3 uid="uid://dj7ndcyqgnnsa"]
 
-[ext_resource type="Shader" path="res://shaders/goal.gdshader" id="1_ifsdl"]
-[ext_resource type="Script" path="res://scripts/playfield/Paddle.gd" id="2_u8ct1"]
-[ext_resource type="Script" path="res://scripts/global/Team.gd" id="2_v1pke"]
-[ext_resource type="Script" path="res://scripts/playfield/Ball.gd" id="3_ubq7i"]
-[ext_resource type="Script" path="res://scripts/playfield/Wall.gd" id="5_3gsix"]
+[ext_resource type="Shader" uid="uid://be80ujejsfp13" path="res://shaders/goal.gdshader" id="1_ifsdl"]
+[ext_resource type="Script" uid="uid://dllmg44mf2uka" path="res://scripts/playfield/Paddle.gd" id="2_u8ct1"]
+[ext_resource type="Script" uid="uid://kgf62xs07g2n" path="res://scripts/global/Team.gd" id="2_v1pke"]
+[ext_resource type="Script" uid="uid://8jt28x0yi27a" path="res://scripts/playfield/Ball.gd" id="3_ubq7i"]
+[ext_resource type="Script" uid="uid://cm858xd4puewn" path="res://scripts/playfield/Wall.gd" id="5_3gsix"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_45wdc"]
 radius = 4.9
@@ -19,8 +19,8 @@ noise = SubResource("FastNoiseLite_b6yav")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rmnr2"]
 shader = ExtResource("1_ifsdl")
-shader_parameter/density = 0.0
 shader_parameter/noiseTexture = SubResource("NoiseTexture2D_mhneu")
+shader_parameter/density = 0.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ebahk"]
 size = Vector2(100, 10)

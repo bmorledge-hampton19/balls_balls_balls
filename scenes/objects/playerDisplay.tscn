@@ -1,9 +1,9 @@
 [gd_scene load_steps=16 format=3 uid="uid://cxiab0g3k5g85"]
 
-[ext_resource type="Script" path="res://scripts/main_menu/PlayerDisplay.gd" id="1_qexq1"]
+[ext_resource type="Script" uid="uid://bn6341dwfby78" path="res://scripts/main_menu/PlayerDisplay.gd" id="1_qexq1"]
 [ext_resource type="Material" uid="uid://deu2224b1twei" path="res://shaders/pulsing_circle.tres" id="2_a0fqo"]
 [ext_resource type="PackedScene" uid="uid://bngtx6rr0whah" path="res://scenes/objects/bumper.tscn" id="2_u13d7"]
-[ext_resource type="Shader" path="res://shaders/CircleMask.gdshader" id="3_rqenc"]
+[ext_resource type="Shader" uid="uid://dbdj2n4rh8vu1" path="res://shaders/CircleMask.gdshader" id="3_rqenc"]
 [ext_resource type="Texture2D" uid="uid://hme6gheo7qpq" path="res://images/player_icons/PS3_Triangle.png" id="4_gqwh7"]
 [ext_resource type="Texture2D" uid="uid://6wu1uwdmjdso" path="res://images/controller_prompts/Generic_Controller.png" id="5_p2plo"]
 [ext_resource type="Texture2D" uid="uid://vqla2clo6hcm" path="res://images/controller_prompts/PS4_R2.png" id="6_2wbku"]

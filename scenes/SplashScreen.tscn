@@ -1,6 +1,6 @@
 [gd_scene load_steps=25 format=4 uid="uid://o7lp863lnibk"]
 
-[ext_resource type="Script" path="res://scripts/misc/SplashScreen.gd" id="1_7h6u2"]
+[ext_resource type="Script" uid="uid://b4xa40gxcpac8" path="res://scripts/misc/SplashScreen.gd" id="1_7h6u2"]
 [ext_resource type="Texture2D" uid="uid://se5tesb2dnee" path="res://images/dr_bean/dr_bean_ballin_out_idle.png" id="2_43cno"]
 [ext_resource type="PackedScene" uid="uid://brbfliohi7w1j" path="res://scenes/objects/trail.tscn" id="2_p4clj"]
 [ext_resource type="Texture2D" uid="uid://dxp8wd5ayovjk" path="res://images/dr_bean/dr_bean_ballin_out_aiming.png" id="3_8m73o"]
@@ -276,10 +276,10 @@ tracks/5/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_6t5ww"]
 _data = {
-"RESET": SubResource("Animation_odch5"),
-"aiming": SubResource("Animation_ogrrs"),
-"idle": SubResource("Animation_34uht"),
-"smack": SubResource("Animation_8wugq")
+&"RESET": SubResource("Animation_odch5"),
+&"aiming": SubResource("Animation_ogrrs"),
+&"idle": SubResource("Animation_34uht"),
+&"smack": SubResource("Animation_8wugq")
 }
 
 [sub_resource type="Image" id="Image_f8vyk"]
@@ -1254,7 +1254,7 @@ hframes = 9
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CenterContainer/DrBeanControl/NotText/BeanSprite"]
 libraries = {
-"": SubResource("AnimationLibrary_6t5ww")
+&"": SubResource("AnimationLibrary_6t5ww")
 }
 
 [node name="paddleButton" type="Button" parent="CenterContainer/DrBeanControl/NotText/BeanSprite"]

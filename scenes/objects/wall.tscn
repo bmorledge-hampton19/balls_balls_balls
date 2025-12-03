@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://cd0f3kaj2vli3"]
 
-[ext_resource type="Script" path="res://scripts/playfield/Wall.gd" id="1_tpmo8"]
-[ext_resource type="Shader" path="res://shaders/WallShader.gdshader" id="2_3hcqd"]
+[ext_resource type="Script" uid="uid://cm858xd4puewn" path="res://scripts/playfield/Wall.gd" id="1_tpmo8"]
+[ext_resource type="Shader" uid="uid://bvojywnmhfbj1" path="res://shaders/WallShader.gdshader" id="2_3hcqd"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ldxuy"]
 seed = -764572415
@@ -15,10 +15,10 @@ noise = SubResource("FastNoiseLite_ldxuy")
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mvgfc"]
 resource_local_to_scene = true
 shader = ExtResource("2_3hcqd")
+shader_parameter/noise = SubResource("NoiseTexture2D_psbaw")
 shader_parameter/width = 540.0
 shader_parameter/flipped = 0.0
 shader_parameter/noiseOffset = Vector2(0.438966, 0.756017)
-shader_parameter/noise = SubResource("NoiseTexture2D_psbaw")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7w8gn"]
 resource_local_to_scene = true

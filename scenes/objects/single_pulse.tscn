@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cpxmj844n1pgo"]
 
-[ext_resource type="Shader" path="res://shaders/SingleRainbowPulse.gdshader" id="1_3mcty"]
-[ext_resource type="Script" path="res://scripts/playfield/Pulse.gd" id="2_q6pg1"]
+[ext_resource type="Shader" uid="uid://bn266gnhcrple" path="res://shaders/SingleRainbowPulse.gdshader" id="1_3mcty"]
+[ext_resource type="Script" uid="uid://c7whgsmif7vg5" path="res://scripts/playfield/Pulse.gd" id="2_q6pg1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p75l4"]
 resource_local_to_scene = true

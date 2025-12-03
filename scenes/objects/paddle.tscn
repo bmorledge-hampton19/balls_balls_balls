@@ -1,13 +1,13 @@
 [gd_scene load_steps=18 format=3 uid="uid://dn5fpyl6dbako"]
 
-[ext_resource type="Script" path="res://scripts/playfield/Paddle.gd" id="1_mq44b"]
-[ext_resource type="Shader" path="res://shaders/paddle.gdshader" id="2_uywgm"]
+[ext_resource type="Script" uid="uid://dllmg44mf2uka" path="res://scripts/playfield/Paddle.gd" id="1_mq44b"]
+[ext_resource type="Shader" uid="uid://cc71fvu4lhtti" path="res://shaders/paddle.gdshader" id="2_uywgm"]
 [ext_resource type="Texture2D" uid="uid://b2y4r4ft4560u" path="res://images/player_icons/360_A.png" id="3_3tkri"]
-[ext_resource type="Shader" path="res://shaders/ChargingPaddle.gdshader" id="3_fb0p4"]
+[ext_resource type="Shader" uid="uid://bu2jjiu7a1nut" path="res://shaders/ChargingPaddle.gdshader" id="3_fb0p4"]
 [ext_resource type="Texture2D" uid="uid://bxnlnonyb146e" path="res://images/duplicator_symbol.png" id="4_bklop"]
-[ext_resource type="Shader" path="res://shaders/StickyShader.gdshader" id="5_oro2f"]
+[ext_resource type="Shader" uid="uid://bettr4yp2hyjx" path="res://shaders/StickyShader.gdshader" id="5_oro2f"]
 [ext_resource type="Texture2D" uid="uid://cqun7nqgrtxk0" path="res://shaders/sticky_shader_noise.tres" id="6_6rijp"]
-[ext_resource type="Shader" path="res://shaders/RepeatingPulses.gdshader" id="7_8x4fm"]
+[ext_resource type="Shader" uid="uid://dcstrjlypf2yr" path="res://shaders/RepeatingPulses.gdshader" id="7_8x4fm"]
 [ext_resource type="PackedScene" uid="uid://ecjbcl0yrfhy" path="res://scenes/objects/charged_particle_emitter.tscn" id="8_eabko"]
 [ext_resource type="PackedScene" uid="uid://cbhwnt3imxcwv" path="res://scenes/objects/failed_charge_particle_emitter.tscn" id="8_xhvls"]
 
@@ -39,18 +39,18 @@ shader_parameter/innerSpiralProgress = 0.5
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_s2oy5"]
 resource_local_to_scene = true
 shader = ExtResource("5_oro2f")
+shader_parameter/noise = ExtResource("6_6rijp")
 shader_parameter/flipped = 0.0
 shader_parameter/width = 370.0
 shader_parameter/noiseOffset = Vector2(0.8, 1.4)
-shader_parameter/noise = ExtResource("6_6rijp")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_isd8h"]
 resource_local_to_scene = true
 shader = ExtResource("5_oro2f")
+shader_parameter/noise = ExtResource("6_6rijp")
 shader_parameter/flipped = 1.0
 shader_parameter/width = 100.0
 shader_parameter/noiseOffset = Vector2(0, 0)
-shader_parameter/noise = ExtResource("6_6rijp")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s4ui3"]
 resource_local_to_scene = true

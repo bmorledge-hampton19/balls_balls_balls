@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://bngtx6rr0whah"]
 
-[ext_resource type="Script" path="res://scripts/playfield/Bumper.gd" id="1_igjff"]
+[ext_resource type="Script" uid="uid://bfr3x0xu4i2na" path="res://scripts/playfield/Bumper.gd" id="1_igjff"]
 [ext_resource type="PackedScene" uid="uid://cpxmj844n1pgo" path="res://scenes/objects/single_pulse.tscn" id="2_jyyit"]
-[ext_resource type="Shader" path="res://shaders/PulsingRainbow.gdshader" id="2_pcx8e"]
+[ext_resource type="Shader" uid="uid://c0y25lj0fota5" path="res://shaders/PulsingRainbow.gdshader" id="2_pcx8e"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_asq4e"]
 resource_local_to_scene = true

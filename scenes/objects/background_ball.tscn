@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cerylx43rxt76"]
 
-[ext_resource type="Shader" path="res://shaders/BackgroundBall.gdshader" id="1_d0uk3"]
-[ext_resource type="Script" path="res://scripts/global/BackgroundBall.gd" id="2_u1rlk"]
+[ext_resource type="Shader" uid="uid://bhv28lmq7uyu0" path="res://shaders/BackgroundBall.gdshader" id="1_d0uk3"]
+[ext_resource type="Script" uid="uid://df0d4gp5vbiln" path="res://scripts/global/BackgroundBall.gd" id="2_u1rlk"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aqbmx"]
 resource_local_to_scene = true

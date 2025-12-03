@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cysnmq72xco0p"]
 
-[ext_resource type="Shader" path="res://shaders/BackgroundBall.gdshader" id="1_h4qse"]
-[ext_resource type="Script" path="res://scripts/playfield/PowerupParticle.gd" id="2_yacey"]
+[ext_resource type="Shader" uid="uid://bhv28lmq7uyu0" path="res://shaders/BackgroundBall.gdshader" id="1_h4qse"]
+[ext_resource type="Script" uid="uid://7tolxfxlku8e" path="res://scripts/playfield/PowerupParticle.gd" id="2_yacey"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_aqbmx"]
 resource_local_to_scene = true

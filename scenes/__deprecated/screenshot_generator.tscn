@@ -1,14 +1,14 @@
 [gd_scene load_steps=18 format=3 uid="uid://v8xcrwcschq7"]
 
-[ext_resource type="Script" path="res://scripts/misc/StartupScreenshot.gd" id="1_t8dej"]
-[ext_resource type="Shader" path="res://shaders/TheBall.gdshader" id="1_yiw65"]
-[ext_resource type="Shader" path="res://shaders/PlayfieldGrid.gdshader" id="2_glqjd"]
-[ext_resource type="Shader" path="res://shaders/Midline.gdshader" id="3_t2byl"]
-[ext_resource type="Shader" path="res://shaders/borders/TopPulsingBorder.gdshader" id="4_gyfqk"]
-[ext_resource type="Shader" path="res://shaders/borders/RightPulsingBorder.gdshader" id="5_354fp"]
-[ext_resource type="Shader" path="res://shaders/borders/LeftPulsingBorder.gdshader" id="6_aeebh"]
-[ext_resource type="Shader" path="res://shaders/borders/BottomPulsingBorder.gdshader" id="7_7c0mx"]
-[ext_resource type="Script" path="res://scripts/main_menu/TitleText.gd" id="8_hex1y"]
+[ext_resource type="Script" uid="uid://cfxfec42brim1" path="res://scripts/misc/StartupScreenshot.gd" id="1_t8dej"]
+[ext_resource type="Shader" uid="uid://48fu1ov1i1l5" path="res://shaders/TheBall.gdshader" id="1_yiw65"]
+[ext_resource type="Shader" uid="uid://cwwx0ku84hy4o" path="res://shaders/PlayfieldGrid.gdshader" id="2_glqjd"]
+[ext_resource type="Shader" uid="uid://co6xc8bh1i2j0" path="res://shaders/Midline.gdshader" id="3_t2byl"]
+[ext_resource type="Shader" uid="uid://cf7c8wt7r3si5" path="res://shaders/borders/TopPulsingBorder.gdshader" id="4_gyfqk"]
+[ext_resource type="Shader" uid="uid://c1yr3d8ve54u6" path="res://shaders/borders/RightPulsingBorder.gdshader" id="5_354fp"]
+[ext_resource type="Shader" uid="uid://32tw1qmkrh2g" path="res://shaders/borders/LeftPulsingBorder.gdshader" id="6_aeebh"]
+[ext_resource type="Shader" uid="uid://dgqrh2pgtjd0t" path="res://shaders/borders/BottomPulsingBorder.gdshader" id="7_7c0mx"]
+[ext_resource type="Script" uid="uid://cybhecc1bff1p" path="res://scripts/main_menu/TitleText.gd" id="8_hex1y"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h7n8l"]
 resource_local_to_scene = true

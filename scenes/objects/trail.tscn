@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://brbfliohi7w1j"]
 
-[ext_resource type="Script" path="res://scripts/global/Trail.gd" id="1_kf3p0"]
-[ext_resource type="Shader" path="res://shaders/TrailLine.gdshader" id="1_x4lk6"]
+[ext_resource type="Script" uid="uid://bcqm3ypfoh78f" path="res://scripts/global/Trail.gd" id="1_kf3p0"]
+[ext_resource type="Shader" uid="uid://kfdxutkrm4k1" path="res://shaders/TrailLine.gdshader" id="1_x4lk6"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_23imx"]
 resource_local_to_scene = true

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://br8ipg0uyttmh"]
 
-[ext_resource type="Script" path="res://scripts/misc/SettingSelector.gd" id="1_hiia5"]
-[ext_resource type="Shader" path="res://shaders/PulsingCircleMask.gdshader" id="2_pbtby"]
+[ext_resource type="Script" uid="uid://dooyawqdaq2et" path="res://scripts/misc/SettingSelector.gd" id="1_hiia5"]
+[ext_resource type="Shader" uid="uid://bglyyh6yw0jgb" path="res://shaders/PulsingCircleMask.gdshader" id="2_pbtby"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_6hrx6"]
 shader = ExtResource("2_pbtby")

@@ -1,8 +1,8 @@
 [gd_scene load_steps=13 format=3 uid="uid://bunjfytv1m4tq"]
 
-[ext_resource type="Shader" path="res://shaders/goal.gdshader" id="1_setvy"]
-[ext_resource type="Script" path="res://scripts/playfield/Paddle.gd" id="2_jp4qk"]
-[ext_resource type="Script" path="res://scripts/playfield/Ball.gd" id="3_hnqs7"]
+[ext_resource type="Shader" uid="uid://be80ujejsfp13" path="res://shaders/goal.gdshader" id="1_setvy"]
+[ext_resource type="Script" uid="uid://dllmg44mf2uka" path="res://scripts/playfield/Paddle.gd" id="2_jp4qk"]
+[ext_resource type="Script" uid="uid://8jt28x0yi27a" path="res://scripts/playfield/Ball.gd" id="3_hnqs7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_aqvk5"]
 size = Vector2(520, 100)
@@ -14,8 +14,8 @@ noise = SubResource("FastNoiseLite_6b7o5")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_pc37a"]
 shader = ExtResource("1_setvy")
-shader_parameter/density = 0.0
 shader_parameter/noiseTexture = SubResource("NoiseTexture2D_6f32x")
+shader_parameter/density = 0.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h67qf"]
 size = Vector2(100, 10)

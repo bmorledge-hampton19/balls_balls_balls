@@ -1,11 +1,11 @@
 [gd_scene load_steps=18 format=3 uid="uid://dofn2tm0f68ta"]
 
-[ext_resource type="Script" path="res://scripts/playfield/Ball.gd" id="1_c3ly0"]
-[ext_resource type="Script" path="res://scripts/playfield/GameManager.gd" id="1_dewtm"]
-[ext_resource type="Script" path="res://scripts/global/Team.gd" id="2_poa4c"]
-[ext_resource type="Shader" path="res://shaders/goal.gdshader" id="3_1e5ip"]
-[ext_resource type="Script" path="res://scripts/playfield/Paddle.gd" id="4_426oj"]
-[ext_resource type="Script" path="res://scripts/playfield/Wall.gd" id="5_28yv7"]
+[ext_resource type="Script" uid="uid://8jt28x0yi27a" path="res://scripts/playfield/Ball.gd" id="1_c3ly0"]
+[ext_resource type="Script" uid="uid://ce7kfa408d7yl" path="res://scripts/playfield/GameManager.gd" id="1_dewtm"]
+[ext_resource type="Script" uid="uid://kgf62xs07g2n" path="res://scripts/global/Team.gd" id="2_poa4c"]
+[ext_resource type="Shader" uid="uid://be80ujejsfp13" path="res://shaders/goal.gdshader" id="3_1e5ip"]
+[ext_resource type="Script" uid="uid://dllmg44mf2uka" path="res://scripts/playfield/Paddle.gd" id="4_426oj"]
+[ext_resource type="Script" uid="uid://cm858xd4puewn" path="res://scripts/playfield/Wall.gd" id="5_28yv7"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_45wdc"]
 radius = 4.9
@@ -20,8 +20,8 @@ noise = SubResource("FastNoiseLite_b6yav")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rmnr2"]
 shader = ExtResource("3_1e5ip")
-shader_parameter/density = 0.0
 shader_parameter/noiseTexture = SubResource("NoiseTexture2D_gfats")
+shader_parameter/density = 0.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ebahk"]
 size = Vector2(100, 10)

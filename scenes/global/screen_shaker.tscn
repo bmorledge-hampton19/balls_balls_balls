@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://baemq3u5eutjl"]
 
-[ext_resource type="Script" path="res://scripts/global/ScreenShaker.gd" id="1_6y6a6"]
+[ext_resource type="Script" uid="uid://csl34hoop71se" path="res://scripts/global/ScreenShaker.gd" id="1_6y6a6"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_n6gs2"]
 frequency = 1.0

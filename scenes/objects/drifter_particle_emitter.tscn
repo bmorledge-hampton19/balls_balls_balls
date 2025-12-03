@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://lepqftpncvl8"]
 
-[ext_resource type="Shader" path="res://shaders/FadingCircleParticle.gdshader" id="1_5862j"]
+[ext_resource type="Shader" uid="uid://iftoep1j53rx" path="res://shaders/FadingCircleParticle.gdshader" id="1_5862j"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ppy4b"]
 shader = ExtResource("1_5862j")

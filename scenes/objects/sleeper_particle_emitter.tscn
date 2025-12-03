@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dbd7xx67yp221"]
 
-[ext_resource type="Shader" path="res://shaders/FadingCircleParticle.gdshader" id="1_dxqgx"]
+[ext_resource type="Shader" uid="uid://iftoep1j53rx" path="res://shaders/FadingCircleParticle.gdshader" id="1_dxqgx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ppy4b"]
 shader = ExtResource("1_dxqgx")
@@ -10,7 +10,7 @@ shader_parameter/lifetimeFadeStart = 0.2
 shader_parameter/lifetimeFadeEnd = 0.7
 
 [sub_resource type="Curve" id="Curve_v8nsj"]
-min_value = -1.0
+_limits = [-1.0, 1.0, 0.0, 1.0]
 _data = [Vector2(0, -0.318681), 0.0, 11.1617, 0, 1, Vector2(0.118143, 1), 0.0, 0.0, 0, 0, Vector2(0.253165, -0.516483), 0.0, 0.0, 0, 0, Vector2(0.362869, 0.340659), 0.0, 0.0, 0, 0, Vector2(0.506329, -0.208791), 0.0, 0.0, 0, 0, Vector2(0.624472, 0.0329671), 2.04631, 0.0, 1, 0]
 point_count = 6
 

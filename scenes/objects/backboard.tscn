@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://bjvx5qdqhbusc"]
 
-[ext_resource type="Script" path="res://scripts/playfield/Backboard.gd" id="1_myfok"]
+[ext_resource type="Script" uid="uid://eox8723gie4v" path="res://scripts/playfield/Backboard.gd" id="1_myfok"]
 [ext_resource type="PackedScene" uid="uid://c1rddv1k7ru1p" path="res://scenes/objects/breakable_block.tscn" id="1_pko2p"]
 
 [node name="Backboard" type="Control" node_paths=PackedStringArray("breakableBlocks")]

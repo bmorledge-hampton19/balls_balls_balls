@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bwggye1f527c4"]
 
-[ext_resource type="Script" path="res://scripts/playfield/Vertex.gd" id="1_ye5og"]
+[ext_resource type="Script" uid="uid://c0m88qqmfh2js" path="res://scripts/playfield/Vertex.gd" id="1_ye5og"]
 
 [node name="Vertex" type="Control"]
 layout_mode = 3

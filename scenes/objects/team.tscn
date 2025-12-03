@@ -1,9 +1,9 @@
 [gd_scene load_steps=9 format=3 uid="uid://cabfjmylr6pau"]
 
-[ext_resource type="Script" path="res://scripts/global/Team.gd" id="1_25hma"]
-[ext_resource type="Shader" path="res://shaders/goal.gdshader" id="2_gowim"]
+[ext_resource type="Script" uid="uid://kgf62xs07g2n" path="res://scripts/global/Team.gd" id="1_25hma"]
+[ext_resource type="Shader" uid="uid://be80ujejsfp13" path="res://shaders/goal.gdshader" id="2_gowim"]
 [ext_resource type="PackedScene" uid="uid://ccyr86hu00pb3" path="res://scenes/objects/goal_particle_emitter.tscn" id="2_uoy4j"]
-[ext_resource type="Script" path="res://scripts/playfield/PaddleManager.gd" id="3_rumxq"]
+[ext_resource type="Script" uid="uid://v33eywqdnb3p" path="res://scripts/playfield/PaddleManager.gd" id="3_rumxq"]
 [ext_resource type="PackedScene" uid="uid://dn5fpyl6dbako" path="res://scenes/objects/paddle.tscn" id="4_5dvrg"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_dk33v"]
@@ -13,8 +13,8 @@ noise = SubResource("FastNoiseLite_dk33v")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_xbply"]
 shader = ExtResource("2_gowim")
-shader_parameter/density = 0.0
 shader_parameter/noiseTexture = SubResource("NoiseTexture2D_mhneu")
+shader_parameter/density = 0.0
 
 [node name="Team" type="Control" node_paths=PackedStringArray("goal", "goalShader", "goalCollider", "paddleManager", "particleEmitterControl")]
 layout_mode = 3

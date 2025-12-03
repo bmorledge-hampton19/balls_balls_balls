@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://dq0i1c6gilmgx"]
 
-[ext_resource type="Script" path="res://scripts/global/Background.gd" id="4_8t75m"]
+[ext_resource type="Script" uid="uid://r53hox0blcf3" path="res://scripts/global/Background.gd" id="4_8t75m"]
 [ext_resource type="PackedScene" uid="uid://dqcbmnw2epd0h" path="res://scenes/objects/winner_playfield.tscn" id="4_snjxm"]
 [ext_resource type="PackedScene" uid="uid://cerylx43rxt76" path="res://scenes/objects/background_ball.tscn" id="5_4401s"]
-[ext_resource type="Script" path="res://scripts/global/VariableTimer.gd" id="7_4vlsh"]
+[ext_resource type="Script" uid="uid://cgkfdsgl2w0tp" path="res://scripts/global/VariableTimer.gd" id="7_4vlsh"]
 
 [node name="WinnerScreen" type="Control"]
 layout_mode = 3

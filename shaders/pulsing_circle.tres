@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://deu2224b1twei"]
 
-[ext_resource type="Shader" path="res://shaders/PulsingCircleMask.gdshader" id="1_yeydq"]
+[ext_resource type="Shader" uid="uid://bglyyh6yw0jgb" path="res://shaders/PulsingCircleMask.gdshader" id="1_yeydq"]
 
 [resource]
 resource_local_to_scene = true
